@@ -15,31 +15,39 @@
     <section id="map-wrap" aria-label="3D 지도">
       <div id="map"></div>
       <h1 id="title">마카오 가족여행 2026.12.27–31</h1>
-      <div id="map-note" hidden>동선은 장소를 직선으로 이은 대략적인 경로입니다</div>
       <div id="map-fallback" hidden>
         <p><strong>지도를 불러오지 못했습니다.</strong></p>
-        <p>인터넷 연결을 확인해 주세요. 아래 일정 목록과 예약 버튼은 그대로 쓸 수 있습니다.</p>
+        <p>인터넷 연결을 확인해 주세요. 아래 일정과 예약 버튼은 그대로 쓸 수 있습니다.</p>
       </div>
     </section>
 
-    <!-- 아래쪽(PC에서는 왼쪽): 일정 패널 -->
+    <!-- 아래쪽(PC에서는 왼쪽): 일정 -->
     <section id="panel" aria-label="일정">
-      <div id="toolbar">
-        <div id="plan-toggle" role="group" aria-label="일정 안 선택" hidden></div>
-        <button type="button" class="btn" id="btn-booking">📋 예약 체크리스트</button>
-        <button type="button" class="btn" id="btn-cost">💰 비용 요약</button>
-      </div>
       <div id="sticky">
+        <!-- 손잡이: 누르면 목록을 크게(지도를 작게) 본다 -->
+        <button type="button" id="grip" aria-label="목록 크게 보기" aria-pressed="false"><span></span></button>
+        <div id="plan-toggle" role="group" aria-label="일정 안 선택" hidden></div>
         <div id="tabs" role="tablist" aria-label="날짜"></div>
-        <div id="tour">
-          <button type="button" class="btn icon" id="tour-prev" aria-label="이전 장소">⏮</button>
-          <button type="button" class="btn primary" id="tour-play">▶ 투어</button>
-          <button type="button" class="btn icon" id="tour-next" aria-label="다음 장소">⏭</button>
-          <span id="tour-status" aria-live="polite"></span>
+        <div id="bar">
+          <div id="tour">
+            <button type="button" class="btn icon" id="tour-prev" aria-label="이전 장소">⏮</button>
+            <button type="button" class="btn primary" id="tour-play">▶ 투어</button>
+            <button type="button" class="btn icon" id="tour-next" aria-label="다음 장소">⏭</button>
+          </div>
+          <div id="tools">
+            <button type="button" class="btn" id="btn-booking" aria-label="예약 체크리스트">📋 <span>예약</span></button>
+            <button type="button" class="btn" id="btn-cost" aria-label="비용 요약">💰 <span>비용</span></button>
+          </div>
         </div>
+        <span id="tour-status" class="sr-only" aria-live="polite"></span>
       </div>
       <div id="cards"></div>
-      <p id="foot">가격·운행 시각·영업시간은 바뀔 수 있습니다. 현장·공식 사이트에서 최종 확인하세요.</p>
+      <div id="foot">
+        <p>일정을 누르면 지도가 그곳으로 날아가고 자세한 내용이 펼쳐집니다.</p>
+        <p>가격·운행 시각·영업시간은 바뀔 수 있습니다. 현장·공식 사이트에서 최종 확인하세요.</p>
+        <p>지도의 선은 장소를 직선으로 이은 대략적인 동선입니다.</p>
+        <p id="foot-rhythm"></p>
+      </div>
     </section>
   </div>
 

@@ -51,7 +51,9 @@
   function dayInfo(date) { for (var i = 0; i < D.days.length; i++) if (D.days[i].date === date) return D.days[i]; return null; }
   function place(id) { return D.places[id]; }
   function onMap(id) { var p = place(id); return !!(p && !p.offMap && typeof p.lng === 'number' && typeof p.lat === 'number'); }
-  function mop(c) { return c.min === c.max ? 'MOP ' + c.min.toLocaleString() : 'MOP ' + c.min.toLocaleString() + '~' + c.max.toLocaleString(); }
+  function mopShort(c) { return c.min === c.max ? c.min.toLocaleString() : c.min.toLocaleString() + '~' + c.max.toLocaleString(); }
+  function mop(c) { return 'MOP ' + mopShort(c); }
+  function isNarrow() { return window.innerWidth < 900; }      // 휴대폰처럼 좁은 화면인지
   function link(url, text, cls) {
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
   }
@@ -181,8 +183,10 @@
   function renderTabs() {
     var html = '<button type="button" class="tab" role="tab" data-day="all" aria-selected="' + (state.day === 'all') + '">전체</button>';
     D.days.forEach(function (d) {
+      var m = /^(\d+)\/(\d+)\((.+)\)$/.exec(d.label);      // '12/27(일)' → 월 · 일 · 요일로 나눠 좁은 화면에서 짧게 보여 준다
+      var inner = m ? '<span class="m">' + m[1] + '/</span><span class="d">' + m[2] + '</span><span class="w">' + m[3] + '</span>' : esc(d.label);
       html += '<button type="button" class="tab" role="tab" data-day="' + d.date + '" style="--day-color:' + d.color +
-        '" aria-selected="' + (state.day === d.date) + '"><span class="dot"></span>' + esc(d.label) + '</button>';
+        '" aria-label="' + esc(d.label) + '" aria-selected="' + (state.day === d.date) + '">' + inner + '</button>';
     });
     $('tabs').innerHTML = html;
   }
@@ -199,51 +203,49 @@
     return t;
   }
 
+  /* 작은 표시(칩). 접힌 카드에는 짧은 글(short), 펼친 카드에는 전체 문구(full)가 보인다 */
+  function chip(short, full, cls) {
+    return '<span class="chip' + (cls ? ' ' + cls : '') + '"><span class="s">' + short + '</span><span class="f">' + full + '</span></span>';
+  }
+
+  /* 일정 카드: 접힌 상태는 시간·제목·장소·작은 표시만. 누르면 메모·꿀팁·버튼이 펼쳐진다 */
   function cardHtml(it, numberByPlace, linked) {
     var d = dayInfo(it.date) || {};
     var quiet = !!QUIET_KINDS[it.kind];
-    var showNum = !quiet && it.kind !== 'move';
+    var isMove = it.kind === 'move';
+    var showNum = !quiet && !isMove;
     var names = (it.places || []).map(function (id) {     // 지도 마커와 같은 번호를 장소 이름 앞에 붙인다
       var nm = esc(place(id) ? place(id).name : id);
       return (showNum && numberByPlace[id] ? '<span class="pnum">' + numberByPlace[id] + '</span>' : '') + nm;
     });
-    var sep = it.kind === 'move' ? ' → ' : ' · ';
-    var badges = [];
-    if (it.transport && TRANSPORT[it.transport]) badges.push('<span class="badge">' + TRANSPORT[it.transport] + '</span>');
+
+    var chips = [];
+    var tIcon = it.transport && TRANSPORT[it.transport] ? TRANSPORT[it.transport].split(' ')[0] : '';
+    if (tIcon) chips.push(isMove ? '<span class="chip f-only">' + TRANSPORT[it.transport] + '</span>' : chip(tIcon, TRANSPORT[it.transport]));
     if (it.cost) {
-      badges.push('<span class="badge">💰 1가족 예상 ' + mop(it.cost) + (it.cost.optional ? ' (선택)' : '') + '</span>');
+      var opt = it.cost.optional ? ' (선택)' : '';
+      chips.push(chip('💰 ' + mopShort(it.cost) + opt, '💰 1가족 예상 ' + mop(it.cost) + opt));
     }
     var rw = rhythmWarning(it);
-    if (rw) badges.push('<span class="badge warn">⚠️ 아이 리듬 주의 · ' + esc(rw) + '</span>');
-    closedWarning(it).forEach(function (n) {
-      badges.push('<span class="badge closed">⛔ 휴무 주의 · ' + esc(n) + '</span>');
-    });
-    hoursWarning(it).forEach(function (t) {
-      badges.push('<span class="badge warn">⏰ 영업시간 주의 · ' + esc(t) + '</span>');
-    });
-    if (it.warn) badges.push('<span class="badge warn">⚠️ 확인 필요 · ' + esc(it.warn) + '</span>');
-
-    var html = '<div class="card' + (quiet ? ' quiet' : '') + '" tabindex="0" role="button" data-i="' + it._i +
-      '" style="--day-color:' + (d.color || '') + '">';
-    html += '<div class="card-top"><div class="card-time">' + esc(it.time) + (it.end ? '<small>~' + esc(it.end) + '</small>' : '') + '</div>';
-    html += '<div class="card-main"><p class="card-title">' + (KIND_ICONS[it.kind] || '') + ' ' + esc(it.title) + '</p>';
-    if (names.length) html += '<p class="card-place">' + names.join(sep) + '</p>';
-    html += '</div></div>';
-    if (badges.length) html += '<div class="badges">' + badges.join('') + '</div>';
-    if (it.memo) html += '<p class="card-memo">' + esc(it.memo) + '</p>';
-    if (it.cost && it.cost.note) html += '<p class="card-memo fine">💰 ' + esc(it.cost.note) + ' · 현장·공식 사이트에서 최종 확인</p>';
-    else if (it.cost) html += '<p class="card-memo fine">금액은 현장·공식 사이트에서 최종 확인</p>';
-    if (it.tips && it.tips.length) {
-      html += '<ul class="tips">' + it.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>';
-    }
-
-    var actions = [];
+    if (rw) chips.push(chip('⚠️ 아이 리듬', '⚠️ 아이 리듬 주의 · ' + esc(rw), 'warn'));
+    closedWarning(it).forEach(function (n) { chips.push(chip('⛔ 휴무', '⛔ 휴무 주의 · ' + esc(n), 'closed')); });
+    hoursWarning(it).forEach(function (t) { chips.push(chip('⏰ 영업시간', '⏰ 영업시간 주의 · ' + esc(t), 'warn')); });
+    if (it.warn) chips.push(chip('⚠️ 확인 필요', '⚠️ 확인 필요 · ' + esc(it.warn), 'warn'));
     var bk = bookingFor(it);
-    if (bk) actions.push(bookingButton(bk.b));
-    if (it.shuttle && D.shuttles[it.shuttle]) {
-      actions.push(link(D.shuttles[it.shuttle].url, '🚌 셔틀 시간표', 'btn'));
+    if (bk) chips.push('<span class="chip s-only">🎫 예약</span>');
+
+    // 펼쳤을 때 보이는 자세한 내용
+    var more = '';
+    if (it.memo) more += '<p class="card-memo">' + esc(it.memo) + '</p>';
+    if (it.tips && it.tips.length) {
+      more += '<ul class="tips">' + it.tips.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>';
     }
-    if (it.kind !== 'move' && !quiet) {
+    if (it.cost) more += '<p class="fine">💰 ' + (it.cost.note ? esc(it.cost.note) + ' · ' : '') + '현장·공식 사이트에서 최종 확인</p>';
+    var actions = [];
+    if (bk) actions.push(bookingButton(bk.b));
+    var sh = it.shuttle && D.shuttles[it.shuttle];
+    if (sh) actions.push(link(sh.url, '🚌 셔틀 시간표', 'btn'));
+    if (!isMove && !quiet) {
       (it.places || []).forEach(function (id) {             // 같은 장소의 링크는 하루에 한 번만 보여 준다
         var p = place(id);
         if (!p || !p.url || linked[id] || (bk && bk.b.url === p.url)) return;
@@ -251,12 +253,20 @@
         actions.push(link(p.url, p.urlLabel || '소개 페이지', 'btn'));
       });
     }
-    html += '<div class="card-actions">' + actions.join('') + '</div>';
-    if (it.shuttle && D.shuttles[it.shuttle]) {
-      html += '<p class="card-memo fine">' + esc(D.shuttles[it.shuttle].info) + ' · 운행 시각은 현장 확인</p>';
-    }
+    if (actions.length) more += '<div class="card-actions">' + actions.join('') + '</div>';
+    if (sh) more += '<p class="fine">' + esc(sh.info) + ' · 운행 시각은 현장 확인</p>';
+
+    var cls = 'card' + (quiet ? ' quiet' : '') + (isMove ? ' move' : '') + (more ? ' has-more' : '');
+    var html = '<div class="' + cls + '" tabindex="0" role="button"' + (more ? ' aria-expanded="false"' : '') +
+      ' data-i="' + it._i + '" style="--day-color:' + (d.color || '') + '">';
+    html += '<div class="card-top"><div class="card-time">' + esc(it.time) + (it.end ? '<small>~' + esc(it.end) + '</small>' : '') + '</div>';
+    html += '<div class="card-main"><p class="card-title">' + ((isMove && tIcon) || KIND_ICONS[it.kind] || '') + ' ' + esc(it.title) + '</p>';
+    if (names.length) html += '<p class="card-place place-line">' + names.join(isMove ? ' → ' : ' · ') + '</p>';
+    html += '<div class="chips">' + chips.join('') + '</div></div>';
+    if (more) html += '<span class="chev" aria-hidden="true">⌄</span>';
     html += '</div>';
-    return html;
+    if (more) html += '<div class="card-more">' + more + '</div>';
+    return html + '</div>';
   }
 
   /* 날짜별로 장소에 번호 매기기(그날 처음 들르는 순서) */
@@ -272,25 +282,19 @@
   }
 
   function renderCards() {
-    var R = D.rhythm || {};
     var html = '';
-    if (R.breakfastStart) {
-      html += '<p class="fine rhythm">👶 아이 리듬: 조식 ' + esc(R.breakfastStart) + ' · 낮잠 ' + esc(R.napStart) + '~' + esc(R.napEnd) +
-        ' · 저녁 ' + esc(R.dinnerStart) + ' (늦어도 ' + esc(R.dinnerLatest) + ') · ' + esc(R.backToHotel) + ' 호텔 복귀 · ' + esc(R.bedtime) + ' 취침</p>';
-    }
     viewDates().forEach(function (date) {
       var d = dayInfo(date);
       var c = dayCost(date);
-      html += '<h2 class="day-head" style="--day-color:' + d.color + '">' + esc(d.label) +
-        (d.summary ? ' <small>' + esc(d.summary) + '</small>' : '') + '</h2>';
+      // 날짜 제목 + 그날 예상 비용(누르면 비용 요약)
+      html += '<div class="day-head" style="--day-color:' + d.color + '"><h2>' + esc(d.label) +
+        (d.summary ? ' <small>' + esc(d.summary) + '</small>' : '') + '</h2>' +
+        (c.max > 0 ? '<button type="button" class="day-cost" aria-label="이날 1가족 예상 비용 ' + mop(c) + ' · 비용 요약 열기">💰 ' + mop(c) + '</button>' : '') +
+        '</div>';
       var prep = (plan().prep || {})[date];
       if (prep && prep.length) {
-        html += '<details class="prep"' + (state.day === 'all' ? '' : ' open') + '><summary>🎒 오늘의 준비물</summary><ul>' +
+        html += '<details class="prep"><summary>🎒 오늘의 준비물 ' + prep.length + '가지</summary><ul>' +
           prep.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></details>';
-      }
-      if (c.max > 0) {
-        html += '<p class="fine">💰 이날 1가족 예상 비용: <strong>' + mop(c) + '</strong> (시설 ' + mop({ min: c.ticketMin, max: c.ticketMax }) +
-          ' + 택시 ' + mop({ min: c.taxiMin, max: c.taxiMax }) + ') · 현장·공식 사이트에서 최종 확인</p>';
       }
       var nums = numbering(date);
       var linked = {};
@@ -300,12 +304,17 @@
   }
 
   function render(moveCamera) {
-    stopTour();
     state.tourIdx = -1;
+    stopTour();
     state.lastPlace = null;
     renderPlanToggle();
     renderTabs();
     renderCards();
+    var R = D.rhythm || {};
+    if (R.breakfastStart) {
+      $('foot-rhythm').textContent = '아이 리듬: 조식 ' + R.breakfastStart + ' · 낮잠 ' + R.napStart + '~' + R.napEnd +
+        ' · 저녁 ' + R.dinnerStart + ' (늦어도 ' + R.dinnerLatest + ') · ' + R.backToHotel + ' 호텔 복귀 · ' + R.bedtime + ' 취침';
+    }
     setTourStatus('');
     updateMap(moveCamera);
   }
@@ -476,7 +485,6 @@
     }).filter(function (f) { return f.geometry.coordinates.length > 1; });
     var src = map.getSource('routes');
     if (src) src.setData({ type: 'FeatureCollection', features: feats });
-    $('map-note').hidden = false;
 
     if (moveCamera) fitTo(ids);
   }
@@ -576,7 +584,6 @@
   function mapFailed() {
     mapReady = false;
     $('map-fallback').hidden = false;
-    $('map-note').hidden = true;
   }
 
   function createMap(styleUrl) {
@@ -591,9 +598,12 @@
       Object.keys(extra).forEach(function (k) { opts[k] = extra[k]; });
       map = new maplibregl.Map(opts);
     } catch (e) { mapFailed(); return; }
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+    map.addControl(new maplibregl.NavigationControl({ showZoom: !isNarrow(), visualizePitch: true }), 'top-right');
     map.on('load', function () {
       mapReady = true;
+      // 지도 아래의 출처 표시는 접어 둔다 (ⓘ 를 누르면 펼쳐진다)
+      var att = map.getContainer().querySelector('.maplibregl-ctrl-attrib');
+      if (att) { att.classList.remove('maplibregl-compact-show'); att.removeAttribute('open'); }
       add3dBuildings();
       localizeLabels();
       addBeaconLayer();
@@ -674,13 +684,20 @@
     var ids = (it.places || []).filter(onMap);
     if (!ids.length) return;
     if (it.kind === 'move' && ids.length > 1) { if (popup) popup.remove(); fitTo(ids); return; }
-    flyToPlace(ids[0]);
-    openPopup(ids[0], { color: (dayInfo(it.date) || {}).color });
+    var compact = isNarrow();      // 휴대폰에서는 지도가 가려지지 않게 작은 이름표만 띄운다 (자세한 내용은 카드에 펼쳐진다)
+    flyToPlace(ids[0], { compact: compact });
+    openPopup(ids[0], { compact: compact, item: it, color: (dayInfo(it.date) || {}).color });
   }
 
   /* ---------- 투어 ---------- */
   function setTourStatus(t) { $('tour-status').textContent = t; }
-  function setPlayButton() { $('tour-play').textContent = state.playing ? '⏸ 일시정지' : '▶ 투어'; }
+  function setPlayButton() {
+    var n = state.tourIdx >= 0 ? stops().length : 0;
+    var prog = n ? (state.tourIdx + 1) + '/' + n : '';
+    var b = $('tour-play');
+    b.textContent = state.playing ? '⏸ ' + (prog || '일시정지') : '▶ ' + (prog || '투어');
+    b.setAttribute('aria-label', state.playing ? '투어 일시정지' : '투어 재생');
+  }
 
   function goStop(idx) {
     var list = stops();
@@ -688,6 +705,8 @@
     if (idx < 0) idx = 0;
     if (idx >= list.length) return false;
     state.tourIdx = idx;
+    setPlayButton();
+    closeCards(null);                 // 투어 중에는 카드를 접어 목록을 간결하게 둔다
     var s = list[idx];
     var el = highlight(s.item._i);
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -701,7 +720,7 @@
     clearTimeout(state.timer);
     state.timer = setTimeout(function () {           // 이동(약 2초) + 머무는 시간(3초) 뒤에 다음 장소로
       if (!state.playing) return;
-      if (state.tourIdx + 1 >= stops().length) { stopTour(); setTourStatus('투어가 끝났습니다'); state.tourIdx = -1; return; }
+      if (state.tourIdx + 1 >= stops().length) { state.tourIdx = -1; stopTour(); setTourStatus('투어가 끝났습니다'); return; }
       goStop(state.tourIdx + 1);
       scheduleNext();
     }, FLY_MS + STAY_MS);
@@ -797,17 +816,45 @@
     state.plan = +b.getAttribute('data-plan');
     render(true);
   });
+  /* 펼쳐진 카드를 접는다 (except 는 그대로 둔다) */
+  function closeCards(except) {
+    Array.prototype.forEach.call($('cards').querySelectorAll('.card.open'), function (c) {
+      if (c !== except) { c.classList.remove('open'); c.setAttribute('aria-expanded', 'false'); }
+    });
+  }
+  /* 카드를 누르면: 지도가 그 장소로 날아가고, 카드가 펼쳐져 메모·꿀팁·버튼이 보인다 (다시 누르면 접힌다) */
   function cardActivate(e) {
-    if (e.target.closest('a, summary')) return;           // 예약 버튼·링크는 그대로 열리게 둔다
+    if (e.target.closest('a, summary, button')) return;   // 예약 버튼·링크는 그대로 열리게 둔다
     var c = e.target.closest('.card');
     if (!c) return;
     if (e.type === 'keydown') { if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); }
+    else if (e.target.closest('.card-more')) return;      // 펼친 내용 안을 누를 때는 접지 않는다
     stopTour();
     var it = plan().items[+c.getAttribute('data-i')];
-    if (it) goItem(it);
+    if (!it) return;
+    if (c.classList.contains('has-more')) {
+      var open = !c.classList.contains('open');
+      closeCards(c);
+      c.classList.toggle('open', open);
+      c.setAttribute('aria-expanded', String(open));
+    } else {
+      closeCards(null);
+    }
+    goItem(it);
+    setTimeout(function () { c.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 60);
   }
   $('cards').addEventListener('click', cardActivate);
   $('cards').addEventListener('keydown', cardActivate);
+  $('cards').addEventListener('click', function (e) {      // 날짜 제목 옆의 비용 버튼 → 비용 요약
+    if (e.target.closest('.day-cost')) openModal('비용 요약', costHtml());
+  });
+
+  // 손잡이: 목록을 크게(지도를 작게) / 원래대로
+  $('grip').addEventListener('click', function () {
+    var big = $('app').classList.toggle('list-big');
+    this.setAttribute('aria-pressed', String(big));
+    this.setAttribute('aria-label', big ? '지도 크게 보기' : '목록 크게 보기');
+  });
 
   $('tour-play').addEventListener('click', function () { if (state.playing) stopTour(); else playTour(); });
   $('tour-next').addEventListener('click', function () { stepTour(1); });
