@@ -14,11 +14,13 @@
   --gray-card: #eceae5;
   --chip: #eef2f5;
   --tip-bg: #f3f8ee;
+  --must-text: #ffffff;
   --shadow: 0 1px 3px rgba(0, 0, 0, .12);
 }
 
+/* 어두운 화면(다크 모드) 색. 기기 설정을 따르고, 보는 쪽에서 밝게/어둡게를 직접 고르면(data-theme) 그것을 따른다 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #15181e;
     --card: #20242c;
     --text: #f0f2f6;
@@ -32,8 +34,28 @@
     --gray-card: #2a2e36;
     --chip: #2c323c;
     --tip-bg: #25301f;
+    --must-text: #1b0b0a;
     --shadow: 0 1px 3px rgba(0, 0, 0, .5);
+    color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #15181e;
+  --card: #20242c;
+  --text: #f0f2f6;
+  --muted: #b3bac8;
+  --line: #3a404c;
+  --accent: #5bb8e0;
+  --accent-text: #0c1a22;
+  --red: #ff7b72;
+  --orange: #ffb561;
+  --orange-bg: #40301a;
+  --gray-card: #2a2e36;
+  --chip: #2c323c;
+  --tip-bg: #25301f;
+  --must-text: #1b0b0a;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .5);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -157,10 +179,7 @@ a { color: var(--accent); }
 .btn:focus-visible, .tab:focus-visible, .card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 
 .btn.book { background: var(--chip); }
-.btn.book.must { background: var(--red); border-color: var(--red); color: #fff; }
-@media (prefers-color-scheme: dark) {
-  .btn.book.must { color: #1b0b0a; }
-}
+.btn.book.must { background: var(--red); border-color: var(--red); color: var(--must-text); }
 
 /* ---------- 위쪽 도구줄, 날짜 탭, 투어 ---------- */
 #toolbar {
@@ -465,7 +484,7 @@ a { color: var(--accent); }
 .bk h3 { margin: 0 0 2px; font-size: 17px; }
 .bk p { margin: 4px 0; font-size: 15px; }
 .lvl { display: inline-block; padding: 2px 9px; border-radius: 12px; background: var(--chip); font-size: 14px; font-weight: 700; }
-.lvl.must { background: var(--red); color: #fff; }
+.lvl.must { background: var(--red); color: var(--must-text); }
 
 .table-wrap { overflow-x: auto; margin: 8px 0; }
 table.cost { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }

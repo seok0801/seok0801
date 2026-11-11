@@ -581,12 +581,15 @@
 
   function createMap(styleUrl) {
     try {
-      map = new maplibregl.Map({
+      var opts = {
         container: 'map', style: styleUrl,
         center: D.map.center, zoom: D.map.zoom, pitch: 55, bearing: -20, maxPitch: 70,
         antialias: true,                       // 3D 건물 모서리를 매끈하게
         attributionControl: { compact: true }
-      });
+      };
+      var extra = D.map.mapOptions || {};      // (선택) data.js 의 map.mapOptions 로 지도 옵션을 더할 수 있다
+      Object.keys(extra).forEach(function (k) { opts[k] = extra[k]; });
+      map = new maplibregl.Map(opts);
     } catch (e) { mapFailed(); return; }
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
     map.on('load', function () {
@@ -603,6 +606,7 @@
   function tryStyles(i) {
     var list = D.map.styles;
     if (i >= list.length) { mapFailed(); return; }
+    if (typeof list[i] !== 'string') { createMap(list[i]); return; }   // 주소가 아니라 스타일 내용을 직접 넣은 경우
     var done = false;
     var timer = setTimeout(function () { if (!done) { done = true; tryStyles(i + 1); } }, 7000);
     fetch(list[i]).then(function (r) {
@@ -622,7 +626,7 @@
     if (i >= urls.length) { mapFailed(); return; }
     var css = document.createElement('link');     // 지도 모양 파일(css)도 같은 곳에서 불러온다
     css.rel = 'stylesheet';
-    css.href = urls[i].replace(/\.js$/, '.css');
+    css.href = (D.map.cssUrls && D.map.cssUrls[i]) || urls[i].replace(/\.js$/, '.css');
     document.head.appendChild(css);
     var s = document.createElement('script');
     var done = false;
@@ -631,7 +635,10 @@
     s.onload = function () {
       if (done) return;
       done = true; clearTimeout(timer);
-      if (window.maplibregl) tryStyles(0); else loadMapLibrary(i + 1);
+      if (!window.maplibregl) { loadMapLibrary(i + 1); return; }
+      // (선택) data.js 의 map.onLibraryLoaded 에 함수를 넣으면 지도를 만들기 전에 먼저 실행된다
+      var ready = typeof D.map.onLibraryLoaded === 'function' ? D.map.onLibraryLoaded(window.maplibregl) : null;
+      Promise.resolve(ready).then(function () { tryStyles(0); }, function () { tryStyles(0); });
     };
     s.onerror = function () {
       if (done) return;
