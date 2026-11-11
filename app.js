@@ -28,8 +28,17 @@
   var QUIET_KINDS = { nap: true, sleep: true };          // 목록에만 회색으로 보이는 일정
   var NO_STOP_KINDS = { nap: true, sleep: true, move: true }; // 투어에서 멈추지 않는 일정
 
-  var state = { plan: 0, day: 'all', tourIdx: -1, playing: false, timer: null, bearing: -20 };
+  var state = { plan: 0, day: 'all', tourIdx: -1, playing: false, timer: null, lastPlace: null };
   var map = null, mapReady = false, markers = {}, popup = null, dashTimer = null;
+
+  /* ---------- 3D 투어 카메라 설정 (숫자를 바꾸면 연출이 달라집니다) ---------- */
+  var STOP_ZOOM = 16.1;      // 장소에 도착했을 때의 확대 정도 (클수록 가까이)
+  var STOP_PITCH = 60;       // 지도를 기울이는 각도(도)
+  var FLY_MS = 2000;         // 다음 장소로 날아가는 시간 (약 2초)
+  var STAY_MS = 3000;        // 투어에서 한 장소에 머무는 시간 (3초)
+  var ORBIT_DEG = 34;        // 머무는 동안 장소 둘레를 도는 각도
+  var BEACON_RADIUS_M = 7;   // 지금 보는 장소에 세우는 빛기둥의 반지름(m)
+  var BEACON_HEIGHT_M = 130; // 빛기둥의 높이(m)
 
   /* ---------- 작은 도우미 ---------- */
   function esc(s) {
@@ -45,6 +54,25 @@
   function mop(c) { return c.min === c.max ? 'MOP ' + c.min.toLocaleString() : 'MOP ' + c.min.toLocaleString() + '~' + c.max.toLocaleString(); }
   function link(url, text, cls) {
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
+  }
+
+  function reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+  /* 두 지점 [경도, 위도] 사이의 방향(북쪽 0도, 시계 방향)과 거리(m) */
+  function bearingTo(a, b) {
+    var r = Math.PI / 180, dl = (b[0] - a[0]) * r;
+    var y = Math.sin(dl) * Math.cos(b[1] * r);
+    var x = Math.cos(a[1] * r) * Math.sin(b[1] * r) - Math.sin(a[1] * r) * Math.cos(b[1] * r) * Math.cos(dl);
+    return (Math.atan2(y, x) / r + 360) % 360;
+  }
+  function distanceM(a, b) {
+    var r = Math.PI / 180, dy = (b[1] - a[1]) * 111320, dx = (b[0] - a[0]) * 111320 * Math.cos(a[1] * r);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  /* 중심 [경도, 위도]에서 반지름 r(m)인 원 모양 좌표 */
+  function circleRing(lng, lat, r) {
+    var pts = [], n = 28, dLat = r / 111320, dLng = r / (111320 * Math.cos(lat * Math.PI / 180));
+    for (var i = 0; i <= n; i++) { var a = 2 * Math.PI * i / n; pts.push([lng + dLng * Math.cos(a), lat + dLat * Math.sin(a)]); }
+    return pts;
   }
 
   /* 일정 목록(안 → 날짜 순서). 각 일정에 번호(_i)를 붙여 둔다 */
@@ -274,6 +302,7 @@
   function render(moveCamera) {
     stopTour();
     state.tourIdx = -1;
+    state.lastPlace = null;
     renderPlanToggle();
     renderTabs();
     renderCards();
@@ -307,39 +336,87 @@
     return html + '</div>';
   }
 
-  function openPopup(id) {
-    if (!mapReady || !onMap(id)) return;
-    if (popup) popup.remove();
-    popup = new maplibregl.Popup({ offset: 26, anchor: 'bottom', closeOnClick: true, focusAfterOpen: false })
-      .setLngLat([place(id).lng, place(id).lat]).setHTML(popupHtml(id)).addTo(map);
-    var box = popup.getElement().querySelector('.pop');      // 지도 높이에 맞춰 팝업 높이를 제한(넘치면 안쪽만 스크롤)
-    if (box) box.style.maxHeight = Math.max(120, Math.min(360, Math.round(mapHeight() * 0.7) - 126)) + 'px';
+  /* 투어 중에 마커 아래에 띄우는 작은 이름표 */
+  function compactHtml(id, it) {
+    var p = place(id);
+    var t = PLACE_TYPES[p.type] || { icon: '📍' };
+    return '<div class="pop compact"><strong>' + t.icon + ' ' + esc(p.name) + '</strong>' +
+      (it ? '<span>' + esc(it.time + ' ' + it.title) + '</span>' : '') + '</div>';
+  }
+
+  /* 지금 보는 장소 표시: 마커를 강조하고 그 자리에 3D 빛기둥을 세운다 */
+  function setFocus(id, color) {
     Object.keys(markers).forEach(function (k) { markers[k].getElement().classList.toggle('on', k === id); });
+    var src = map.getSource('beacon');
+    if (!src) return;
+    var p = place(id);
+    src.setData({ type: 'FeatureCollection', features: [{
+      type: 'Feature', properties: { color: color || '#0b6e99' },
+      geometry: { type: 'Polygon', coordinates: [circleRing(p.lng, p.lat, BEACON_RADIUS_M)] }
+    }] });
+  }
+  function clearFocus() {
+    Object.keys(markers).forEach(function (k) { markers[k].getElement().classList.remove('on'); });
+    var src = mapReady && map.getSource('beacon');
+    if (src) src.setData({ type: 'FeatureCollection', features: [] });
+  }
+
+  /* opt.compact = 투어용 작은 이름표, opt.item = 이름표에 보일 일정, opt.color = 빛기둥 색 */
+  var popupToken = 0;
+  function openPopup(id, opt) {
+    if (!mapReady || !onMap(id)) return;
+    opt = opt || {};
+    var my = ++popupToken;
+    if (popup) popup.remove();
+    var at = [place(id).lng, place(id).lat];
+    if (opt.compact) {
+      // 투어 중에는 3D 풍경이 가려지지 않게 마커 아래에 작은 이름표만 띄운다. 이름표를 누르면 자세한 팝업이 열린다
+      popup = new maplibregl.Popup({ offset: 24, anchor: 'top', closeButton: false, closeOnClick: true, focusAfterOpen: false, className: 'tour-pop' })
+        .setLngLat(at).setHTML(compactHtml(id, opt.item)).addTo(map);
+      popup.getElement().addEventListener('click', function () { stopTour(); flyToPlace(id); openPopup(id, { color: opt.color }); });
+    } else {
+      popup = new maplibregl.Popup({ offset: 26, anchor: 'bottom', closeOnClick: true, focusAfterOpen: false })
+        .setLngLat(at).setHTML(popupHtml(id)).addTo(map);
+      var box = popup.getElement().querySelector('.pop');    // 지도 높이에 맞춰 팝업 높이를 제한(넘치면 안쪽만 스크롤)
+      if (box) box.style.maxHeight = Math.max(120, Math.min(360, Math.round(mapHeight() * 0.7) - 126)) + 'px';
+    }
+    popup.on('close', function () { if (my === popupToken) clearFocus(); });   // 팝업을 닫으면 강조도 끈다
+    setFocus(id, opt.color || (state.day === 'all' ? null : dayInfo(state.day).color));
   }
 
   function mapHeight() { return map.getContainer().clientHeight || 400; }
 
+  /* opt.compact = 투어용(작은 이름표라 장소를 덜 내린다), opt.orbitMs = 도착 후 도는 시간 */
   var flyToken = 0;
-  function flyToPlace(id) {
+  function flyToPlace(id, opt) {
     if (!mapReady || !onMap(id)) return;
+    opt = opt || {};
     var my = ++flyToken;
     var center = [place(id).lng, place(id).lat];
-    var offset = [0, Math.round(mapHeight() * 0.2)];   // 장소를 지도 아래쪽에 두어 위에 팝업 자리를 만든다
-    state.bearing = state.bearing > 0 ? -25 : 35;      // 이동할 때마다 방향을 바꿔 입체감을 준다
-    map.flyTo({ center: center, offset: offset, zoom: 16.6, pitch: 60, bearing: state.bearing, duration: 2000 });
-    setTimeout(function () {                           // 도착한 뒤 천천히 조금 더 회전
-      if (my !== flyToken || !mapReady || map.isMoving()) return;
-      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      map.easeTo({ center: center, offset: offset, bearing: state.bearing + (state.bearing > 0 ? 18 : -18), duration: 2600, easing: function (x) { return x; } });
-    }, 2200);
+    // 장소를 지도 가운데보다 아래에 두어, 그 위로 3D 풍경(또는 팝업)이 보이게 한다
+    var offset = [0, Math.round(mapHeight() * (opt.compact ? 0.12 : 0.2))];
+    var cur = map.getBearing(), b = cur + 40;
+    var from = state.lastPlace && state.lastPlace !== id && onMap(state.lastPlace) ? [place(state.lastPlace).lng, place(state.lastPlace).lat] : null;
+    if (from && distanceM(from, center) > 80) {
+      // 이동하는 방향을 바라보며 도착한다 (어지럽지 않게 한 번에 최대 100도까지만 돈다)
+      var turn = ((bearingTo(from, center) - cur + 540) % 360) - 180;
+      b = cur + Math.max(-100, Math.min(100, turn));
+    }
+    state.lastPlace = id;
+    map.flyTo({ center: center, offset: offset, zoom: STOP_ZOOM, pitch: STOP_PITCH, bearing: b, duration: FLY_MS });
+    setTimeout(function () {                           // 도착한 뒤 장소 둘레를 천천히 돌아 입체감을 준다
+      if (my !== flyToken || !mapReady || map.isMoving() || reducedMotion()) return;
+      map.easeTo({ center: center, offset: offset, bearing: b + ORBIT_DEG, duration: opt.orbitMs || 3600, easing: function (x) { return x; } });
+    }, FLY_MS + 150);
   }
 
   function fitTo(ids) {
     if (!mapReady) return;
     flyToken++;
+    state.lastPlace = null;
     var pts = ids.filter(onMap).map(function (id) { return [place(id).lng, place(id).lat]; });
     if (!pts.length) return;
-    if (pts.length === 1) { map.flyTo({ center: pts[0], zoom: 16, pitch: 60, bearing: -20, duration: 1800 }); return; }
+    if (pts.length === 1) { map.flyTo({ center: pts[0], zoom: 16, pitch: STOP_PITCH, bearing: -20, duration: 1800 }); return; }
     var b = new maplibregl.LngLatBounds(pts[0], pts[0]);
     pts.forEach(function (p) { b.extend(p); });
     var wide = window.innerWidth >= 900;
@@ -408,27 +485,62 @@
     try {
       var layers = map.getStyle().layers || [];
       var has = false;
+      // 높은 건물일수록 조금 진한 모래색으로 칠한다
+      var color = ['interpolate', ['linear'], ['coalesce', ['get', 'render_height'], 5],
+        0, '#f2ede4', 30, '#e8dfd0', 100, '#dccfb9', 250, '#cdbb9d'];
       layers.forEach(function (l) {
         if (l.type === 'fill-extrusion') {
           has = true;
           map.setLayerZoomRange(l.id, 13, 24);
-          map.setPaintProperty(l.id, 'fill-extrusion-opacity', 0.85);
+          map.setPaintProperty(l.id, 'fill-extrusion-color', color);
+          map.setPaintProperty(l.id, 'fill-extrusion-opacity', 0.95);
         }
       });
-      if (has) return;
-      var srcId = null;
-      layers.forEach(function (l) { if (!srcId && l['source-layer'] === 'building') srcId = l.source; });
-      if (!srcId) return;
-      map.addLayer({
-        id: 'tour-3d-buildings', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
-        paint: {
-          'fill-extrusion-color': '#d9d3c7',
-          'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 12],
-          'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
-          'fill-extrusion-opacity': 0.85
+      if (!has) {
+        var srcId = null;
+        layers.forEach(function (l) { if (!srcId && l['source-layer'] === 'building') srcId = l.source; });
+        if (srcId) {
+          map.addLayer({
+            id: 'tour-3d-buildings', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
+            paint: {
+              'fill-extrusion-color': color,
+              'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 12],
+              'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+              'fill-extrusion-opacity': 0.95
+            }
+          });
         }
-      });
+      }
+      // 남동쪽에서 비추는 햇빛: 건물 면마다 밝기가 달라져 입체감이 생기고, 카메라가 돌면 명암도 따라 바뀐다
+      map.setLight({ anchor: 'map', color: '#ffffff', intensity: 0.45, position: [1.5, 135, 55] });
     } catch (e) { /* 3D 건물을 못 세워도 지도는 계속 쓴다 */ }
+  }
+
+  /* 지도 위 글자: 한국어 이름이 등록된 곳(마카오, 코타이, 베네시안 등)은 한국어로 보여 준다 */
+  function localizeLabels() {
+    try {
+      (map.getStyle().layers || []).forEach(function (l) {
+        var tf = l.type === 'symbol' && l.layout && l.layout['text-field'];
+        if (!Array.isArray(tf) || JSON.stringify(tf).indexOf('name') < 0) return;   // 도로 번호 등은 그대로 둔다
+        map.setLayoutProperty(l.id, 'text-field', ['case', ['has', 'name:ko'], ['get', 'name:ko'], tf]);
+      });
+    } catch (e) { /* 바꾸지 못하면 원래 글자 그대로 쓴다 */ }
+  }
+
+  /* 지금 보는 장소에 세우는 3D 빛기둥 (건물이 납작하게 그려진 곳에서도 위치와 입체감이 보인다) */
+  function addBeaconLayer() {
+    try {
+      map.addSource('beacon', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({
+        id: 'beacon-3d', type: 'fill-extrusion', source: 'beacon',
+        paint: {
+          'fill-extrusion-color': ['get', 'color'],
+          'fill-extrusion-height': BEACON_HEIGHT_M,
+          'fill-extrusion-base': 0,
+          'fill-extrusion-opacity': 0.55
+        }
+      });
+    } catch (e) { /* 빛기둥이 없어도 나머지는 그대로 동작한다 */ }
   }
 
   function addRouteLayers() {
@@ -439,7 +551,10 @@
       paint: {
         'line-color': ['get', 'color'],
         'line-width': ['case', ['==', ['get', 'active'], 1], 6, 3],
-        'line-opacity': ['case', ['==', ['get', 'active'], 1], 0.9, 0.25]
+        // 가까이 들여다볼 때(확대 15.5 이상)는 다른 날의 동선을 거의 안 보이게 한다
+        'line-opacity': ['interpolate', ['linear'], ['zoom'],
+          13, ['case', ['==', ['get', 'active'], 1], 0.9, 0.25],
+          15.5, ['case', ['==', ['get', 'active'], 1], 0.9, 0.08]]
       }
     });
     // 진행 방향이 보이도록 흰 점선을 선 위로 흘려보낸다
@@ -469,6 +584,7 @@
       map = new maplibregl.Map({
         container: 'map', style: styleUrl,
         center: D.map.center, zoom: D.map.zoom, pitch: 55, bearing: -20, maxPitch: 70,
+        antialias: true,                       // 3D 건물 모서리를 매끈하게
         attributionControl: { compact: true }
       });
     } catch (e) { mapFailed(); return; }
@@ -476,6 +592,8 @@
     map.on('load', function () {
       mapReady = true;
       add3dBuildings();
+      localizeLabels();
+      addBeaconLayer();
       addRouteLayers();
       updateMap(true);
     });
@@ -550,7 +668,7 @@
     if (!ids.length) return;
     if (it.kind === 'move' && ids.length > 1) { if (popup) popup.remove(); fitTo(ids); return; }
     flyToPlace(ids[0]);
-    openPopup(ids[0]);
+    openPopup(ids[0], { color: (dayInfo(it.date) || {}).color });
   }
 
   /* ---------- 투어 ---------- */
@@ -566,19 +684,20 @@
     var s = list[idx];
     var el = highlight(s.item._i);
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    flyToPlace(s.place);
-    openPopup(s.place);
+    // 투어: 작은 이름표만 띄우고, 머무는 동안 장소 둘레를 돈다
+    flyToPlace(s.place, { compact: true, orbitMs: STAY_MS - 150 });
+    openPopup(s.place, { compact: true, item: s.item, color: (dayInfo(s.item.date) || {}).color });
     setTourStatus((idx + 1) + '/' + list.length + ' · ' + s.item.time + ' ' + place(s.place).name);
     return true;
   }
   function scheduleNext() {
     clearTimeout(state.timer);
-    state.timer = setTimeout(function () {           // 이동 약 2초 + 머무는 시간 3초
+    state.timer = setTimeout(function () {           // 이동(약 2초) + 머무는 시간(3초) 뒤에 다음 장소로
       if (!state.playing) return;
       if (state.tourIdx + 1 >= stops().length) { stopTour(); setTourStatus('투어가 끝났습니다'); state.tourIdx = -1; return; }
       goStop(state.tourIdx + 1);
       scheduleNext();
-    }, 5000);
+    }, FLY_MS + STAY_MS);
   }
   function playTour() {
     var list = stops();
