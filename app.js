@@ -57,6 +57,12 @@
   function link(url, text, cls) {
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
   }
+  /* 그 장소를 구글 어스의 실사 3D 로 여는 주소 (가입·키 없이 새 탭이나 구글 어스 앱에서 열린다) */
+  function earthLink(id) {
+    var p = place(id);
+    var url = 'https://earth.google.com/web/@' + p.lat + ',' + p.lng + ',15a,' + (p.earthDist || 600) + 'd,35y,0h,60t,0r';
+    return link(url, '🌍 구글 어스 실사 3D', 'btn');
+  }
 
   function reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   /* 두 지점 [경도, 위도] 사이의 방향(북쪽 0도, 시계 방향)과 거리(m) */
@@ -253,6 +259,10 @@
         actions.push(link(p.url, p.urlLabel || '소개 페이지', 'btn'));
       });
     }
+    if (!isMove && !quiet) {
+      var first = (it.places || []).filter(onMap)[0];
+      if (first) actions.push(earthLink(first));
+    }
     if (actions.length) more += '<div class="card-actions">' + actions.join('') + '</div>';
     if (sh) more += '<p class="fine">' + esc(sh.info) + ' · 운행 시각은 현장 확인</p>';
 
@@ -342,6 +352,7 @@
     if (tips.length) html += '<ul>' + tips.slice(0, 3).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
     if (bk) html += bookingButton(bk);
     if (p.url && !(bk && bk.url === p.url)) html += link(p.url, p.urlLabel || '소개 페이지', 'btn');
+    html += earthLink(id);
     return html + '</div>';
   }
 
