@@ -1,0 +1,457 @@
+/* 마카오 가족여행 투어맵 — 색·글씨·배치 */
+
+:root {
+  --bg: #f6f4ef;
+  --card: #ffffff;
+  --text: #1f2430;
+  --muted: #5d6474;
+  --line: #dcd8cf;
+  --accent: #0b6e99;
+  --accent-text: #ffffff;
+  --red: #c62828;
+  --orange: #b85c00;
+  --orange-bg: #fff1dc;
+  --gray-card: #eceae5;
+  --chip: #eef2f5;
+  --tip-bg: #f3f8ee;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15181e;
+    --card: #20242c;
+    --text: #f0f2f6;
+    --muted: #b3bac8;
+    --line: #3a404c;
+    --accent: #5bb8e0;
+    --accent-text: #0c1a22;
+    --red: #ff7b72;
+    --orange: #ffb561;
+    --orange-bg: #40301a;
+    --gray-card: #2a2e36;
+    --chip: #2c323c;
+    --tip-bg: #25301f;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .5);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+}
+
+a { color: var(--accent); }
+
+/* ---------- 전체 배치: 휴대폰은 위 지도(55%) + 아래 패널 ---------- */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+}
+
+#map-wrap {
+  position: relative;
+  flex: 0 0 55%;
+  min-height: 0;
+  background: #dfe7ea;
+}
+
+#map { position: absolute; inset: 0; }
+
+#title {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 56px;
+  margin: 0;
+  width: fit-content;
+  max-width: calc(100% - 64px);
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .92);
+  color: #1f2430;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: var(--shadow);
+  z-index: 2;
+}
+
+#map-note {
+  position: absolute;
+  left: 8px;
+  top: 48px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .88);
+  color: #3b4252;
+  font-size: 12px;
+  z-index: 2;
+  max-width: calc(100% - 64px);
+}
+
+#map-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 20px 20px;
+  text-align: center;
+  background: var(--gray-card);
+  color: var(--text);
+  z-index: 1;
+}
+#map-fallback[hidden] { display: none; }
+#map-fallback p { margin: 4px 0; }
+
+#panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 12px 24px;
+  background: var(--bg);
+}
+
+/* PC: 왼쪽 패널 + 오른쪽 지도 */
+@media (min-width: 900px) {
+  #app { flex-direction: row-reverse; }
+  #map-wrap { flex: 1 1 auto; }
+  #panel { flex: 0 0 440px; border-right: 1px solid var(--line); }
+  #title { font-size: 20px; }
+  #map-note { top: 56px; font-size: 13px; }
+}
+
+/* ---------- 버튼 ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.btn.icon { padding: 8px; }
+.btn:focus-visible, .tab:focus-visible, .card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.btn.book { background: var(--chip); }
+.btn.book.must { background: var(--red); border-color: var(--red); color: #fff; }
+@media (prefers-color-scheme: dark) {
+  .btn.book.must { color: #1b0b0a; }
+}
+
+/* ---------- 위쪽 도구줄, 날짜 탭, 투어 ---------- */
+#toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 0 6px;
+}
+#toolbar .btn { flex: 1 1 auto; }
+#plan-toggle { display: flex; gap: 6px; flex: 1 1 100%; }
+#plan-toggle[hidden] { display: none; }
+#plan-toggle .btn { flex: 1 1 0; }
+#plan-toggle .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+
+/* 날짜 탭과 투어 버튼은 목록을 내려도 위에 붙어 있다 */
+#sticky {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  margin: 0 -12px;
+  padding: 0 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+
+#tabs {
+  display: flex;
+  gap: 6px;
+  margin: 0 -12px;
+  padding: 6px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tab .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--day-color, var(--muted));
+}
+.tab[aria-selected="true"] { border-color: var(--day-color, var(--accent)); background: var(--chip); }
+
+#tour {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 0 8px;
+}
+#tour-status {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- 날짜 제목, 준비물, 합계 ---------- */
+.day-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 14px 0 6px;
+  padding-left: 10px;
+  border-left: 6px solid var(--day-color, var(--accent));
+  font-size: 19px;
+  font-weight: 700;
+}
+.day-head small { color: var(--muted); font-size: 15px; font-weight: 500; }
+
+.prep {
+  margin: 6px 0 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+.prep summary { min-height: 32px; font-weight: 700; cursor: pointer; }
+.prep ul { margin: 6px 0 2px; padding-left: 20px; }
+.prep li { margin: 2px 0; }
+
+/* ---------- 일정 카드 ---------- */
+.card {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--day-color, var(--accent));
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  text-align: left;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.card.quiet {
+  border-left-color: var(--line);
+  background: var(--gray-card);
+  color: var(--muted);
+  box-shadow: none;
+}
+.card.active { outline: 3px solid var(--day-color, var(--accent)); outline-offset: 1px; }
+.card { scroll-margin-top: 130px; scroll-margin-bottom: 12px; }
+.rhythm { margin: 10px 0 0; }
+
+.card-top { display: flex; gap: 10px; align-items: flex-start; }
+.card-time { flex: 0 0 auto; min-width: 58px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.card-time small { display: block; color: var(--muted); font-weight: 500; font-size: 14px; }
+.card-main { flex: 1 1 auto; min-width: 0; }
+.card-title { margin: 0; font-size: 17px; font-weight: 700; overflow-wrap: anywhere; }
+.card-place { margin: 2px 0 0; color: var(--muted); font-size: 15px; overflow-wrap: anywhere; }
+.card-memo { margin: 6px 0 0; font-size: 15px; }
+
+.badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 14px;
+  background: var(--chip);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+.badge.warn { background: var(--orange-bg); color: var(--orange); }
+.badge.closed { background: var(--orange-bg); color: var(--red); }
+.pnum {
+  display: inline-block;
+  min-width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--day-color, var(--accent));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  vertical-align: 1px;
+}
+
+.tips {
+  margin: 8px 0 0;
+  padding: 8px 10px 8px 28px;
+  border-radius: 10px;
+  background: var(--tip-bg);
+  font-size: 15px;
+}
+.tips li { margin: 2px 0; }
+.tips li::marker { content: "💡 "; }
+
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.card-actions:empty { display: none; }
+.fine { color: var(--muted); font-size: 14px; }
+
+#foot { margin: 18px 0 0; color: var(--muted); font-size: 14px; text-align: center; }
+
+/* ---------- 지도 마커·팝업 ---------- */
+.mk {
+  width: 38px;
+  height: 38px;
+  border: 3px solid var(--mk-color, #0b6e99);
+  border-radius: 50%;
+  background: #fff;
+  color: #1f2430;
+  font-size: 19px;
+  line-height: 32px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+  cursor: pointer;
+}
+.mk .n {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 10px;
+  background: var(--mk-color, #0b6e99);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+}
+.mk.small { width: 28px; height: 28px; border-width: 2px; font-size: 14px; line-height: 24px; }
+.mk.on { transform-origin: center; box-shadow: 0 0 0 6px rgba(255, 255, 255, .7), 0 2px 8px rgba(0, 0, 0, .5); }
+
+/* 앞에 #map 을 붙여 지도 엔진의 기본 모양보다 우선하게 한다 */
+#map .maplibregl-popup { max-width: min(300px, 82vw) !important; }
+#map .maplibregl-popup-content {
+  padding: 0;
+  border-radius: 12px;
+  background: #fff;
+  color: #1f2430;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+  overflow: hidden;
+}
+/* 팝업이 길면 안쪽(.pop)만 스크롤된다. 바깥 상자를 스크롤시키면 일부 브라우저에서 지도 일부가 가려져 보인다 */
+.pop {
+  padding: 12px 14px;
+  max-height: 44vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#map .maplibregl-popup-close-button { width: 36px; height: 36px; font-size: 22px; color: #1f2430; background: transparent; }
+.pop h3 { margin: 0 30px 2px 0; font-size: 17px; }
+.pop .pop-type { margin: 0 0 6px; color: #5d6474; font-size: 14px; }
+.pop p { margin: 4px 0; }
+.pop ul { margin: 6px 0; padding: 8px 8px 8px 26px; border-radius: 8px; background: #f3f8ee; }
+.pop li::marker { content: "💡 "; }
+.pop .btn { margin: 6px 6px 0 0; min-height: 40px; background: #eef2f5; color: #1f2430; border-color: #dcd8cf; }
+.pop .btn.must { background: #c62828; border-color: #c62828; color: #fff; }
+.pop .unverified { color: #b85c00; font-size: 13px; }
+
+/* ---------- 창(예약 체크리스트·비용 요약) ---------- */
+#modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, .5);
+}
+#modal[hidden] { display: none; }
+#modal-box {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  max-height: 88vh;
+  max-height: 88dvh;
+  border-radius: 16px 16px 0 0;
+  background: var(--bg);
+  color: var(--text);
+}
+@media (min-width: 900px) {
+  #modal { align-items: center; }
+  #modal-box { border-radius: 16px; }
+}
+#modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+#modal-title { margin: 0; font-size: 19px; }
+#modal-body { padding: 12px 16px 24px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+.bk {
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+}
+.bk h3 { margin: 0 0 2px; font-size: 17px; }
+.bk p { margin: 4px 0; font-size: 15px; }
+.lvl { display: inline-block; padding: 2px 9px; border-radius: 12px; background: var(--chip); font-size: 14px; font-weight: 700; }
+.lvl.must { background: var(--red); color: #fff; }
+
+.table-wrap { overflow-x: auto; margin: 8px 0; }
+table.cost { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+table.cost th, table.cost td { padding: 8px 3px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.cost th:first-child, table.cost td:first-child { text-align: left; white-space: normal; }
+table.cost tfoot td { font-weight: 700; border-top: 2px solid var(--text); }
+@media (max-width: 380px) { table.cost { font-size: 13px; } }
+.cost-list { margin: 6px 0; padding-left: 20px; font-size: 15px; }
+.cost-list li { margin: 3px 0; }
+h3.sec { margin: 18px 0 4px; font-size: 17px; }

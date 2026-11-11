@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>마카오 가족여행 2026.12.27–31</title>
+  <meta name="description" content="마카오 4박 5일 가족여행 일정을 3D 지도에서 날짜별로 보는 투어맵">
+  <!-- 지도 엔진(MapLibre GL JS 4.7.1)은 app.js 가 나중에 불러옵니다. 지도가 안 떠도 일정은 보입니다. -->
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- 위쪽(PC에서는 오른쪽): 3D 지도 -->
+    <section id="map-wrap" aria-label="3D 지도">
+      <div id="map"></div>
+      <h1 id="title">마카오 가족여행 2026.12.27–31</h1>
+      <div id="map-note" hidden>동선은 장소를 직선으로 이은 대략적인 경로입니다</div>
+      <div id="map-fallback" hidden>
+        <p><strong>지도를 불러오지 못했습니다.</strong></p>
+        <p>인터넷 연결을 확인해 주세요. 아래 일정 목록과 예약 버튼은 그대로 쓸 수 있습니다.</p>
+      </div>
+    </section>
+
+    <!-- 아래쪽(PC에서는 왼쪽): 일정 패널 -->
+    <section id="panel" aria-label="일정">
+      <div id="toolbar">
+        <div id="plan-toggle" role="group" aria-label="일정 안 선택" hidden></div>
+        <button type="button" class="btn" id="btn-booking">📋 예약 체크리스트</button>
+        <button type="button" class="btn" id="btn-cost">💰 비용 요약</button>
+      </div>
+      <div id="sticky">
+        <div id="tabs" role="tablist" aria-label="날짜"></div>
+        <div id="tour">
+          <button type="button" class="btn icon" id="tour-prev" aria-label="이전 장소">⏮</button>
+          <button type="button" class="btn primary" id="tour-play">▶ 투어</button>
+          <button type="button" class="btn icon" id="tour-next" aria-label="다음 장소">⏭</button>
+          <span id="tour-status" aria-live="polite"></span>
+        </div>
+      </div>
+      <div id="cards"></div>
+      <p id="foot">가격·운행 시각·영업시간은 바뀔 수 있습니다. 현장·공식 사이트에서 최종 확인하세요.</p>
+    </section>
+  </div>
+
+  <!-- 예약 체크리스트 / 비용 요약 창 -->
+  <div id="modal" hidden>
+    <div id="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div id="modal-head">
+        <h2 id="modal-title"></h2>
+        <button type="button" class="btn icon" id="modal-close" aria-label="닫기">✕</button>
+      </div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <noscript>이 페이지는 자바스크립트가 켜져 있어야 보입니다.</noscript>
+
+  <!-- 일정 데이터(여기만 고치면 됩니다) → 기능 순서로 불러옵니다. -->
+  <script src="./data.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

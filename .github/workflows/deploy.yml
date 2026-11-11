@@ -1,0 +1,38 @@
+# main 브랜치에 반영(Merge)될 때마다 이 저장소의 파일을 그대로 GitHub Pages에 올립니다.
+# 빌드(가공) 단계는 없습니다. 고칠 일이 없는 파일입니다.
+name: GitHub Pages 배포
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Actions 탭의 'Run workflow' 버튼으로 직접 실행할 수도 있습니다
+
+# 필요한 최소 권한만 줍니다
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포가 겹치면 진행 중인 배포를 끝낸 뒤 다음 배포를 합니다
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 저장소 파일 가져오기
+        uses: actions/checkout@v4
+      - name: Pages 설정 확인
+        uses: actions/configure-pages@v5
+      - name: 저장소 맨 위 폴더를 그대로 올릴 준비
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: GitHub Pages에 배포
+        id: deployment
+        uses: actions/deploy-pages@v4
