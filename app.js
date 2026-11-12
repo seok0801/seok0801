@@ -439,6 +439,7 @@
     // 1) 장소 설명 한 줄 (종류 · 메모 · 영업시간)
     var meta = [t.label, p.note].filter(Boolean).join(' · ');
     var html = (meta || p.hours) ? '<p class="fine place-meta">' + esc(meta) + (p.hours ? (meta ? '<br>' : '') + '🕒 ' + esc(p.hours) : '') + '</p>' : '';
+    html += meDistanceHtml(p);
     // 2) 이 장소에서 하는 일정 (가장 중요한 내용이라 먼저 보인다)
     var linked = {}, n = 0;
     viewDates().forEach(function (date) {
@@ -500,6 +501,7 @@
   var flyToken = 0;
   function flyToPlace(id, opt) {
     if (!mapReady || !onMap(id)) return;
+    pauseFollow();
     opt = opt || {};
     var my = ++flyToken;
     var center = [place(id).lng, place(id).lat];
@@ -539,6 +541,7 @@
   var firstFit = true;
   function fitTo(ids) {
     if (!mapReady) return;
+    pauseFollow();
     var dur = firstFit && !reducedMotion() ? 3200 : 1800;   // 처음 열 때는 천천히 날아 내려온다
     firstFit = false;
     flyToken++;
@@ -1064,6 +1067,7 @@
       map.on('moveend', spreadMarkers);
       addBeaconLayer();
       addRouteLayers();
+      addMeLayer();
       applyMode(false);
       updateMap(true);
       // 덜 그려진 지도가 보이지 않게, 준비가 끝나면 서서히 나타나게 한다
@@ -1291,6 +1295,109 @@
     document.body.appendChild(box);
     setTimeout(function () { box.remove(); }, 2000);
   }
+  /* ---------- 내 위치 (GPS) ----------
+   * 📍 버튼: 처음 누르면 위치 허용을 묻고 파란 점 + 오차 범위를 보인다. 걸으면 지도가 따라온다.
+   * 손으로 지도를 밀면 따라가기만 멈추고(버튼 흰색), 다시 누르면 다시 따라온다. 따라가는 중에 누르면 끈다.
+   * 위치는 이 휴대폰 안에서만 쓰고 어디에도 보내거나 저장하지 않는다. */
+  var me = { watch: null, follow: false, pos: null, acc: 0, heading: null, marker: null };
+  var toastTimer = null;
+  function toast(msg, ms) {
+    var t = $('toast'); if (!t) return;
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, ms || 3500);
+  }
+  function setLocateState(st) {
+    var b = $('btn-locate'); if (!b) return;
+    b.className = 'locate' + (st === 'off' ? '' : ' ' + st);
+    b.setAttribute('aria-pressed', String(st !== 'off'));
+    b.setAttribute('aria-label', st === 'off' ? '내 위치 보기' : st === 'follow' ? '내 위치 끄기' : '내 위치로 다시 따라가기');
+  }
+  function insideMacau(lng, lat) {
+    var ring = (D.map.area || []).map(function (p) { return [p[0], p[1]]; });
+    return ring.length > 3 && insidePolygon([lng, lat], { type: 'Polygon', coordinates: [ring] });
+  }
+  function updateMe() {
+    if (!mapReady || !me.pos) return;
+    if (!me.marker) {
+      var el = document.createElement('div'); el.className = 'me';
+      el.innerHTML = '<span class="me-dir"><i></i></span>';
+      me.marker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(me.pos).addTo(map);
+    } else me.marker.setLngLat(me.pos);
+    var src = map.getSource('me-acc');
+    if (src) src.setData({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [circleRing(me.pos[0], me.pos[1], Math.max(me.acc, 4))] } });
+    updateMeDir();
+  }
+  function updateMeDir() {
+    if (!me.marker) return;
+    var el = me.marker.getElement();
+    el.classList.toggle('has-dir', me.heading != null);
+    if (me.heading != null) el.style.setProperty('--h', (me.heading - map.getBearing()) + 'deg');
+  }
+  function onOrient(e) {
+    var h = e.webkitCompassHeading != null ? e.webkitCompassHeading : (e.absolute && e.alpha != null ? 360 - e.alpha : null);
+    if (h == null || isNaN(h)) return;
+    me.heading = h; updateMeDir();
+  }
+  function askHeading() {   // 휴대폰이 향한 방향 (아이폰은 처음 한 번 허용을 묻는다)
+    var DO = window.DeviceOrientationEvent;
+    if (!DO) return;
+    var add = function () { window.addEventListener('deviceorientation', onOrient, true); };
+    if (typeof DO.requestPermission === 'function') DO.requestPermission().then(function (r) { if (r === 'granted') add(); }).catch(function () { /* 방향 없이 점만 */ });
+    else add();
+  }
+  function onPos(p) {
+    var lng = p.coords.longitude, lat = p.coords.latitude, first = !me.pos;
+    if (!insideMacau(lng, lat)) {
+      toast('지금 위치가 마카오 밖이라 지도에 표시할 수 없어요. 마카오에 도착하면 다시 눌러 주세요.', 5000);
+      stopLocate(); return;
+    }
+    me.pos = [lng, lat]; me.acc = p.coords.accuracy || 0;
+    updateMe();
+    if (first) {
+      me.follow = true; stopTour();
+      map.flyTo({ center: me.pos, zoom: Math.max(map.getZoom(), 16.5), duration: 1200 });
+      if (me.acc > 60) toast('위치 오차가 약 ' + Math.round(me.acc) + 'm예요. 건물 안이면 점이 조금 어긋날 수 있어요.', 4000);
+    } else if (me.follow && !map.isMoving()) map.easeTo({ center: me.pos, duration: 700 });
+    setLocateState(me.follow ? 'follow' : 'on');
+  }
+  function onPosErr(e) {
+    if (e.code === 1) toast('위치 권한이 꺼져 있어요. 아이폰: 설정 → 개인정보 보호 및 보안 → 위치 서비스 → Safari 웹 사이트 → "앱을 사용하는 동안". 카카오톡 안에서는 사파리로 열어 주세요.', 8000);
+    else toast('위치를 찾지 못했어요. 하늘이 보이는 곳에서 다시 눌러 주세요.', 4000);
+    if (!me.pos) stopLocate();
+  }
+  function startLocate() {
+    if (!navigator.geolocation) { toast('이 브라우저는 위치 기능을 쓸 수 없어요.'); return; }
+    askHeading();
+    setLocateState('wait');
+    me.watch = navigator.geolocation.watchPosition(onPos, onPosErr, { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 });
+  }
+  function stopLocate() {
+    if (me.watch != null) navigator.geolocation.clearWatch(me.watch);
+    window.removeEventListener('deviceorientation', onOrient, true);
+    if (me.marker) me.marker.remove();
+    var src = mapReady && map.getSource('me-acc');
+    if (src) src.setData({ type: 'FeatureCollection', features: [] });
+    me.watch = null; me.marker = null; me.pos = null; me.follow = false; me.heading = null;
+    setLocateState('off');
+  }
+  function pauseFollow() { if (me.follow) { me.follow = false; setLocateState('on'); } }
+  function addMeLayer() {
+    try {
+      map.addSource('me-acc', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({ id: 'me-acc', type: 'fill', source: 'me-acc', paint: { 'fill-color': '#2a7de1', 'fill-opacity': 0.14 } });
+      map.addLayer({ id: 'me-acc-line', type: 'line', source: 'me-acc', paint: { 'line-color': '#2a7de1', 'line-opacity': 0.5, 'line-width': 1 } });
+    } catch (e) { /* 오차 원 없이 점만 */ }
+    map.on('dragstart', pauseFollow);        // 손으로 지도를 밀면 따라가기를 잠시 멈춘다
+    map.on('rotate', updateMeDir);
+  }
+  /* 지금 위치에서 장소까지 거리 (아이와 걷는 속도: 1분에 약 50m) */
+  function meDistanceHtml(p) {
+    if (!me.pos) return '';
+    var d = distanceM(me.pos, [p.lng, p.lat]);
+    var dist = d < 1000 ? Math.round(d / 10) * 10 + 'm' : (d / 1000).toFixed(1) + 'km';
+    return '<p class="fine me-dist">🚶 지금 위치에서 약 ' + dist + (d < 3000 ? ' · 아이와 걸어서 ' + Math.max(1, Math.round(d / 50)) + '분' : ' · 택시 권장') + '</p>';
+  }
+
   /* 할인 코드 누르면 복사 */
   function copyText(t, done) {
     if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(done, function () { fallback(); }); return; }
@@ -1399,6 +1506,12 @@
   $('btn-booking').addEventListener('click', function () { openModal('예약 체크리스트', bookingListHtml()); });
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
   $('btn-mode').addEventListener('click', toggleMode);
+  $('btn-locate').addEventListener('click', function () {
+    if (!mapReady) { toast('지도를 불러온 뒤에 눌러 주세요.'); return; }
+    if (me.watch == null) startLocate();
+    else if (!me.follow && me.pos) { me.follow = true; setLocateState('follow'); map.easeTo({ center: me.pos, zoom: Math.max(map.getZoom(), 16), duration: 800 }); }
+    else stopLocate();
+  });
   /* 제목 옆 D-day: 출발 전 'D-45', 여행 중 '2일차', 다녀온 뒤 '다녀왔어요' (한국 시간 기준) */
   (function () {
     var first = D.days[0] && D.days[0].date, last = D.days[D.days.length - 1] && D.days[D.days.length - 1].date;

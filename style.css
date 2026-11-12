@@ -682,3 +682,32 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
   #map { opacity: 0; transition: opacity .7s ease; }
   #map.shown, .nomap #map { opacity: 1; }
 }
+
+/* ---------- 내 위치 (GPS) ---------- */
+.locate {
+  position: absolute; right: 12px; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); z-index: 3;
+  width: 46px; height: 46px; border: 0; border-radius: 50%;
+  background: rgba(24, 36, 44, .9); color: #fff; font-size: 20px; line-height: 46px; text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .3); cursor: pointer;
+}
+.locate.on { background: #fff; color: #2a7de1; }                 /* 위치는 켜져 있지만 따라가기는 멈춤 */
+.locate.follow { background: #2a7de1; color: #fff; }             /* 내 위치를 따라가는 중 */
+.locate.wait { opacity: .7; }
+.nomap .locate { display: none; }
+#toast {
+  position: absolute; left: 50%; top: 130px; z-index: 6; transform: translateX(-50%);
+  width: max-content; max-width: min(88vw, 420px); padding: 10px 14px; border-radius: 12px;
+  background: rgba(24, 36, 44, .94); color: #fff; font-size: 14px; line-height: 1.45; text-align: center;
+}
+#toast[hidden] { display: none; }
+.me { width: 18px; height: 18px; border: 3px solid #fff; border-radius: 50%; background: #2a7de1; box-shadow: 0 1px 6px rgba(0, 0, 0, .45); }
+.me-dir { display: none; position: absolute; left: 50%; top: 50%; width: 0; height: 0; transform: rotate(var(--h, 0deg)); }
+.me.has-dir .me-dir { display: block; }
+.me-dir i { position: absolute; left: -8px; top: -30px; width: 0; height: 0;
+  border-left: 8px solid transparent; border-right: 8px solid transparent; border-bottom: 16px solid rgba(42, 125, 225, .85); }
+.me-dist { color: #1f5fa8; font-weight: 600; }
+@media (prefers-reduced-motion: no-preference) {
+  .me::after { content: ""; position: absolute; inset: -9px; border-radius: 50%; border: 2px solid rgba(42, 125, 225, .6); animation: mepulse 2s ease-out infinite; }
+  @keyframes mepulse { from { scale: .5; opacity: 1; } to { scale: 1.6; opacity: 0; } }
+  .locate.wait { animation: glow 1.2s ease-in-out infinite; }
+}
