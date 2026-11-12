@@ -270,9 +270,10 @@ window.TRIP_DATA = {
     },
     glpbreakfast: {
       name: '그랜드 리스보아 팰리스 조식 뷔페 (더 그랜드 뷔페)', level: '선택', linkVerified: true,
-      icon: '🍳', short: '호텔 조식 뷔페', key: '객실에 조식 포함이면 필요 없음', when: '12/28·29',
+      icon: '🍳', short: '호텔 조식 뷔페', key: '어른 268 · 만 6세 이하 무료 · 조식 포함 객실이면 불필요', when: '12/28·29',
       url: 'https://3ha.in/r/895275', aff: 'https://3ha.in/r/895275', affBy: '클룩',
-      note: '객실 예약에 조식이 포함되어 있는지 먼저 확인하세요. 포함이면 따로 살 필요가 없습니다.'
+      note: '공식 요금: 조식 어른 MOP 268, 아이(만 7~12세) MOP 134, 봉사료 10% 별도. 어른 1명당 만 6세 이하 아이 1명은 무료(공식)라 두 아이 모두 요금이 없습니다. ' +
+        '조식 07:00~10:30, 3층 더 그랜드 뷔페. 객실 예약에 조식이 포함되어 있는지 먼저 확인하세요. 포함이면 따로 살 필요가 없습니다.'
     },
     pickup: {
       name: '마카오 국제공항 픽업·샌딩', level: '선택', linkVerified: true,
@@ -508,7 +509,10 @@ window.TRIP_DATA = {
         { date: '2026-12-27', time: '19:30', kind: 'sleep', title: '호텔 복귀, 20:00 목욕, 21:00 취침', places: ['glp'] },
 
         /* ===== 12/28(월) 구시가지 · 타이파 빌리지 ===== */
-        { date: '2026-12-28', time: '07:30', kind: 'meal', title: '조식 (호텔 뷔페)', places: ['glp'] },
+        {
+          date: '2026-12-28', time: '07:30', kind: 'meal', title: '조식 (호텔 뷔페, 3층 더 그랜드 뷔페)', places: ['glp'], booking: 'glpbreakfast',
+          tips: ['어른 1명당 만 6세 이하 아이 1명은 무료다 (공식). 어른 MOP 268 + 봉사료 10%, 조식 포함 객실이면 추가 비용 없음.']
+        },
         {
           date: '2026-12-28', time: '10:00', kind: 'move', title: '호텔 무료 셔틀로 마카오 반도 그랜드 리스보아',
           places: ['glp', 'grandlisboa'], transport: 'shuttle', shuttle: 'glpPeninsula',
@@ -576,7 +580,7 @@ window.TRIP_DATA = {
         },
 
         /* ===== 12/29(화) W로 이동 · 키즈시티 ===== */
-        { date: '2026-12-29', time: '07:30', kind: 'meal', title: '조식', places: ['glp'] },
+        { date: '2026-12-29', time: '07:30', kind: 'meal', title: '조식 (호텔 뷔페, 아이 무료)', places: ['glp'] },
         { date: '2026-12-29', time: '09:30', kind: 'hotel', title: '그랜드 리스보아 팰리스 체크아웃 (11:00 마감), 짐을 모두 챙겨 나옴', places: ['glp'] },
         {
           date: '2026-12-29', time: '09:45', kind: 'move', title: '짐을 모두 싣고 택시로 W 마카오',
