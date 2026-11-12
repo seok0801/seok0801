@@ -34,7 +34,8 @@
   var is2d = false;
   try { is2d = localStorage.getItem(MODE_KEY) === '2d'; } catch (e) { /* 기억 못 해도 3D 로 시작 */ }
   function tilt(p) { return is2d ? 0 : p; }
-  function turnTo(b) { return is2d ? 0 : b; }
+  // 2D 에서는 사용자가 돌려 둔 방향을 그대로 둔다 (두 손가락으로 돌릴 수 있다)
+  function turnTo(b) { return is2d ? (map ? map.getBearing() : 0) : b; }
   var map = null, mapReady = false, markers = {}, popup = null, dashTimer = null;
   var dashUntil = 0;         // 동선 점선을 이 시각까지만 움직인다(투어 중에는 계속)
 
@@ -896,10 +897,11 @@
       if (l.type === 'fill-extrusion') map.setLayoutProperty(l.id, 'visibility', is2d ? 'none' : 'visible');
     });
     ['tour-flat', 'tour-tall-flat'].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', is2d ? 'visible' : 'none'); });
-    if (is2d) { map.dragRotate.disable(); map.touchZoomRotate.disableRotation(); }
-    else { map.dragRotate.enable(); map.touchZoomRotate.enableRotation(); }
+    map.dragRotate.enable(); map.touchZoomRotate.enableRotation();   // 2D 에서도 두 손가락으로 돌릴 수 있다 (기울이기만 막는다)
     limitPitch();
-    map.easeTo({ pitch: tilt(Math.min(55, map.getMaxPitch())), bearing: turnTo(-20), duration: animate ? 800 : 0 });
+    // 2D 로 바꾸는 순간에만 북쪽을 위로 맞춘다. 그 뒤로는 사용자가 돌린 방향을 따른다
+    // (처음 불러올 때는 건드리지 않는다 → 오프닝 회전이 그대로 보인다)
+    if (animate) map.easeTo({ pitch: tilt(Math.min(55, map.getMaxPitch())), bearing: is2d ? 0 : -20, duration: 800 });
   }
   function toggleMode() {
     is2d = !is2d;
