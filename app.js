@@ -822,19 +822,19 @@
         // 바탕 지도의 가게·시설·도로·동네 이름은 그대로 둔다. 도로 번호판과 나라·주 이름만 숨긴다
         if (/shield|country|state|continent/.test(id)) map.setLayoutProperty(id, 'visibility', 'none');
       } else if (l.type === 'background') {
-        set('background-color', '#eee3c4');          // 마카오 땅: 따뜻한 모래색
+        set('background-color', '#d9d6cc');
       } else if (l.type === 'fill') {
         if (/water/.test(id)) set('fill-color', SEA_COLOR);
-        else if (/park|wood|grass|landcover|green|pitch|cemetery/.test(id)) { set('fill-color', '#b9c99c'); set('fill-opacity', 0.9); }
-        else if (/building/.test(id)) set('fill-color', '#e2d6b4');
-        else if (/aeroway/.test(id)) set('fill-color', '#d9d3c2');
-        else { set('fill-color', '#e9ddbd'); }
+        else if (/park|wood|grass|landcover|green|pitch|cemetery/.test(id)) { set('fill-color', '#a9b79a'); set('fill-opacity', 0.9); }
+        else if (/building/.test(id)) set('fill-color', '#cbc7bb');
+        else if (/aeroway/.test(id)) set('fill-color', '#c9c6bc');
+        else { set('fill-color', '#d4d1c7'); }
         try { map.setPaintProperty(id, 'fill-pattern', undefined); } catch (e) { /* 무시 */ }
       } else if (l.type === 'line') {
-        if (/water/.test(id)) set('line-color', '#9cc4d8');
+        if (/water/.test(id)) set('line-color', SEA_COLOR);
         else if (/boundary|ferry|cablecar|rail|pier/.test(id)) map.setLayoutProperty(id, 'visibility', 'none');
-        else if (/casing/.test(id)) set('line-color', '#d3c4a0');   // 도로: 흰 길에 옅은 테두리
-        else set('line-color', '#fffdf7');
+        else if (/casing/.test(id)) set('line-color', '#b3b0a6');
+        else set('line-color', '#c6c3b9');
       }
     });
   }
@@ -856,9 +856,9 @@
   }
 
   /* 마카오 바깥(헝친·주하이)은 바다색으로 덮는다. 바다와 같은 색이라 경계선이 보이지 않고, 마카오만 섬처럼 남는다 */
-  /* 바다는 가운데 물길과 바깥까지 모두 하늘색으로 남기고, 마카오 밖의 땅(헝친·주하이)만 연회색으로 흐리게 칠한다 */
-  var SEA_COLOR = '#aed6e8';
-  var MASK_COLOR = '#e1e3e3';
+  /* 바다는 가운데 물길과 바깥까지 모두 남기고, 마카오 밖의 땅(헝친·주하이)만 흐린 회색으로 칠한다 */
+  var SEA_COLOR = '#6f98a0';
+  var MASK_COLOR = '#ccceca';
   function addAreaMask() {
     var ring = D.map.area;
     if (!ring || ring.length < 4) return;
