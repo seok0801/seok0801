@@ -60,23 +60,26 @@ window.TRIP_DATA = {
    * lng 경도, lat 위도 (OpenStreetMap 지도에서 확인)
    * verified: true = 지도에서 그 장소를 직접 찾아 확인함 / false = 건물 안의 대략적인 위치
    * height: 공개 지도에 높이가 없어 납작하게 나오는 건물을 세울 대략의 높이(m)
+   * look: 그 건물을 실제에 가까운 색으로 칠한다 { wall 벽, glass 유리, roof 지붕, radius 주변 몇 m 건물까지 }. 구글 어스에서 본 색감을 참고한 대략의 값
    * open, close: 일정 시간이 영업 전·후이면 카드에 '영업시간 주의'가 뜹니다 (방문하는 요일 기준)
    * closedWeekdays: 정기 휴무 요일 (0 일, 1 월, 2 화, 3 수, 4 목, 5 금, 6 토)
    * closedDates: 쉬는 날짜 → 일정과 겹치면 '휴무 주의'가 뜹니다 */
   places: {
     // 공항
     icn: { name: '인천공항 T2', type: 'airport', lng: 126.43474, lat: 37.46847, verified: true, offMap: true, note: '지도 밖, 출발·도착 표시만' },
-    mfm: { name: '마카오 국제공항', type: 'airport', lng: 113.57434, lat: 22.15744, verified: true },
+    mfm: { name: '마카오 국제공항', type: 'airport', lng: 113.57434, lat: 22.15744, verified: true, look: { wall: '#eef0f0', glass: '#7f9bb0', roof: '#d5d9da', radius: 120 } },
 
     // 호텔
     glp: {
       name: '그랜드 리스보아 팰리스', type: 'hotel', lng: 113.57420, lat: 22.14409, verified: true,
       height: 75,     // 공개 지도에 건물 높이가 없어 넣은 대략의 높이(m). 실제와 다를 수 있음
+      look: { wall: '#efe9da', glass: '#6b7f8c', roof: '#6f9085', radius: 60 },   // 크림색 벽, 청록 지붕
       note: '12/27~29 숙박', url: 'https://www.grandlisboapalace.com/kr', urlLabel: '호텔 공식'
     },
     wmacau: {
       name: 'W 마카오 스튜디오 시티', type: 'hotel', lng: 113.56023, lat: 22.14198, verified: true,
       height: 110,    // 대략의 높이(m)
+      look: { wall: '#7d8ca0', glass: '#2f3e52', roof: '#59677a', radius: 140 },  // 청회색 유리 건물
       note: '12/29~31 숙박 · 체크인 15:00, 체크아웃 11:00'
     },
 
@@ -89,6 +92,7 @@ window.TRIP_DATA = {
     },
     gourmet: {
       name: '고메 파빌리온 푸드홀 (윈 팰리스)', type: 'food', lng: 113.57279, lat: 22.14722, verified: true,
+      look: { wall: '#9a6a48', glass: '#4a2f22', roof: '#e3d8c4', radius: 190 },  // 윈 팰리스: 구릿빛 유리
       note: '예약 없이 들어가는 캐주얼 푸드홀 (치킨라이스·죽·국수·만두)',
       hours: '푸드홀 11:30~22:30 · 수~월 영업 (화요일은 영업일에 없음)', open: '11:30', close: '22:30', closedWeekdays: [2],
       url: 'https://www.wynnresortsmacau.com/ko/wynn-palace/dining/gourmet-pavilion', urlLabel: '식당 공식'
@@ -97,6 +101,7 @@ window.TRIP_DATA = {
     // 12/28
     cod: {
       name: '시티 오브 드림즈 키즈시티', type: 'kids', lng: 113.56641, lat: 22.14918, verified: true,
+      look: { wall: '#5b7088', glass: '#27374b', roof: '#7b8794', radius: 110 },  // 짙은 푸른 유리
       note: '실내 놀이터 (3층)', hours: '10:30~19:00 (마지막 입장 18:00) · 평소 수·목 휴무지만 12/20~31은 매일 운영',
       open: '10:30', close: '19:00'
     },
@@ -116,14 +121,16 @@ window.TRIP_DATA = {
     },
     londoner: {
       name: 'FEAST 뷔페 (런더너 마카오)', type: 'food', lng: 113.56534, lat: 22.14581, verified: true,
+      look: { wall: '#e6dcc3', glass: '#55606b', roof: '#b9b3a3', radius: 110 },  // 크림색 석조풍
       note: '쉐라톤 그랜드 마카오 1층 · 시장 콘셉트의 가족형 뷔페', hours: '저녁 18:00~22:30 (2차 출처 기준, 공식 사이트 미확인)', open: '18:00', close: '22:30',
       url: 'https://macau.com/listing/feast/', urlLabel: '소개 페이지'
     },
-    venetian: { name: '베네시안·파리지앵', type: 'shop', lng: 113.56047, lat: 22.14820, verified: true, note: '크리스마스 장식 구경' },
+    venetian: { name: '베네시안·파리지앵', type: 'shop', lng: 113.56047, lat: 22.14820, verified: true, note: '크리스마스 장식 구경', look: { wall: '#dccaa2', glass: '#6a5f4e', roof: '#e9e6dc', radius: 160 } },
 
     // 12/29
     grandlisboa: {
       name: '그랜드 리스보아 (셔틀 타고 내리는 곳)', type: 'transport', lng: 113.54338, lat: 22.19093, verified: true,
+      look: { wall: '#b8914e', glass: '#5a4320', roof: '#c9a65f', radius: 50 },    // 금빛 유리 탑
       note: '마카오 반도. 그랜드 리스보아 팰리스 무료 셔틀 승하차', url: 'https://www.grandlisboa.com/kr/getting-here', urlLabel: '셔틀 안내'
     },
     margaret: {
@@ -131,8 +138,8 @@ window.TRIP_DATA = {
       note: '에그타르트', hours: '월~금 08:30~16:30, 주말 10:00~18:00 · 수요일 휴무 (2026년 가이드 기준)', open: '08:30', close: '16:30', closedWeekdays: [3],
       url: 'https://citiesinsider.com/country/china/macao/cafes-and-bakeries/en', urlLabel: '소개 페이지(영문)'
     },
-    senado: { name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장' },
-    stpaul: { name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, note: '계단 많음' },
+    senado: { name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장', look: { wall: '#ecd98f', glass: '#5d6b4f', roof: '#b9b4a8', radius: 110 } },
+    stpaul: { name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 } },
     koikei: {
       name: '쿠이케이 (세나도 광장 지점)', type: 'snack', lng: 113.53965, lat: 22.19371, verified: true,
       note: '아몬드 쿠키·에그타르트, 선물용으로도 좋음', hours: '영업시간 미확인 (근처 성 바울 지점은 10:00부터로 안내)'
@@ -162,6 +169,7 @@ window.TRIP_DATA = {
     },
     lordstow: {
       name: '로드 스토우 베이커리 본점 (콜로안)', type: 'snack', lng: 113.55133, lat: 22.11820, verified: true,
+      look: { wall: '#eedc94', glass: '#58705a', roof: '#b97a5e', radius: 110 },   // 파스텔 노란 벽, 붉은 기와
       note: '마카오식 에그타르트의 원조', hours: '매일 07:00~21:00 (가이드 기준, 공식 페이지에는 시간 표시 없음)', open: '07:00', close: '21:00',
       url: 'https://www.lordstow.com/contact-us/', urlLabel: '공식'
     },

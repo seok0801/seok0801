@@ -57,11 +57,11 @@
   function link(url, text, cls) {
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
   }
-  /* 그 장소를 구글 어스의 실사 3D 로 여는 주소 (가입·키 없이 새 탭이나 구글 어스 앱에서 열린다) */
+  /* 그 장소를 구글 지도에서 여는 주소 (길찾기·리뷰·사진을 볼 수 있다) */
   function earthLink(id) {
     var p = place(id);
-    var url = 'https://earth.google.com/web/@' + p.lat + ',' + p.lng + ',15a,' + (p.earthDist || 600) + 'd,35y,0h,60t,0r';
-    return link(url, '🌍 구글 어스 실사 3D', 'btn');
+    var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.mapQuery || (p.lat + ',' + p.lng));
+    return link(url, '📍 구글 지도', 'btn');
   }
 
   function reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
@@ -582,12 +582,12 @@
           }
         });
       }
-      // 공개 지도에 높이가 없어 납작하게 나오는 주요 건물(data.js 에 height 를 적은 장소)을 대략의 높이로 세운다
+      // 공개 지도에 높이가 없어 납작하게 나오는 주요 건물(data.js 에 height 나 look 을 적은 장소)을 대략의 높이와 실제에 가까운 색으로 그린다
       map.addSource('tour-tall', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       map.addLayer({ id: 'tour-tall-walls', type: 'fill-extrusion', source: 'tour-tall',
-        paint: { 'fill-extrusion-pattern': 'tour-windows', 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-opacity': 1 } });
+        paint: { 'fill-extrusion-pattern': ['get', 'pat'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-opacity': 1 } });
       map.addLayer({ id: 'tour-tall-roofs', type: 'fill-extrusion', source: 'tour-tall',
-        paint: { 'fill-extrusion-color': '#6f9085', 'fill-extrusion-base': ['get', 'h'], 'fill-extrusion-height': ['+', ['get', 'h'], 1.2], 'fill-extrusion-opacity': 1 } });
+        paint: { 'fill-extrusion-color': ['get', 'roof'], 'fill-extrusion-base': ['get', 'h'], 'fill-extrusion-height': ['+', ['get', 'h'], 1.2], 'fill-extrusion-opacity': 1 } });
       // 카메라가 멈춘 뒤와 지도 조각이 도착한 뒤에 확인한다
       var tallTimer = null;
       var later = function () { clearTimeout(tallTimer); tallTimer = setTimeout(raiseFlatBuildings, 700); };
@@ -599,25 +599,62 @@
     } catch (e) { /* 3D 건물을 못 세워도 지도는 계속 쓴다 */ }
   }
 
+  /* 벽 색(wall)과 유리 색(glass)으로 창문 무늬 그림을 만들어 지도에 등록하고 그 이름을 돌려준다 */
+  function windowPattern(wall, glass) {
+    var name = 'win-' + wall + glass;
+    if (map.hasImage(name)) return name;
+    var cv = document.createElement('canvas'); cv.width = 32; cv.height = 32;
+    var g = cv.getContext('2d');
+    g.fillStyle = wall; g.fillRect(0, 0, 32, 32);
+    g.fillStyle = glass;
+    [2, 10, 18, 26].forEach(function (x) { [2, 10, 18, 26].forEach(function (y) { g.fillRect(x, y, 4, 5); }); });
+    var img = g.getImageData(0, 0, 32, 32);
+    map.addImage(name, { width: 32, height: 32, data: new Uint8Array(img.data.buffer) });
+    return name;
+  }
+
   /* 높이가 적힌 장소(height)가 납작한 건물 위에 있으면, 그 건물 바닥 모양을 그대로 써서 적힌 높이로 세운다 */
-  var tallDone = {}, tallFeatures = [];
+  /* 또 look(벽·유리·지붕 색)이 적힌 장소는 그 건물(과 radius 미터 안의 건물)을 그 색으로 칠한다 */
+  var tallKeys = {}, tallFeatures = [];   // 지도 조각이 나중에 도착해도 빠진 건물을 이어서 칠한다
   function raiseFlatBuildings() {
     if (!mapReady || map.getZoom() < 14.5) return;
-    var changed = false;
+    var changed = false, all = null;
     Object.keys(D.places).forEach(function (id) {
       var p = D.places[id];
-      if (!p.height || tallDone[id] || !onMap(id)) return;
+      if ((!p.height && !p.look) || !onMap(id)) return;
       var pt = map.project([p.lng, p.lat]);
       var c = map.getContainer();
       if (pt.x < 0 || pt.y < 0 || pt.x > c.clientWidth || pt.y > c.clientHeight) return;
-      var hit = map.querySourceFeatures(map.getLayer('tour-roofs').source, { sourceLayer: 'building' }).filter(function (f) {
-        return (f.properties.render_height || 5) < p.height * 0.6 && insidePolygon([p.lng, p.lat], f.geometry);
+      if (!all) {
+        // 지도 자료는 여러 건물을 한 덩어리(MultiPolygon)로 묶어 주기도 하므로, 건물 하나씩으로 나눠서 본다
+        all = [];
+        map.querySourceFeatures(map.getLayer('tour-roofs').source, { sourceLayer: 'building' }).forEach(function (f) {
+          var polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
+          polys.forEach(function (rings) { all.push({ rings: rings, props: f.properties }); });
+        });
+      }
+      var look = p.look || {}, here = [p.lng, p.lat];
+      var pat = null;
+      all.forEach(function (o) {
+        var geom = { type: 'Polygon', coordinates: o.rings };
+        var own = insidePolygon(here, geom);
+        if (!own && !(look.radius && nearPolygon(here, geom, look.radius))) return;
+        var first = o.rings[0][0];
+        var key = first[0].toFixed(6) + ',' + first[1].toFixed(6);
+        if (tallKeys[key]) return;                   // 이미 다른 장소의 색으로 칠한 건물은 건드리지 않는다
+        tallKeys[key] = true; changed = true;
+        pat = pat || windowPattern(look.wall || '#ece6d8', look.glass || '#5f7f96');
+        var h = Math.max(o.props.render_height || 5, own && p.height ? p.height : 0);
+        tallFeatures.push({ type: 'Feature', geometry: geom,
+          properties: { h: h, b: o.props.render_min_height || 0, pat: pat, roof: look.roof || (h >= 28 ? '#6f9085' : '#c4c0b4') } });
       });
-      if (!hit.length) return;
-      tallDone[id] = true; changed = true;
-      hit.forEach(function (f) { tallFeatures.push({ type: 'Feature', properties: { h: p.height }, geometry: f.geometry }); });
     });
     if (changed) map.getSource('tour-tall').setData({ type: 'FeatureCollection', features: tallFeatures });
+  }
+  /* 건물 바깥선의 어느 꼭짓점이든 pt 에서 r 미터 안에 있는지 */
+  function nearPolygon(pt, geom, r) {
+    var polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.type === 'MultiPolygon' ? geom.coordinates : [];
+    return polys.some(function (rings) { return rings[0].some(function (v) { return distanceM(pt, v) < r; }); });
   }
   function insidePolygon(pt, geom) {
     var polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.type === 'MultiPolygon' ? geom.coordinates : [];
