@@ -44,6 +44,9 @@
   var FLY_MS = 2000;         // 다음 장소로 날아가는 시간 (약 2초)
   var STAY_MS = 3000;        // 투어에서 한 장소에 머무는 시간 (3초)
   var ORBIT_DEG = 34;        // 머무는 동안 장소 둘레를 도는 각도
+  var LONG_HOP_M = 1500;     // 이보다 먼 이동(예: 코타이 → 구시가지 버스)은 먼저 두 곳을 한 화면에 보여 준 뒤 내려앉는다
+  var HOP_MS = 1800;         // 두 곳을 한 화면에 담는 데 걸리는 시간
+  var HOP_HOLD_MS = 700;     // 동선을 보여 주며 잠깐 멈추는 시간
   var BEACON_RADIUS_M = 7;   // 지금 보는 장소에 세우는 빛기둥의 반지름(m)
   var BEACON_HEIGHT_M = 130; // 빛기둥의 높이(m)
 
@@ -500,11 +503,23 @@
       b = cur + Math.max(-100, Math.min(100, turn));
     }
     state.lastPlace = id;
-    map.flyTo({ center: center, offset: offset, zoom: STOP_ZOOM, pitch: tilt(STOP_PITCH), bearing: turnTo(b), duration: FLY_MS });
+    // 먼 이동: ① 출발지와 도착지를 한 화면에 담아 동선을 보여 주고 ② 도착지로 내려앉는다 (화면이 이동을 따라가 보이게)
+    var hop = from && opt.tour && distanceM(from, center) > LONG_HOP_M && !reducedMotion();
+    var wait = hop ? HOP_MS + HOP_HOLD_MS : 0;
+    state.hopMs = wait;
+    if (hop) {
+      var bb = new maplibregl.LngLatBounds(from, from).extend(center);
+      map.fitBounds(bb, { padding: { top: 150, bottom: 140, left: 60, right: 60 }, pitch: tilt(35), bearing: turnTo(b), maxZoom: 15, duration: HOP_MS });
+    }
+    setTimeout(function () {
+      if (my !== flyToken || !mapReady) return;
+      map.flyTo({ center: center, offset: offset, zoom: STOP_ZOOM, pitch: tilt(STOP_PITCH), bearing: turnTo(b), duration: FLY_MS });
+    }, wait);
     setTimeout(function () {                           // 도착한 뒤 장소 둘레를 천천히 돌아 입체감을 준다
       if (is2d || my !== flyToken || !mapReady || map.isMoving() || reducedMotion()) return;
-      map.easeTo({ center: center, offset: offset, bearing: b + ORBIT_DEG, duration: opt.orbitMs || 3600, easing: function (x) { return x; } });
-    }, FLY_MS + 150);
+      // 멀리서 내려오며 기울기가 덜 된 채 끝났으면 여기서 마저 기울인다
+      map.easeTo({ center: center, offset: offset, pitch: tilt(STOP_PITCH), bearing: b + ORBIT_DEG, duration: opt.orbitMs || 3600, easing: function (x) { return x; } });
+    }, wait + FLY_MS + 150);
   }
 
   function fitTo(ids) {
@@ -1090,7 +1105,7 @@
     var el = highlight(s.item._i);
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     // 투어: 작은 이름표만 띄우고, 머무는 동안 장소 둘레를 돈다
-    flyToPlace(s.place, { orbitMs: STAY_MS - 150 });
+    flyToPlace(s.place, { orbitMs: STAY_MS - 150, tour: true });
     openPopup(s.place, { item: s.item, color: (dayInfo(s.item.date) || {}).color });
     setTourStatus((idx + 1) + '/' + list.length + ' · ' + s.item.time + ' ' + place(s.place).name);
     return true;
@@ -1102,7 +1117,7 @@
       if (state.tourIdx + 1 >= stops().length) { state.tourIdx = -1; stopTour(); setTourStatus('투어가 끝났습니다'); return; }
       goStop(state.tourIdx + 1);
       scheduleNext();
-    }, FLY_MS + STAY_MS);
+    }, FLY_MS + STAY_MS + (state.hopMs || 0));      // 먼 이동이면 동선을 보여 준 시간만큼 더 기다린다
   }
   function playTour() {
     var list = stops();
