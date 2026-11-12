@@ -84,53 +84,20 @@ a { color: var(--accent); }
   border: 0;
 }
 
-/* ---------- 전체 배치: 휴대폰은 위 지도(55%) + 아래 일정 ---------- */
+/* ---------- 전체 배치: 화면 전체가 지도. 위에 제목·날짜, 아래에 버튼, 누르면 아래에서 내용이 올라온다 ---------- */
 #app {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   height: 100vh;
   height: 100dvh;
-}
-
-#map-wrap {
-  position: relative;
-  flex: 0 0 55%;
-  min-height: 0;
-  background: #dfe7ea;
-  transition: flex-basis .25s ease;
-}
-/* 목록 위의 손잡이를 누르면 지도를 줄이고 목록을 크게 본다 */
-#app.list-big #map-wrap { flex-basis: 30%; }
-
-#map { position: absolute; inset: 0; }
-
-#title {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  margin: 0;
-  max-width: calc(100% - 64px);
-  padding: 4px 10px;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, .9);
-  color: #1f2430;
-  font-size: 14px;
-  font-weight: 700;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-  box-shadow: var(--shadow);
-  z-index: 2;
+  background: #d9d6cc;
 }
+#map { position: absolute; inset: 0; }
 
 #map-fallback {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 20px 20px;
+  padding: 130px 20px 20px;
   text-align: center;
   background: var(--chip);
   color: var(--text);
@@ -139,23 +106,93 @@ a { color: var(--accent); }
 #map-fallback[hidden] { display: none; }
 #map-fallback p { margin: 4px 0; }
 
-#panel {
-  flex: 1 1 auto;
+/* 지도 위에 떠 있는 어두운 유리 느낌의 버튼·이름표 */
+#top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 10px;
+  pointer-events: none;
+}
+#top > * { pointer-events: auto; }
+#title {
+  align-self: flex-start;
+  max-width: 100%;
+  margin: 0;
+  padding: 5px 12px;
+  border-radius: 10px;
+  background: rgba(24, 36, 44, .88);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px calc(12px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+}
+#bar .btn { pointer-events: auto; border-color: transparent; background: rgba(24, 36, 44, .9); color: #fff; }
+#bar .btn.primary { background: #dbeaf5; color: #16242d; }
+#bar .gap { flex: 1 1 auto; }
+
+/* 아래에서 올라오는 창 */
+#sheet {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));   /* 아래쪽 버튼 줄 위에 뜬다 */
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  max-height: 52%;
+  border-radius: 16px;
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, .3);
+}
+#sheet.list { max-height: 74%; }
+#sheet[hidden] { display: none; }
+.nomap #sheet { top: 120px; max-height: none; }
+#sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 6px 16px;
+  border-bottom: 1px solid var(--line);
+}
+#sheet-title { min-width: 0; margin: 0; font-size: 17px; line-height: 1.3; overflow-wrap: anywhere; }
+#sheet-body {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 14px 28px;
-  background: var(--bg);
+  padding: 6px 14px 18px;
 }
+#place[hidden], #list[hidden] { display: none; }
+#place > .fine:first-child { margin-top: 6px; }
+.day-tag { margin: 10px 0 0; font-weight: 700; }
 
-/* PC: 왼쪽 일정 + 오른쪽 지도 */
+/* PC: 창을 왼쪽 아래에 띄운다 */
 @media (min-width: 900px) {
-  #app { flex-direction: row-reverse; }
-  #map-wrap, #app.list-big #map-wrap { flex: 1 1 auto; }
-  #panel { flex: 0 0 440px; border-right: 1px solid var(--line); }
-  #title { padding: 6px 12px; font-size: 18px; }
-  #sticky #grip { display: none; }          /* PC 에서는 손잡이가 필요 없다 */
-  #sticky { padding-top: 12px; }
+  #top { right: auto; width: 440px; }
+  #title { font-size: 18px; padding: 6px 12px; }
+  #bar { right: auto; width: 440px; }
+  #sheet, #sheet.list { left: 12px; right: auto; bottom: 72px; width: 420px; max-height: calc(100% - 200px); border-radius: 16px; }
 }
 
 /* ---------- 버튼 ---------- */
@@ -179,84 +216,40 @@ a { color: var(--accent); }
 }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .btn.icon { padding: 8px; }
-.btn:focus-visible, .tab:focus-visible, .card:focus-visible, #grip:focus-visible, .day-cost:focus-visible {
+.btn:focus-visible, .tab:focus-visible, .card:focus-visible, .day-cost:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 .btn.book { background: var(--chip); }
 .btn.book.must { background: var(--red); border-color: var(--red); color: var(--must-text); }
 
-/* ---------- 목록 위쪽: 손잡이 · 날짜 · 투어 (목록을 내려도 위에 붙어 있다) ---------- */
-#sticky {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  margin: 0 -14px;
-  padding: 0 14px 8px;
-  background: var(--bg);
-  border-bottom: 1px solid var(--line);
-}
-
-#grip {
-  display: block;
-  width: 100%;
-  height: 20px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-}
-#grip span {
-  display: block;
-  width: 44px;
-  height: 4px;
-  margin: 8px auto;
-  border-radius: 2px;
-  background: var(--line);
-}
-
-#plan-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+/* ---------- 날짜 탭 ---------- */
+#plan-toggle { display: flex; gap: 6px; }
 #plan-toggle[hidden] { display: none; }
 #plan-toggle .btn { flex: 1 1 0; }
 #plan-toggle .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 
-/* 날짜 탭: 휴대폰에서는 '27 / 일' 처럼 두 줄로 줄여 6개가 한 줄에 들어온다 */
-#tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+#tabs { display: flex; gap: 5px; }
 .tab {
   flex: 1 1 0;
   min-width: 0;
   min-height: 44px;
   padding: 3px 4px;
-  border: 2px solid var(--line);
+  border: 2px solid transparent;
   border-radius: 12px;
-  background: var(--card);
-  color: var(--text);
+  background: rgba(24, 36, 44, .88);
+  color: #fff;
   font: inherit;
   font-weight: 700;
   line-height: 1.15;
   cursor: pointer;
 }
 .tab .d { display: block; font-size: 16px; }
-.tab .w { display: block; color: var(--muted); font-size: 12px; font-weight: 600; }
+.tab .w { display: block; color: #c5d0d8; font-size: 12px; font-weight: 600; }
 .tab .m { display: none; }
-.tab[aria-selected="true"] {
-  border-color: var(--day-color, var(--accent));
-  background: var(--day-color, var(--accent));
-  color: #fff;
-}
+.tab[aria-selected="true"] { background: var(--day-color, #dbeaf5); border-color: #fff; color: #fff; }
+.tab[data-day="all"][aria-selected="true"] { color: #16242d; }
 .tab[aria-selected="true"] .w { color: #fff; }
-@media (min-width: 900px) {
-  .tab .d, .tab .w { display: inline; font-size: 15px; }
-  .tab .m { display: inline; }
-  .tab .w::before { content: "("; }
-  .tab .w::after { content: ")"; }
-}
-
-#bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-#tour, #tools { display: flex; gap: 6px; }
-#tools .btn { padding: 8px 10px; font-size: 15px; }
-@media (max-width: 350px) { #tools .btn span { display: none; } }
 
 /* ---------- 날짜 제목 · 준비물 ---------- */
 .day-head {
@@ -318,10 +311,13 @@ a { color: var(--accent); }
   color: var(--text);
   box-shadow: var(--shadow);
   cursor: pointer;
-  scroll-margin-top: 150px;
+  scroll-margin-top: 8px;
   scroll-margin-bottom: 12px;
 }
 .card.active { outline: 3px solid var(--day-color, var(--accent)); outline-offset: 1px; }
+/* 장소 창 안의 일정: 항상 펼쳐 보이고 누르는 동작이 없다 */
+.card.static { cursor: auto; box-shadow: none; }
+.card.static .chev { display: none; }
 
 .card-top { display: flex; gap: 10px; align-items: flex-start; }
 .card-time {
@@ -451,7 +447,7 @@ a { color: var(--accent); }
 }
 @media (prefers-reduced-motion: reduce) {
   .mk.on::after { animation: none; }
-  #map-wrap, .chev { transition: none; }
+  .chev { transition: none; }
 }
 
 /* 앞에 #map 을 붙여 지도 엔진의 기본 모양보다 우선하게 한다 */
@@ -475,9 +471,11 @@ a { color: var(--accent); }
 }
 #map .maplibregl-popup-close-button { width: 36px; height: 36px; font-size: 22px; color: #1f2430; background: transparent; }
 /* 마커 아래에 뜨는 작은 이름표 (누르면 자세한 팝업) */
+#map .tour-pop .maplibregl-popup-content { background: #1d2a33; color: #fff; }
+#map .tour-pop .maplibregl-popup-tip { border-bottom-color: #1d2a33; }
 .pop.compact { padding: 6px 12px; max-width: 250px; text-align: center; cursor: pointer; }
 .pop.compact strong { display: block; font-size: 15px; line-height: 1.3; }
-.pop.compact span { display: block; max-width: 226px; color: #5d6474; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pop.compact span { display: block; max-width: 226px; color: #c5d0d8; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pop h3 { margin: 0 30px 2px 0; font-size: 17px; }
 .pop .pop-type { margin: 0 0 6px; color: #5d6474; font-size: 14px; }
 .pop p { margin: 4px 0; }

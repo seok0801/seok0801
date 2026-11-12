@@ -59,6 +59,7 @@ window.TRIP_DATA = {
    *             transport 교통 / airport 공항 / food 식당 / snack 간식
    * lng 경도, lat 위도 (OpenStreetMap 지도에서 확인)
    * verified: true = 지도에서 그 장소를 직접 찾아 확인함 / false = 건물 안의 대략적인 위치
+   * height: 공개 지도에 높이가 없어 납작하게 나오는 건물을 세울 대략의 높이(m)
    * open, close: 일정 시간이 영업 전·후이면 카드에 '영업시간 주의'가 뜹니다 (방문하는 요일 기준)
    * closedWeekdays: 정기 휴무 요일 (0 일, 1 월, 2 화, 3 수, 4 목, 5 금, 6 토)
    * closedDates: 쉬는 날짜 → 일정과 겹치면 '휴무 주의'가 뜹니다 */
@@ -70,10 +71,12 @@ window.TRIP_DATA = {
     // 호텔
     glp: {
       name: '그랜드 리스보아 팰리스', type: 'hotel', lng: 113.57420, lat: 22.14409, verified: true,
+      height: 75,     // 공개 지도에 건물 높이가 없어 넣은 대략의 높이(m). 실제와 다를 수 있음
       note: '12/27~29 숙박', url: 'https://www.grandlisboapalace.com/kr', urlLabel: '호텔 공식'
     },
     wmacau: {
       name: 'W 마카오 스튜디오 시티', type: 'hotel', lng: 113.56023, lat: 22.14198, verified: true,
+      height: 110,    // 대략의 높이(m)
       note: '12/29~31 숙박 · 체크인 15:00, 체크아웃 11:00'
     },
 

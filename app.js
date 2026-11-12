@@ -382,25 +382,63 @@
   }
 
   /* opt.compact = 투어용 작은 이름표, opt.item = 이름표에 보일 일정, opt.color = 빛기둥 색 */
+  /* ---------- 아래에서 올라오는 창(시트): 누른 장소의 여행 내용 / 그날 일정 목록 ---------- */
+  var sheetMode = '';
+  function openSheet(mode, title) {
+    sheetMode = mode;
+    $('sheet').hidden = false;
+    $('sheet').className = mode;
+    $('sheet-title').textContent = title;
+    $('place').hidden = mode !== 'place';
+    $('list').hidden = mode !== 'list';
+    $('sheet-body').scrollTop = 0;
+  }
+  function hideSheet() { sheetMode = ''; $('sheet').hidden = true; }
+
+  /* 장소를 눌렀을 때 보여 줄 내용: 그 장소에서 하는 일정(시간·메모·꿀팁·예약 버튼) */
+  function placeHtml(id) {
+    var p = place(id);
+    var t = PLACE_TYPES[p.type] || { icon: '📍', label: '' };
+    var meta = [];
+    if (t.label) meta.push(t.label);
+    if (p.note) meta.push(p.note);
+    var html = meta.length ? '<p class="fine">' + esc(meta.join(' · ')) + '</p>' : '';
+    if (p.hours) html += '<p class="fine">🕒 ' + esc(p.hours) + '</p>';
+    var linked = {}, n = 0;
+    viewDates().forEach(function (date) {
+      items(date).forEach(function (it) {
+        if (it.kind === 'move' || (it.places || []).indexOf(id) < 0) return;
+        if (state.day === 'all') html += '<p class="fine day-tag">' + esc((dayInfo(date) || {}).label || '') + '</p>';
+        html += cardHtml(it, {}, linked).replace('class="card', 'class="card open static');
+        n++;
+      });
+    });
+    if (!n) html += '<div class="card-actions">' + (p.url ? link(p.url, p.urlLabel || '소개 페이지', 'btn') : '') + earthLink(id) + '</div>';
+    if (p.verified === false) html += '<p class="fine">지도 위 위치는 건물 기준의 대략적인 표시입니다.</p>';
+    return html;
+  }
+  function showPlace(id) {
+    var p = place(id);
+    var t = PLACE_TYPES[p.type] || { icon: '📍' };
+    $('place').innerHTML = placeHtml(id);
+    openSheet('place', t.icon + ' ' + p.name);
+  }
+  function showList() {
+    openSheet('list', state.day === 'all' ? '전체 일정' : (dayInfo(state.day) || {}).label + ' 일정');
+  }
+
+  /* 지도 위 이름표. opt.item = 이름표에 보일 일정, opt.color = 빛기둥 색 */
   var popupToken = 0;
   function openPopup(id, opt) {
     if (!mapReady || !onMap(id)) return;
     opt = opt || {};
     var my = ++popupToken;
     if (popup) popup.remove();
-    var at = [place(id).lng, place(id).lat];
-    if (opt.compact) {
-      // 투어 중에는 3D 풍경이 가려지지 않게 마커 아래에 작은 이름표만 띄운다. 이름표를 누르면 자세한 팝업이 열린다
-      popup = new maplibregl.Popup({ offset: 24, anchor: 'top', closeButton: false, closeOnClick: true, focusAfterOpen: false, className: 'tour-pop' })
-        .setLngLat(at).setHTML(compactHtml(id, opt.item)).addTo(map);
-      popup.getElement().addEventListener('click', function () { stopTour(); flyToPlace(id); openPopup(id, { color: opt.color }); });
-    } else {
-      popup = new maplibregl.Popup({ offset: 26, anchor: 'bottom', closeOnClick: true, focusAfterOpen: false })
-        .setLngLat(at).setHTML(popupHtml(id)).addTo(map);
-      var box = popup.getElement().querySelector('.pop');    // 지도 높이에 맞춰 팝업 높이를 제한(넘치면 안쪽만 스크롤)
-      if (box) box.style.maxHeight = Math.max(120, Math.min(360, Math.round(mapHeight() * 0.7) - 126)) + 'px';
-    }
-    popup.on('close', function () { if (my === popupToken) clearFocus(); });   // 팝업을 닫으면 강조도 끈다
+    popup = new maplibregl.Popup({ offset: 24, anchor: 'top', closeButton: false, closeOnClick: true, focusAfterOpen: false, className: 'tour-pop' })
+      .setLngLat([place(id).lng, place(id).lat]).setHTML(compactHtml(id, opt.item)).addTo(map);
+    // 이름표를 누르면 그 장소의 여행 내용이 아래에서 올라온다
+    popup.getElement().addEventListener('click', function () { stopTour(); flyToPlace(id, { sheet: true }); showPlace(id); });
+    popup.on('close', function () { if (my === popupToken) clearFocus(); });
     setFocus(id, opt.color || (state.day === 'all' ? null : dayInfo(state.day).color));
   }
 
@@ -414,7 +452,7 @@
     var my = ++flyToken;
     var center = [place(id).lng, place(id).lat];
     // 장소를 지도 가운데보다 아래에 두어, 그 위로 3D 풍경(또는 팝업)이 보이게 한다
-    var offset = [0, Math.round(mapHeight() * (opt.compact ? 0.12 : 0.2))];
+    var offset = [0, Math.round(mapHeight() * (opt.sheet ? -0.22 : 0.04))];   // 아래 창이 열리면 장소를 화면 위쪽에 둔다
     var cur = map.getBearing(), b = cur + 40;
     var from = state.lastPlace && state.lastPlace !== id && onMap(state.lastPlace) ? [place(state.lastPlace).lng, place(state.lastPlace).lat] : null;
     if (from && distanceM(from, center) > 80) {
@@ -476,9 +514,9 @@
       el.addEventListener('click', function (e) {
         e.stopPropagation();
         stopTour();
-        flyToPlace(id);
+        flyToPlace(id, { sheet: true });
         openPopup(id);
-        highlightCardForPlace(id);
+        showPlace(id);
       });
       markers[id] = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([p.lng, p.lat]).addTo(map);
       el.setAttribute('role', 'button');          // 화면 읽기 프로그램이 장소 이름을 읽도록
@@ -504,35 +542,117 @@
     try {
       var layers = map.getStyle().layers || [];
       var has = false;
-      // 높은 건물일수록 조금 진한 모래색으로 칠한다
-      var color = ['interpolate', ['linear'], ['coalesce', ['get', 'render_height'], 5],
-        0, '#f2ede4', 30, '#e8dfd0', 100, '#dccfb9', 250, '#cdbb9d'];
+      var H = ['coalesce', ['get', 'render_height'], 5];
+      var srcId = null, bLayer = null;
       layers.forEach(function (l) {
+        if (!srcId && l['source-layer'] === 'building') srcId = l.source;
         if (l.type === 'fill-extrusion') {
-          has = true;
+          has = true; bLayer = l.id;
           map.setLayerZoomRange(l.id, 13, 24);
-          map.setPaintProperty(l.id, 'fill-extrusion-color', color);
-          map.setPaintProperty(l.id, 'fill-extrusion-opacity', 0.95);
+          map.setPaintProperty(l.id, 'fill-extrusion-color', '#e9e3d4');
+          map.setPaintProperty(l.id, 'fill-extrusion-opacity', 1);
         }
       });
-      if (!has) {
-        var srcId = null;
-        layers.forEach(function (l) { if (!srcId && l['source-layer'] === 'building') srcId = l.source; });
-        if (srcId) {
-          map.addLayer({
-            id: 'tour-3d-buildings', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
-            paint: {
-              'fill-extrusion-color': color,
-              'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 12],
-              'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
-              'fill-extrusion-opacity': 0.95
-            }
-          });
-        }
+      if (!has && srcId) {
+        bLayer = 'tour-3d-buildings';
+        map.addLayer({
+          id: bLayer, type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
+          paint: { 'fill-extrusion-color': '#e9e3d4', 'fill-extrusion-height': H,
+            'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0], 'fill-extrusion-opacity': 1 }
+        });
       }
-      // 남동쪽에서 비추는 햇빛: 건물 면마다 밝기가 달라져 입체감이 생기고, 카메라가 돌면 명암도 따라 바뀐다
-      map.setLight({ anchor: 'map', color: '#ffffff', intensity: 0.45, position: [1.5, 135, 55] });
+      if (bLayer) {
+        // 벽에 창문 무늬를 입힌다 (작은 그림을 만들어 반복해서 붙인다)
+        var cv = document.createElement('canvas'); cv.width = 32; cv.height = 32;
+        var g = cv.getContext('2d');
+        g.fillStyle = '#ece6d8'; g.fillRect(0, 0, 32, 32);
+        g.fillStyle = '#5f7f96';
+        [2, 10, 18, 26].forEach(function (x) { [2, 10, 18, 26].forEach(function (y) { g.fillRect(x, y, 4, 5); }); });
+        var img = g.getImageData(0, 0, 32, 32);
+        if (!map.hasImage('tour-windows')) map.addImage('tour-windows', { width: 32, height: 32, data: new Uint8Array(img.data.buffer) });
+        map.setPaintProperty(bLayer, 'fill-extrusion-pattern', 'tour-windows');
+        // 지붕: 높은 건물은 청록색, 낮은 건물은 회색
+        map.addLayer({
+          id: 'tour-roofs', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
+          paint: {
+            'fill-extrusion-color': ['step', H, '#c4c0b4', 28, '#6f9085'],
+            'fill-extrusion-base': H,
+            'fill-extrusion-height': ['+', H, 1.2],
+            'fill-extrusion-opacity': 1
+          }
+        });
+      }
+      // 공개 지도에 높이가 없어 납작하게 나오는 주요 건물(data.js 에 height 를 적은 장소)을 대략의 높이로 세운다
+      map.addSource('tour-tall', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({ id: 'tour-tall-walls', type: 'fill-extrusion', source: 'tour-tall',
+        paint: { 'fill-extrusion-pattern': 'tour-windows', 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-opacity': 1 } });
+      map.addLayer({ id: 'tour-tall-roofs', type: 'fill-extrusion', source: 'tour-tall',
+        paint: { 'fill-extrusion-color': '#6f9085', 'fill-extrusion-base': ['get', 'h'], 'fill-extrusion-height': ['+', ['get', 'h'], 1.2], 'fill-extrusion-opacity': 1 } });
+      // 카메라가 멈춘 뒤와 지도 조각이 도착한 뒤에 확인한다
+      var tallTimer = null;
+      var later = function () { clearTimeout(tallTimer); tallTimer = setTimeout(raiseFlatBuildings, 700); };
+      map.on('moveend', later);
+      map.on('sourcedata', later);
+      simplifyBaseMap();
+      // 남동쪽에서 비추는 햇빛: 건물 면마다 밝기가 달라져 입체감이 생긴다
+      map.setLight({ anchor: 'map', color: '#ffffff', intensity: 0.4, position: [1.5, 135, 55] });
     } catch (e) { /* 3D 건물을 못 세워도 지도는 계속 쓴다 */ }
+  }
+
+  /* 높이가 적힌 장소(height)가 납작한 건물 위에 있으면, 그 건물 바닥 모양을 그대로 써서 적힌 높이로 세운다 */
+  var tallDone = {}, tallFeatures = [];
+  function raiseFlatBuildings() {
+    if (!mapReady || map.getZoom() < 14.5) return;
+    var changed = false;
+    Object.keys(D.places).forEach(function (id) {
+      var p = D.places[id];
+      if (!p.height || tallDone[id] || !onMap(id)) return;
+      var pt = map.project([p.lng, p.lat]);
+      var c = map.getContainer();
+      if (pt.x < 0 || pt.y < 0 || pt.x > c.clientWidth || pt.y > c.clientHeight) return;
+      var hit = map.querySourceFeatures(map.getLayer('tour-roofs').source, { sourceLayer: 'building' }).filter(function (f) {
+        return (f.properties.render_height || 5) < p.height * 0.6 && insidePolygon([p.lng, p.lat], f.geometry);
+      });
+      if (!hit.length) return;
+      tallDone[id] = true; changed = true;
+      hit.forEach(function (f) { tallFeatures.push({ type: 'Feature', properties: { h: p.height }, geometry: f.geometry }); });
+    });
+    if (changed) map.getSource('tour-tall').setData({ type: 'FeatureCollection', features: tallFeatures });
+  }
+  function insidePolygon(pt, geom) {
+    var polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.type === 'MultiPolygon' ? geom.coordinates : [];
+    return polys.some(function (rings) {
+      var ring = rings[0], inside = false;
+      for (var i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        var a = ring[i], b = ring[j];
+        if ((a[1] > pt[1]) !== (b[1] > pt[1]) && pt[0] < (b[0] - a[0]) * (pt[1] - a[1]) / (b[1] - a[1]) + a[0]) inside = !inside;
+      }
+      return inside;
+    });
+  }
+
+  /* 바탕 지도를 단순하게: 가게·도로 이름 같은 잔글씨를 숨기고, 땅·바다·도로·녹지만 차분한 색으로 남긴다 */
+  function simplifyBaseMap() {
+    (map.getStyle().layers || []).forEach(function (l) {
+      var id = l.id, set = function (k, v) { try { map.setPaintProperty(id, k, v); } catch (e) { /* 무시 */ } };
+      if (l.type === 'symbol') {
+        if (!/^label_(city|town|village|other)/.test(id)) map.setLayoutProperty(id, 'visibility', 'none');
+      } else if (l.type === 'background') {
+        set('background-color', '#d9d6cc');
+      } else if (l.type === 'fill') {
+        if (/water/.test(id)) set('fill-color', '#6f98a0');
+        else if (/park|wood|grass|landcover|green|pitch|cemetery/.test(id)) { set('fill-color', '#a9b79a'); set('fill-opacity', 0.9); }
+        else if (/building/.test(id)) set('fill-color', '#cbc7bb');
+        else if (/aeroway/.test(id)) set('fill-color', '#c9c6bc');
+        else { set('fill-color', '#d4d1c7'); }
+        try { map.setPaintProperty(id, 'fill-pattern', undefined); } catch (e) { /* 무시 */ }
+      } else if (l.type === 'line') {
+        if (/water/.test(id)) set('line-color', '#6f98a0');
+        else if (/boundary|ferry|cablecar|rail|pier/.test(id)) map.setLayoutProperty(id, 'visibility', 'none');
+        else if (/casing/.test(id)) set('line-color', '#b3b0a6');
+        else set('line-color', '#c6c3b9');
+      }
+    });
   }
 
   /* 지도 위 글자: 한국어 이름이 등록된 곳(마카오, 코타이, 베네시안 등)은 한국어로 보여 준다 */
@@ -595,6 +715,8 @@
   function mapFailed() {
     mapReady = false;
     $('map-fallback').hidden = false;
+    $('app').classList.add('nomap');
+    showList();
   }
 
   function createMap(styleUrl) {
@@ -609,7 +731,7 @@
       Object.keys(extra).forEach(function (k) { opts[k] = extra[k]; });
       map = new maplibregl.Map(opts);
     } catch (e) { mapFailed(); return; }
-    map.addControl(new maplibregl.NavigationControl({ showZoom: !isNarrow(), visualizePitch: true }), 'top-right');
+    if (!isNarrow()) map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
     map.on('load', function () {
       mapReady = true;
       // 지도 아래의 출처 표시는 접어 둔다 (ⓘ 를 누르면 펼쳐진다)
@@ -694,10 +816,10 @@
     highlight(it._i);
     var ids = (it.places || []).filter(onMap);
     if (!ids.length) return;
-    if (it.kind === 'move' && ids.length > 1) { if (popup) popup.remove(); fitTo(ids); return; }
-    var compact = isNarrow();      // 휴대폰에서는 지도가 가려지지 않게 작은 이름표만 띄운다 (자세한 내용은 카드에 펼쳐진다)
-    flyToPlace(ids[0], { compact: compact });
-    openPopup(ids[0], { compact: compact, item: it, color: (dayInfo(it.date) || {}).color });
+    if (it.kind === 'move' && ids.length > 1) { if (popup) popup.remove(); hideSheet(); fitTo(ids); return; }
+    flyToPlace(ids[0], { sheet: true });
+    openPopup(ids[0], { item: it, color: (dayInfo(it.date) || {}).color });
+    showPlace(ids[0]);
   }
 
   /* ---------- 투어 ---------- */
@@ -717,13 +839,14 @@
     if (idx >= list.length) return false;
     state.tourIdx = idx;
     setPlayButton();
-    closeCards(null);                 // 투어 중에는 카드를 접어 목록을 간결하게 둔다
+    closeCards(null);
+    hideSheet();                      // 투어 중에는 지도만 보여 준다
     var s = list[idx];
     var el = highlight(s.item._i);
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     // 투어: 작은 이름표만 띄우고, 머무는 동안 장소 둘레를 돈다
-    flyToPlace(s.place, { compact: true, orbitMs: STAY_MS - 150 });
-    openPopup(s.place, { compact: true, item: s.item, color: (dayInfo(s.item.date) || {}).color });
+    flyToPlace(s.place, { orbitMs: STAY_MS - 150 });
+    openPopup(s.place, { item: s.item, color: (dayInfo(s.item.date) || {}).color });
     setTourStatus((idx + 1) + '/' + list.length + ' · ' + s.item.time + ' ' + place(s.place).name);
     return true;
   }
@@ -819,7 +942,7 @@
     if (!b) return;
     state.day = b.getAttribute('data-day');
     render(true);
-    $('panel').scrollTop = 0;
+    if (sheetMode === 'list') showList(); else hideSheet();
   });
   $('plan-toggle').addEventListener('click', function (e) {
     var b = e.target.closest('[data-plan]');
@@ -860,12 +983,8 @@
     if (e.target.closest('.day-cost')) openModal('비용 요약', costHtml());
   });
 
-  // 손잡이: 목록을 크게(지도를 작게) / 원래대로
-  $('grip').addEventListener('click', function () {
-    var big = $('app').classList.toggle('list-big');
-    this.setAttribute('aria-pressed', String(big));
-    this.setAttribute('aria-label', big ? '지도 크게 보기' : '목록 크게 보기');
-  });
+  $('btn-list').addEventListener('click', function () { if (sheetMode === 'list') hideSheet(); else showList(); });
+  $('sheet-close').addEventListener('click', hideSheet);
 
   $('tour-play').addEventListener('click', function () { if (state.playing) stopTour(); else playTour(); });
   $('tour-next').addEventListener('click', function () { stepTour(1); });
