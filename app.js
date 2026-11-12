@@ -544,7 +544,7 @@
   var flyToken = 0;
   function flyToPlace(id, opt) {
     if (!mapReady || !onMap(id)) return;
-    endFlight();
+    endFlight(); stopPlane3d();
     pauseFollow();
     opt = opt || {};
     var my = ++flyToken;
@@ -642,6 +642,8 @@
       el.addEventListener('click', function (e) {
         e.stopPropagation();
         stopTour();
+        var pk = id === 'mfm' && !is2d && !reducedMotion() ? planeKindFor(state.day) : null;
+        if (pk) { hideSheet(); endFlight(); flyToken++; playPlane3d(pk); return; }   // 첫날·마지막 날 공항을 누르면 착륙·이륙 장면
         flyToPlace(id, { sheet: true });
         openPopup(id);
         showPlace(id);
@@ -968,7 +970,7 @@
   /* 인천 표시는 지도가 아니라 화면 오른쪽 위(1시 방향)에 고정. 비행기와 점선은 그 자리와 '지금 화면의 마카오 공항'을 잇는다
    * → 지도를 움직이거나 투어로 카메라가 움직여도 인천은 늘 1시 방향 끝에 있다 */
   function flightFx() {
-    clearFlight();
+    clearFlight(); stopPlane3d();
     if (!mapReady || !onMap('mfm')) return;
     var firstDay = D.days[0].date, lastDay = D.days[D.days.length - 1].date;
     if (state.day !== firstDay && state.day !== lastDay) return;
@@ -1016,6 +1018,101 @@
     if (reducedMotion()) { endFlight(); return; }
     if (map.isMoving()) map.once('moveend', function () { setTimeout(start, 150); }); else setTimeout(start, 300);
   }
+  /* ---------- 🛬🛫 마카오 공항 활주로 3D 여객기 ----------
+   * 첫날(13:45 도착)은 북쪽에서 내려와 활주로 16 에 착륙, 마지막 날(14:55 출발)은 활주로 34 에서 북쪽으로 이륙.
+   * 투어가 공항에 멈출 때, 또는 그날 공항 마커를 누르면 나온다. 지도의 입체 건물 기능(fill-extrusion)으로 공중에 띄운 여객기다 */
+  var RWY = { n: [113.58611, 22.16374], s: [113.59670, 22.13501] };   // 활주로 북쪽 끝 · 남쪽 끝 (16/34)
+  var plane3d = { token: 0, raf: 0 };
+  var PLANE_SCALE = 2.6;   // 실제 크기(길이 약 60m)로는 너무 작아 보여 키운다
+  // 여객기 부품 [로컬 좌표(m) 다각형 (x 오른쪽, y 앞쪽), 아래 높이, 위 높이, 색]
+  var PLANE_PARTS = [
+    [[[-3, -30], [3, -30], [3, 22], [2, 27], [0, 30], [-2, 27], [-3, 22]], 2, 8, '#f7f8fa'],         // 동체
+    [[[-30, -6], [-3, 3], [3, 3], [30, -6], [30, -10], [3, -3], [-3, -3], [-30, -10]], 4, 5.2, '#d6dde3'],   // 주날개
+    [[[-11, -26], [-2, -22], [2, -22], [11, -26], [11, -29.5], [-11, -29.5]], 6.5, 7.4, '#d6dde3'],   // 꼬리 날개
+    [[[-0.7, -30], [0.7, -30], [0.7, -19], [-0.7, -21]], 8, 19, '#4fa3d9'],                            // 수직 꼬리 (하늘색)
+    [[[-12.5, -1], [-8.5, -1], [-8.5, 6], [-12.5, 6]], 1.6, 4.4, '#8a96a0'],                         // 엔진 왼쪽
+    [[[8.5, -1], [12.5, -1], [12.5, 6], [8.5, 6]], 1.6, 4.4, '#8a96a0'],                             // 엔진 오른쪽
+    [[[-3.1, 12], [3.1, 12], [3.1, 14], [-3.1, 14]], 2, 8.2, '#2f6fa8']                               // 동체 줄무늬
+  ];
+  function addPlane3dLayer() {
+    try {
+      map.addSource('plane3d', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({ id: 'plane3d-shadow', type: 'fill', source: 'plane3d', filter: ['==', ['get', 'shadow'], 1],
+        paint: { 'fill-color': '#000', 'fill-opacity': ['get', 'op'] } });
+      map.addLayer({ id: 'plane3d', type: 'fill-extrusion', source: 'plane3d', filter: ['!=', ['get', 'shadow'], 1],
+        paint: { 'fill-extrusion-color': ['get', 'c'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-opacity': 1 } });
+    } catch (e) { /* 여객기 없이 지도는 그대로 */ }
+  }
+  /* 활주로 축 위 거리 d(m, 북쪽 끝 0 → 남쪽 +)와 옆 거리 → 경도·위도 */
+  function rwyPoint(d, side) {
+    var k = 111320 * Math.cos(RWY.n[1] * Math.PI / 180);
+    var dx = (RWY.s[0] - RWY.n[0]) * k, dy = (RWY.s[1] - RWY.n[1]) * 111320, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+    var x = ux * d + uy * (side || 0), y = uy * d - ux * (side || 0);
+    return [RWY.n[0] + x / k, RWY.n[1] + y / 111320];
+  }
+  function rwyLength() { var k = 111320 * Math.cos(RWY.n[1] * Math.PI / 180); return Math.hypot((RWY.s[0] - RWY.n[0]) * k, (RWY.s[1] - RWY.n[1]) * 111320); }
+  function rwyHeading() { return bearingTo(RWY.n, RWY.s); }   // 활주로 16 방향 (북 → 남)
+  /* 여객기 위치(경도·위도), 진행 방향(도), 고도(m), 기수 들림(도) → 지도에 그릴 도형들 */
+  function planeFeatures(pos, hdg, alt, pitchDeg) {
+    var k = 111320 * Math.cos(pos[1] * Math.PI / 180), r = hdg * Math.PI / 180, S = PLANE_SCALE, tp = Math.tan((pitchDeg || 0) * Math.PI / 180);
+    var toLL = function (x, y) { var e = x * Math.cos(r) + y * Math.sin(r), n = -x * Math.sin(r) + y * Math.cos(r); return [pos[0] + e * S / k, pos[1] + n * S / 111320]; };
+    var out = [];
+    PLANE_PARTS.forEach(function (pt) {
+      var ring = pt[0].map(function (v) { return toLL(v[0], v[1]); }); ring.push(ring[0]);
+      var cy = pt[0].reduce(function (a, v) { return a + v[1]; }, 0) / pt[0].length, lift = cy * S * tp;   // 기수를 들면 앞쪽 부품이 더 높이
+      out.push({ type: 'Feature', properties: { b: alt + lift + pt[1] * S, h: alt + lift + pt[2] * S, c: pt[3] }, geometry: { type: 'Polygon', coordinates: [ring] } });
+    });
+    var sh = PLANE_PARTS.slice(0, 3).map(function (pt) { var ring = pt[0].map(function (v) { return toLL(v[0], v[1]); }); ring.push(ring[0]); return ring; });
+    sh.forEach(function (ring) { out.push({ type: 'Feature', properties: { shadow: 1, op: Math.max(0, .28 - alt / 900) }, geometry: { type: 'Polygon', coordinates: [ring] } }); });
+    return out;
+  }
+  function stopPlane3d() {
+    plane3d.token++; cancelAnimationFrame(plane3d.raf);
+    var src = mapReady && map.getSource('plane3d');
+    if (src) src.setData({ type: 'FeatureCollection', features: [] });
+  }
+  /* kind: 'land' | 'takeoff'. 끝나면 onDone. 걸리는 시간(ms)을 돌려준다 */
+  function playPlane3d(kind, onDone) {
+    stopPlane3d();
+    if (!mapReady || is2d || !map.getSource('plane3d')) return 0;
+    var my = plane3d.token, L = rwyLength(), H16 = rwyHeading(), src = map.getSource('plane3d');
+    var land = kind === 'land', DUR = 9000;
+    // 진행 거리(d, 활주로 북쪽 끝 기준)·고도·기수 각을 시간 t(0~1)에 따라
+    var path = land ? function (t) {
+      if (t < .62) { var u = t / .62; return { d: -2400 + (2750) * u, alt: 190 * Math.pow(1 - u, 1.15), pitch: 3 + 2 * u }; }   // 접근·착지 (약 3도 강하)
+      var v = (t - .62) / .38, e = 1 - Math.pow(1 - v, 2.2); return { d: 350 + 1500 * e, alt: 0, pitch: Math.max(0, 5 - v * 12) };   // 감속하며 활주
+    } : function (t) {
+      if (t < .5) { var u = t / .5; return { d: L - 150 - 1900 * u * u, alt: 0, pitch: u > .85 ? (u - .85) * 40 : 0 }; }   // 남쪽 끝에서 북쪽으로 가속
+      var v = (t - .5) / .5; return { d: L - 2050 - 2600 * v - 600 * v * v, alt: 260 * Math.pow(v, 1.3), pitch: 8 };   // 이륙·상승
+    };
+    var hdg = land ? H16 : (H16 + 180) % 360;
+    toast(land ? '🛬 13:45 KE2015 마카오 착륙 (인천 10:40 출발)' : '🛫 14:55 KE2016 이륙 → 인천 19:40 도착', DUR);
+    // 카메라: 여객기 뒤쪽 비스듬히 위에서, 활주로가 앞에 보이게 (화면 가운데는 여객기보다 조금 앞)
+    var camB = (hdg + (land ? -28 : 28) + 360) % 360, AHEAD = land ? 380 : 450;
+    var dir = land ? 1 : -1, camAt = function (f) { return rwyPoint(f.d + dir * AHEAD, 0); };
+    map.easeTo({ center: camAt(path(0)), zoom: 14.6, pitch: 66, bearing: camB, duration: 1400 });
+    var t0 = 0;
+    setTimeout(function () {
+      if (my !== plane3d.token) return;
+      t0 = performance.now();
+      (function frame(now) {
+        if (my !== plane3d.token) return;
+        var t = Math.min(1, (now - t0) / DUR), f = path(t), pos = rwyPoint(f.d, 0);
+        src.setData({ type: 'FeatureCollection', features: planeFeatures(pos, hdg, f.alt, f.pitch) });
+        map.jumpTo({ center: camAt(f), bearing: camB + (land ? 1 : -1) * t * 30, zoom: 14.6 + t * 0.6 });
+        if (t < 1) plane3d.raf = requestAnimationFrame(frame);
+        else setTimeout(function () { if (my === plane3d.token) { if (!land) stopPlane3d(); if (onDone) onDone(); } }, 600);
+      })(t0);
+    }, 1450);
+    return DUR + 2100;
+  }
+  /* 지금 고른 날이 첫날·마지막 날이고 공항이면 어떤 장면인지 */
+  function planeKindFor(day) {
+    if (day === D.days[0].date) return 'land';
+    if (day === D.days[D.days.length - 1].date) return 'takeoff';
+    return null;
+  }
+
   /* 일정 동선 둘레 r 미터 안쪽 영역 (선분마다 띠 + 장소마다 원) */
   function routeCorridor(r) {
     var polys = [], seen = {};
@@ -1213,6 +1310,7 @@
       map.on('moveend', spreadMarkers);
       addBeaconLayer();
       addRouteLayers();
+      addPlane3dLayer();
       addMeLayer();
       fitViewPadding();
       applyMode(false);
@@ -1322,8 +1420,15 @@
     var el = highlight(s.item._i);
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     // 투어: 작은 이름표만 띄우고, 머무는 동안 장소 둘레를 돈다
-    flyToPlace(s.place, { orbitMs: STAY_MS - 150, tour: true });
-    openPopup(s.place, { item: s.item, color: (dayInfo(s.item.date) || {}).color });
+    var pk = s.place === 'mfm' && !is2d && !reducedMotion() ? planeKindFor(s.item.date) : null;
+    if (pk) {                         // 첫날·마지막 날 공항: 활주로에서 3D 여객기 착륙·이륙
+      endFlight(); flyToken++; state.lastPlace = 'mfm';
+      state.hopMs = playPlane3d(pk) - FLY_MS - STAY_MS + 800;
+    } else {
+      stopPlane3d();
+      flyToPlace(s.place, { orbitMs: STAY_MS - 150, tour: true });
+      openPopup(s.place, { item: s.item, color: (dayInfo(s.item.date) || {}).color });
+    }
     setTourStatus((idx + 1) + '/' + list.length + ' · ' + s.item.time + ' ' + place(s.place).name);
     return true;
   }
