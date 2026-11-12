@@ -610,3 +610,35 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
   background: var(--card); color: var(--text);
   font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; text-decoration: none; cursor: pointer;
 }
+
+/* 예약 체크리스트 (한 줄 요약) */
+.bk-sum { margin: 0 0 10px; font-size: 16px; }
+.bk2 { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.bk2-check input { width: 22px; height: 22px; margin: 0; accent-color: #0f8a5f; }
+.bk2-main { flex: 1 1 auto; min-width: 0; }
+.bk2-title { margin: 0; font-size: 16px; font-weight: 700; }
+.bk2-lvl { font-size: 13px; }
+.bk2-key { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.bk2 details { margin-top: 4px; font-size: 14px; }
+.bk2 summary { color: var(--muted); font-size: 13px; cursor: pointer; }
+.bk2 details p { margin: 4px 0; }
+.bk2.done .bk2-title, .bk2.done .bk2-key { text-decoration: line-through; opacity: .55; }
+.btn.small { min-height: 38px; padding: 6px 12px; font-size: 14px; flex: 0 0 auto; }
+
+/* 비용 요약 (총액 크게) */
+.cost-big { padding: 12px 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); }
+.cost-big .fine { margin: 0; }
+.cost-total { margin: 4px 0 2px; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.cost-split { margin: 0; font-size: 15px; font-variant-numeric: tabular-nums; }
+.cost-days { margin: 4px 0; padding: 0; list-style: none; }
+.cost-days li { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.cd-day { font-weight: 700; color: var(--day-color); }
+.cd-sum { font-variant-numeric: tabular-nums; }
+.cost-tips { margin: 4px 0; padding-left: 4px; list-style: none; font-size: 15px; }
+.cost-tips li { margin: 5px 0; }
+.cost-more { margin-top: 14px; }
+.cost-more summary { color: var(--muted); font-size: 14px; cursor: pointer; }
+.cost-won { margin: 0 0 4px; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cost-rate { margin: 6px 0 0 !important; }
+.cd-sum { text-align: right; }
+.cd-sum small { display: block; color: var(--muted); font-size: 12px; }

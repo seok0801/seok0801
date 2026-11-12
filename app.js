@@ -60,6 +60,33 @@
   function onMap(id) { var p = place(id); return !!(p && !p.offMap && typeof p.lng === 'number' && typeof p.lat === 'number'); }
   function mopShort(c) { return c.min === c.max ? c.min.toLocaleString() : c.min.toLocaleString() + '~' + c.max.toLocaleString(); }
   function mop(c) { return 'MOP ' + mopShort(c); }
+  /* 원화 환산: 1 MOP = KRW.rate 원 (KRW.at 시점). 천 원 단위로 반올림 */
+  var KRW = { rate: (D.krw && D.krw.rate) || 0, at: (D.krw && D.krw.at) || '', live: false };
+  function wonOf(v) { return Math.round(v * KRW.rate / 1000) * 1000; }
+  function won(c) {
+    if (!KRW.rate) return '';
+    var a = wonOf(c.min), b = wonOf(c.max);
+    return '약 ' + (a === b ? a.toLocaleString() : a.toLocaleString() + '~' + b.toLocaleString()) + '원';
+  }
+  /* 그날 환율 받아 오기 (실패하면 data.js 의 값). 하루 한 번만 받아 이 휴대폰에 기억한다 */
+  function loadRate() {
+    var today = new Date().toISOString().slice(0, 10);
+    try {
+      var c = JSON.parse(localStorage.getItem('macau-krw') || 'null');
+      if (c && c.day === today && c.rate) { KRW.rate = c.rate; KRW.at = c.at; KRW.live = true; return; }
+    } catch (e) { /* 기억 못 해도 새로 받는다 */ }
+    if (!D.krw || !D.krw.liveUrl || !window.fetch) return;
+    fetch(D.krw.liveUrl).then(function (r) { return r.json(); }).then(function (j) {
+      var rate = j && j.rates && j.rates.KRW;
+      if (!rate) return;
+      var t = new Date(j.time_last_update_unix * 1000 + 9 * 3600 * 1000);   // 한국 시간
+      KRW.rate = Math.round(rate * 100) / 100;
+      KRW.at = t.toISOString().slice(0, 16).replace('T', ' ') + ' (한국 시간)';
+      KRW.live = true;
+      try { localStorage.setItem('macau-krw', JSON.stringify({ day: today, rate: KRW.rate, at: KRW.at })); } catch (e) { /* 무시 */ }
+      render(false);
+    }).catch(function () { /* 인터넷이 없거나 막히면 data.js 의 환율 */ });
+  }
   function isNarrow() { return window.innerWidth < 900; }      // 휴대폰처럼 좁은 화면인지
   function link(url, text, cls) {
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
@@ -237,7 +264,7 @@
     if (tIcon) chips.push(isMove ? '<span class="chip f-only">' + TRANSPORT[it.transport] + '</span>' : chip(tIcon, TRANSPORT[it.transport]));
     if (it.cost) {
       var opt = it.cost.optional ? ' (선택)' : '';
-      chips.push(chip('💰 ' + mopShort(it.cost) + opt, '💰 1가족 예상 ' + mop(it.cost) + opt));
+      chips.push(chip('💰 ' + mopShort(it.cost) + opt, '💰 1가족 예상 ' + mop(it.cost) + (KRW.rate ? ' (' + won(it.cost) + ')' : '') + opt));
     }
     var rw = rhythmWarning(it);
     if (rw) chips.push(chip('⚠️ 아이 리듬', '⚠️ 아이 리듬 주의 · ' + esc(rw), 'warn'));
@@ -306,7 +333,7 @@
       // 날짜 제목 + 그날 예상 비용(누르면 비용 요약)
       html += '<div class="day-head" style="--day-color:' + d.color + '"><h2>' + esc(d.label) +
         (d.summary ? ' <small>' + esc(d.summary) + '</small>' : '') + '</h2>' +
-        (c.max > 0 ? '<button type="button" class="day-cost" aria-label="이날 1가족 예상 비용 ' + mop(c) + ' · 비용 요약 열기">💰 ' + mop(c) + '</button>' : '') +
+        (c.max > 0 ? '<button type="button" class="day-cost" aria-label="이날 1가족 예상 비용 ' + mop(c) + ' ' + won(c) + ' · 비용 요약 열기">💰 ' + mop(c) + (KRW.rate ? ' · ' + won(c) : '') + '</button>' : '') +
         '</div>';
       var prep = (plan().prep || {})[date];
       if (prep && prep.length) {
@@ -1103,54 +1130,77 @@
     $('modal-close').focus();
   }
   function closeModal() { $('modal').hidden = true; }
+  /* 예약 체크: 누르면 이 휴대폰에 기억하고 목록을 다시 그린다 */
+  $('modal-body').addEventListener('change', function (e) {
+    var k = e.target.getAttribute && e.target.getAttribute('data-done');
+    if (!k) return;
+    var d = doneSet();
+    if (e.target.checked) d[k] = 1; else delete d[k];
+    try { localStorage.setItem(DONE_KEY, JSON.stringify(d)); } catch (err) { /* 기억 못 해도 화면에는 표시 */ }
+    var top = $('modal-body').scrollTop;
+    $('modal-body').innerHTML = bookingListHtml();
+    $('modal-body').scrollTop = top;
+  });
 
+  /* 예약 체크리스트: 한 줄에 아이콘·이름·날짜·핵심 금액·예약 버튼. 체크한 항목은 이 휴대폰에 기억한다 */
+  var DONE_KEY = 'macau-booked';
+  function doneSet() { try { return JSON.parse(localStorage.getItem(DONE_KEY) || '{}'); } catch (e) { return {}; } }
+  var LEVEL_ICON = { '필수': '❗', '권장': '⭐', '선택': '➕', '현장 구매': '🏷️' };
   function bookingListHtml() {
     var order = { '필수': 0, '권장': 1, '선택': 2, '현장 구매': 3 };
     var used = {};
     items('all').forEach(function (it) {
       if (!it.booking || !D.bookings[it.booking]) return;
-      (used[it.booking] = used[it.booking] || []).push(it.date.slice(5).replace('-', '/') + ' ' + it.time);
+      (used[it.booking] = used[it.booking] || []).push(it.date.slice(5).replace('-', '/'));
     });
     var keys = Object.keys(D.bookings).sort(function (a, b) {
       return (order[D.bookings[a].level] || 9) - (order[D.bookings[b].level] || 9);
     });
-    var html = '<p class="fine">예약이 필요하거나 미리 사 두면 좋은 항목입니다. 버튼을 누르면 새 탭으로 열립니다. 예약번호는 이 사이트에 적지 말고 각자 예약 앱에서 확인하세요.</p>';
+    var done = doneSet(), left = keys.filter(function (k) { return !done[k] && D.bookings[k].level !== '선택' && D.bookings[k].level !== '현장 구매'; }).length;
+    var html = '<p class="bk-sum">' + (left ? '⏳ 미리 할 예약 <strong>' + left + '개</strong> 남음' : '✅ 미리 할 예약 끝!') +
+      '<br><span class="fine">⭐ 권장 · ➕ 선택 · 🏷️ 현장 구매 · 🔒 예약번호는 여기 적지 마세요</span></p>';
     keys.forEach(function (k) {
       var b = D.bookings[k];
-      html += '<div class="bk"><h3>' + esc(b.name) + '</h3><p><span class="lvl' + (b.level === '필수' ? ' must' : '') + '">' + esc(b.level) + '</span>' +
-        (used[k] ? ' &nbsp;' + esc(used[k].join(', ')) : ' &nbsp;<span class="fine">(선택 사항 · 일정에는 없음)</span>') + '</p>';
-      if (b.note) html += '<p>' + esc(b.note) + '</p>';
-      if (b.linkVerified === false) html += '<p class="fine">※ 링크가 열리는지 자동 확인하지 못했습니다. 안 열리면 공식 사이트에서 찾아 주세요.</p>';
-      html += '<p>' + bookingButton(b) + '</p></div>';
+      html += '<div class="bk2' + (done[k] ? ' done' : '') + '">' +
+        '<label class="bk2-check"><input type="checkbox" data-done="' + k + '"' + (done[k] ? ' checked' : '') + ' aria-label="' + esc(b.short || b.name) + ' 예약 완료"></label>' +
+        '<div class="bk2-main"><p class="bk2-title">' + (b.icon || '🎫') + ' ' + esc(b.short || b.name) + ' <span class="bk2-lvl">' + (LEVEL_ICON[b.level] || '') + '</span></p>' +
+        '<p class="bk2-key">' + (used[k] ? '📅 ' + esc(used[k].filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) + ' · ' : '') + esc(b.key || '') + '</p>' +
+        (b.note ? '<details><summary>자세히</summary><p>' + esc(b.note) + '</p>' +
+          (b.linkVerified === false ? '<p class="fine">링크가 안 열리면 공식 사이트에서 찾아 주세요.</p>' : '') + '</details>' : '') +
+        '</div>' + link(b.url, b.buttonLabel ? '열기' : '예약', 'btn book small') + '</div>';
     });
     return html;
   }
 
+  /* 비용 요약: 총액 → 날짜별 합계 → 꼭 알아 둘 것 3가지. 항목별 내역은 '자세히'로 접어 둔다 */
   function costHtml() {
     var tot = { ticketMin: 0, ticketMax: 0, taxiMin: 0, taxiMax: 0, min: 0, max: 0 };
     var rows = '';
     D.days.forEach(function (d) {
       var c = dayCost(d.date);
       Object.keys(tot).forEach(function (k) { tot[k] += c[k]; });
-      rows += '<tr><td>' + esc(d.label) + '</td><td>' + mop({ min: c.ticketMin, max: c.ticketMax }).replace('MOP ', '') + '</td><td>' +
-        mop({ min: c.taxiMin, max: c.taxiMax }).replace('MOP ', '') + '</td><td>' + mop(c).replace('MOP ', '') + '</td></tr>';
+      rows += '<li><span class="cd-day" style="--day-color:' + d.color + '">' + esc(d.label) + '</span><span class="cd-sum">' +
+        (c.max ? mopShort(c) + (KRW.rate ? '<small>' + won(c) + '</small>' : '') : '0') + '</span></li>';
     });
-    var html = '<p><strong>1가족(어른 2명, 아이 1명) 기준 · 단위 MOP</strong><br><span class="fine">' + esc(D.costNote || '') + '</span></p>';
-    html += '<div class="table-wrap"><table class="cost"><thead><tr><th>날짜</th><th>시설 티켓</th><th>택시</th><th>합계</th></tr></thead><tbody>' + rows +
-      '</tbody><tfoot><tr><td>여행 전체</td><td>' + mop({ min: tot.ticketMin, max: tot.ticketMax }).replace('MOP ', '') + '</td><td>' +
-      mop({ min: tot.taxiMin, max: tot.taxiMax }).replace('MOP ', '') + '</td><td>' + mop(tot).replace('MOP ', '') + '</td></tr></tfoot></table></div>';
-    html += '<p class="fine">모든 금액은 현장·공식 사이트에서 최종 확인하세요. 식비는 포함하지 않았습니다.</p>';
-
-    html += '<h3 class="sec">항목별</h3><ul class="cost-list">';
+    var html = '<div class="cost-big"><p class="fine">👨‍👩‍👧 1가족 (어른 2 · 아이 1) · 식비 제외</p>' +
+      '<p class="cost-total">💰 MOP ' + mopShort(tot) + '</p>' +
+      (KRW.rate ? '<p class="cost-won">🇰🇷 ' + won(tot) + '</p>' : '') +
+      '<p class="cost-split">🎟️ 시설 ' + mopShort({ min: tot.ticketMin, max: tot.ticketMax }) + ' &nbsp;·&nbsp; 🚕 택시 ' + mopShort({ min: tot.taxiMin, max: tot.taxiMax }) + '</p>' +
+      (KRW.rate ? '<p class="fine cost-rate">💱 1 MOP = ' + KRW.rate.toFixed(2) + '원 · ' + esc(KRW.at) + ' 환율' + (KRW.live ? '' : ' (저장된 값)') + '</p>' : '') + '</div>';
+    html += '<h3 class="sec">📅 날짜별</h3><ul class="cost-days">' + rows + '</ul>';
+    html += '<h3 class="sec">💡 꼭 알아 둘 것</h3><ul class="cost-tips">' +
+      '<li>💵 택시는 <strong>현금</strong> (MOP·홍콩달러 1:1)</li>' +
+      '<li>🚌 호텔 셔틀은 무료 (구시가지·공항)</li>' +
+      '<li>👶 아이는 키 1m 미만 기준 (대부분 무료·할인)</li></ul>';
+    var list = '';
     items('all').forEach(function (it) {
       if (!it.cost) return;
-      html += '<li>' + esc(it.date.slice(5).replace('-', '/')) + ' ' + esc(it.title) + ' — <strong>' + mop(it.cost) + '</strong>' +
+      list += '<li>' + esc(it.date.slice(5).replace('-', '/')) + ' ' + esc(it.title) + ' — <strong>' + mop(it.cost) + '</strong> ' + won(it.cost) +
         (it.cost.optional ? ' (선택, 합계 제외)' : '') + (it.cost.note ? '<br><span class="fine">' + esc(it.cost.note) + '</span>' : '') + '</li>';
     });
-    html += '</ul>';
-    if (D.costExtras && D.costExtras.length) {
-      html += '<h3 class="sec">참고</h3><ul class="cost-list">' + D.costExtras.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
-    }
+    html += '<details class="cost-more"><summary>항목별 내역 · 계산 방법 자세히</summary><ul class="cost-list">' + list + '</ul>' +
+      (D.costExtras && D.costExtras.length ? '<ul class="cost-list">' + D.costExtras.map(function (x) { return '<li class="fine">' + esc(x) + '</li>'; }).join('') + '</ul>' : '') +
+      '<p class="fine">' + esc(D.costNote || '') + ' 현장·공식 사이트에서 최종 확인하세요.</p></details>';
     return html;
   }
 
@@ -1218,6 +1268,7 @@
   $('btn-booking').addEventListener('click', function () { openModal('예약 체크리스트', bookingListHtml()); });
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
   $('btn-mode').addEventListener('click', toggleMode);
+  loadRate();
   applyMode(false);
   $('modal-close').addEventListener('click', closeModal);
   $('modal').addEventListener('click', function (e) { if (e.target === $('modal')) closeModal(); });

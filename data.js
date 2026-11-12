@@ -205,39 +205,47 @@ window.TRIP_DATA = {
   /* ---------- 예약 링크 ----------
    * level: '필수'(빨간 버튼) / '권장' / '선택' / '현장 구매'
    * linkVerified: true = 링크가 열리는 것을 확인함 / false = 확인하지 못함 */
+  /* 예약 링크. icon·short·key 는 예약 체크리스트에 한 줄로 보이는 아이콘·짧은 이름·핵심(금액 단위 MOP), note 는 '자세히'를 눌러야 보이는 설명 */
   bookings: {
     cod: {
       name: '시티 오브 드림즈 키즈시티', level: '권장', linkVerified: true,
+      icon: '🧸', short: '키즈시티', key: '아이 180 · 어른 20',
       url: 'https://www.cityofdreamsmacau.com/kr/attractions/kids-city',
       note: '12/20~31 특별일 요금: 아이(1~17세) MOP 180, 어른 MOP 20. 페이지 안의 예매 버튼으로 온라인 구매.'
     },
     feast: {
       name: 'FEAST 뷔페 (런더너 마카오) 저녁 예약', level: '권장', linkVerified: false,
+      icon: '🍽️', short: 'FEAST 뷔페 저녁', key: '연말 붐빔 · ☎ 853-8113-1200',
       url: 'https://www.feastmacao.com/',
       note: '연말 저녁은 붐빕니다. 아이 요금 기준(나이·키)은 예약할 때 확인하세요. 전화 (853) 8113 1200.'
     },
     funzone: {
       name: '슈퍼 펀 존', level: '권장', linkVerified: true,
+      icon: '🎈', short: '슈퍼 펀 존', key: '아이 120 · 어른 120 · 🧦 양말',
       url: 'https://www.studiocity-macau.com/kr/attractions/super-fun-zone',
       note: '12/21~31 특별일 요금: 키 1m 미만 아이 MOP 120, 어른 MOP 120. 온라인 사전 예약 권장.'
     },
     wheel: {
       name: '8자 관람차 (골든 릴)', level: '선택', linkVerified: true,
+      icon: '🎡', short: '8자 관람차', key: '1인 100 · 현장 구매 가능',
       url: 'https://www.studiocity-macau.com/kr/attractions/golden-reel',
       note: '1인 MOP 100, 만 2세 미만만 무료. 현장 구매도 가능.'
     },
     panda: {
       name: '자이언트 판다관 입장권', level: '현장 구매', linkVerified: false, buttonLabel: '공식 사이트',
+      icon: '🐼', short: '판다관', key: '매표소 회차권 · 어른 10 안팎',
       url: 'https://www.macaupanda.org.mo',
       note: '매표소에서 회차권을 받습니다. 어른 MOP 10·12세 이하 무료로 알려져 있으나 무료라는 안내도 있어 현장 확인이 필요합니다.'
     },
     waterpark: {
       name: '스튜디오 시티 실내 워터파크', level: '권장', linkVerified: true,
+      icon: '🌊', short: '실내 워터파크', key: '어른 398 · 1m 미만 무료',
       url: 'https://www.studiocity-macau.com/kr/attractions/studio-city-water-park',
       note: '12월 겨울 요금: 어른 MOP 398, 아이(키 1~1.19m) MOP 258, 1m 미만 무료. 12/29(화)는 휴장.'
     },
     package: {
       name: '스튜디오 시티 4종 묶음 (펀타스틱 포)', level: '선택', linkVerified: true,
+      icon: '🎟️', short: '4종 묶음 (선택)', key: '1인 538 · 어른만 이득',
       url: 'https://www.studiocity-macau.com/offers/funtastic-four-package',
       note: '워터파크 + 관람차 + 슈퍼 펀 존 + 2D 영화, 1인 MOP 538 (어른·아이 같은 값). Melco Beyond 회원 전용, 5일 안에 사용. 어른은 따로 살 때(398+100+120=618)보다 80 쌉니다. 키 1m 미만 아이는 따로 사는 쪽이 쌉니다.'
     }
@@ -332,6 +340,11 @@ window.TRIP_DATA = {
   },
 
   /* ---------- 비용 요약에 보이는 설명 ---------- */
+  /* 원화 환산. 사이트가 열릴 때 liveUrl 에서 그날 환율을 받아 오고, 못 받으면 아래 rate(at 시점 값)를 씁니다 */
+  krw: {
+    rate: 165.44, at: '2026-11-12 09:02 (한국 시간)',
+    source: 'ExchangeRate-API', liveUrl: 'https://open.er-api.com/v6/latest/MOP'
+  },
   costNote: '아이는 키 1m 미만으로 가정했습니다. 2026년 11월에 확인한 공개 가격이며, 연말에는 요금이 달라질 수 있습니다.',
   costExtras: [
     '스튜디오 시티 4종 묶음(펀타스틱 포): 1인 MOP 538, Melco Beyond 회원 전용. 어른 2명이면 1,076으로, 따로 살 때 1,236(워터파크 398 + 관람차 100 + 슈퍼 펀 존 120)보다 160 쌉니다.',
