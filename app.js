@@ -98,9 +98,32 @@
   /* 그 장소를 구글 지도에서 여는 주소 (길찾기·리뷰·사진을 볼 수 있다) */
   function mapsLink(id) {
     var p = place(id);
-    var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.mapQuery || (p.lat + ',' + p.lng));
-    return link(url, '📍 구글 지도', 'btn');
+    var q = p.mapQuery || (p.lat + ',' + p.lng);
+    var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+    return gmLink(url, gmEmbed(q, p.lat, p.lng, 17), p.name, '📍 구글 지도', 'btn');
   }
+
+  /* 구글 지도: 버튼을 누르면 다른 화면으로 넘어가지 않고 지금 지도 위에 창으로 올라온다.
+   * 창 안은 키가 필요 없는 구글 지도 퍼가기 화면이고, '앱으로 열기'를 누르면 구글 지도 앱(또는 새 탭)으로 연다 */
+  function gmEmbed(q, lat, lng, z) {
+    return 'https://maps.google.com/maps?q=' + encodeURIComponent(q) + '&ll=' + lat + ',' + lng + '&z=' + z + '&hl=ko&output=embed';
+  }
+  function gmLink(url, embed, title, text, cls) {
+    return '<a class="' + cls + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" data-gm="' + esc(embed) + '" data-gm-title="' + esc(title) + '">' + esc(text) + '</a>';
+  }
+  function openGm(a) {
+    $('gm-title').textContent = a.getAttribute('data-gm-title') || '구글 지도';
+    $('gm-open').href = a.href;
+    $('gm-frame').src = a.getAttribute('data-gm');
+    $('gm').hidden = false;
+  }
+  function closeGm() { $('gm').hidden = true; $('gm-frame').src = 'about:blank'; }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[data-gm]');
+    if (!a) return;
+    e.preventDefault();
+    openGm(a);
+  });
 
   function reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   /* 두 지점 [경도, 위도] 사이의 방향(북쪽 0도, 시계 방향)과 거리(m) */
@@ -429,7 +452,7 @@
   function nearbyHtml(p) {
     return '<div class="row-chips"><span class="row-label">주변 찾기</span>' + NEARBY.map(function (n) {
       var url = 'https://www.google.com/maps/search/' + encodeURIComponent(n[2]) + '/@' + p.lat + ',' + p.lng + ',17z?hl=ko';
-      return '<a class="chip-sm" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="이 근처 ' + n[1] + ' 구글 지도에서 찾기">' + n[0] + ' ' + n[1] + '</a>';
+      return gmLink(url, gmEmbed(n[2] + ' near ' + p.lat + ',' + p.lng, p.lat, p.lng, 16), shortName(p.name) + ' 주변 ' + n[1], n[0] + ' ' + n[1], 'chip-sm');
     }).join('') + '</div>';
   }
 
@@ -539,6 +562,14 @@
   }
 
   var firstFit = true;
+  /* 지도 '가운데'를 위 메뉴(날짜)와 아래 버튼 줄 사이 빈 공간으로 맞춘다 → 장소·동선이 메뉴에 가리지 않는다 */
+  function fitViewPadding() {
+    if (!mapReady) return;
+    var r = $('map').getBoundingClientRect(), top = $('top').getBoundingClientRect(), bar = $('bar').getBoundingClientRect();
+    map.setPadding({ top: Math.max(0, Math.round(top.bottom - r.top) + 6), bottom: Math.max(0, Math.round(r.bottom - bar.top) + 6), left: 0, right: 0 });
+  }
+  window.addEventListener('resize', function () { setTimeout(fitViewPadding, 120); });
+
   function fitTo(ids) {
     if (!mapReady) return;
     pauseFollow();
@@ -553,7 +584,7 @@
     pts.forEach(function (p) { b.extend(p); });
     var wide = window.innerWidth >= 900;
     map.fitBounds(b, {
-      padding: wide ? { top: 110, bottom: 100, left: 90, right: 90 } : { top: 130, bottom: 110, left: 75, right: 75 },   // 위 날짜 줄·아래 버튼 줄과 펼친 마커가 가려지지 않게
+      padding: wide ? { top: 40, bottom: 40, left: 90, right: 90 } : { top: 40, bottom: 40, left: 70, right: 70 },   // 위·아래 메뉴만큼은 fitViewPadding 이 이미 비워 둔다   // 위 날짜 줄·아래 버튼 줄과 펼친 마커가 가려지지 않게
       pitch: tilt(55), bearing: turnTo(-20), maxZoom: 16.2, duration: dur
     });
   }
@@ -1068,6 +1099,7 @@
       addBeaconLayer();
       addRouteLayers();
       addMeLayer();
+      fitViewPadding();
       applyMode(false);
       updateMap(true);
       // 덜 그려진 지도가 보이지 않게, 준비가 끝나면 서서히 나타나게 한다
@@ -1506,6 +1538,7 @@
   $('btn-booking').addEventListener('click', function () { openModal('예약 체크리스트', bookingListHtml()); });
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
   $('btn-mode').addEventListener('click', toggleMode);
+  $('gm-close').addEventListener('click', closeGm);
   $('btn-locate').addEventListener('click', function () {
     if (!mapReady) { toast('지도를 불러온 뒤에 눌러 주세요.'); return; }
     if (me.watch == null) startLocate();

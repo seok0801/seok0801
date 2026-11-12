@@ -44,6 +44,16 @@
     <button type="button" id="btn-locate" class="locate" aria-label="내 위치 보기" aria-pressed="false">📍</button>
     <div id="toast" role="status" aria-live="polite" hidden></div>
 
+    <!-- 구글 지도 창: 지금 지도 위에 올라온다 (✕ 로 닫으면 보던 화면 그대로) -->
+    <section id="gm" aria-label="구글 지도" hidden>
+      <div id="gm-head">
+        <h2 id="gm-title">구글 지도</h2>
+        <a id="gm-open" class="btn small" href="#" target="_blank" rel="noopener noreferrer">앱으로 열기</a>
+        <button type="button" class="btn icon" id="gm-close" aria-label="구글 지도 닫기">✕</button>
+      </div>
+      <iframe id="gm-frame" title="구글 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </section>
+
     <!-- 아래에서 올라오는 창: 누른 장소의 여행 내용, 또는 그날 일정 목록 -->
     <section id="sheet" aria-label="여행 내용" hidden>
       <div id="sheet-head">
