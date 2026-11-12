@@ -270,6 +270,14 @@ window.TRIP_DATA = {
       url: 'https://www.studiocity-macau.com/kr/attractions/studio-city-water-park',
       note: '12월 겨울 요금: 어른 MOP 398, 아이(키 1~1.19m) MOP 258, 1m 미만 무료. 12/29(화)는 휴장.'
     },
+    insurance: {
+      name: '해외여행자보험 (클룩, 한국 거주자 전용)', level: '권장', linkVerified: true,
+      icon: '🛡️', short: '여행자보험', key: '가족 모두 · 출발 전 가입', when: '12/27~31',
+      kids: '아이도 각자 가입 (생년월일로 보험료가 정해짐)',
+      url: 'https://3ha.in/r/896124', aff: 'https://3ha.in/r/896124', affBy: '클룩',
+      note: '해외 의료비, 휴대품 손해, 수하물·항공기 지연, 여권 분실 등을 보장하는 상품입니다(분실은 제외). 24시간 한국어 긴급 지원이 있습니다. ' +
+        '여행지는 마카오(또는 전 세계), 기간은 12/27~31로 넣고, 아이까지 한 명씩 생년월일을 입력합니다. 출국 전에 가입해야 하며, 플랜별 보장 금액은 가입 화면에서 비교하세요.'
+    },
     esim: {
       name: '홍콩·마카오 LTE eSIM (유심사)', level: '권장', linkVerified: true,
       icon: '📶', short: 'eSIM (홍콩·마카오)', key: '5일 이용 · 지도·택시 앱용', when: '12/27~31',
