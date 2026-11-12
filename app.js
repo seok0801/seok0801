@@ -360,8 +360,11 @@
   /* opt.compact = 투어용 작은 이름표, opt.item = 이름표에 보일 일정, opt.color = 빛기둥 색 */
   /* ---------- 아래에서 올라오는 창(시트): 누른 장소의 여행 내용 / 그날 일정 목록 ---------- */
   var sheetMode = '';
+  var listScroll = 0;   // 일정 목록에서 장소로 넘어갈 때 보던 위치 (‹ 일정 으로 돌아오면 그 자리로)
   function openSheet(mode, title) {
+    if (sheetMode === 'list' && mode === 'place') listScroll = $('sheet-body').scrollTop;
     sheetMode = mode;
+    $('sheet-back').hidden = mode !== 'place';
     $('sheet').hidden = false;
     $('sheet').className = mode;
     $('sheet-title').textContent = title;
@@ -375,50 +378,56 @@
   /* 주변 찾기: 그 장소 둘레의 식당·카페·편의점·약국을 구글 지도(앱)에서 바로 연다. 키가 필요 없다 */
   var NEARBY = [['🍜', '식당', 'restaurants'], ['☕', '카페', 'cafe'], ['🏪', '편의점', 'convenience store'], ['💊', '약국', 'pharmacy']];
   function nearbyHtml(p) {
-    return '<div class="near"><span class="fine">주변 찾기 (구글 지도)</span>' + NEARBY.map(function (n) {
+    return '<div class="row-chips"><span class="row-label">주변 찾기</span>' + NEARBY.map(function (n) {
       var url = 'https://www.google.com/maps/search/' + encodeURIComponent(n[2]) + '/@' + p.lat + ',' + p.lng + ',17z?hl=ko';
-      return '<a class="chip-btn" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + n[0] + ' ' + n[1] + '</a>';
+      return '<a class="chip-sm" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="이 근처 ' + n[1] + ' 구글 지도에서 찾기">' + n[0] + ' ' + n[1] + '</a>';
     }).join('') + '</div>';
   }
 
   function placeHtml(id) {
     var p = place(id);
     var t = PLACE_TYPES[p.type] || { icon: '📍', label: '' };
-    var meta = [];
-    if (t.label) meta.push(t.label);
-    if (p.note) meta.push(p.note);
-    var html = meta.length ? '<p class="fine">' + esc(meta.join(' · ')) + '</p>' : '';
-    if (p.hours) html += '<p class="fine">🕒 ' + esc(p.hours) + '</p>';
-    html += nearbyHtml(p);
-    // 마커가 겹쳐 누르기 어려운 곳을 위해, 150m 안의 다른 장소로 바로 가는 버튼을 둔다
-    var near = viewPlaceIds().filter(function (o) { return o !== id && distanceM([p.lng, p.lat], [place(o).lng, place(o).lat]) < 150; });
-    if (near.length) {
-      html += '<div class="near"><span class="fine">가까운 곳</span>' + near.map(function (o) {
-        var ot = PLACE_TYPES[place(o).type] || { icon: '📍' };
-        return '<button type="button" class="chip-btn" data-place="' + o + '">' + ot.icon + ' ' + esc(place(o).name) + '</button>';
-      }).join('') + '</div>';
-    }
+    // 1) 장소 설명 한 줄 (종류 · 메모 · 영업시간)
+    var meta = [t.label, p.note].filter(Boolean).join(' · ');
+    var html = (meta || p.hours) ? '<p class="fine place-meta">' + esc(meta) + (p.hours ? (meta ? '<br>' : '') + '🕒 ' + esc(p.hours) : '') + '</p>' : '';
+    // 2) 이 장소에서 하는 일정 (가장 중요한 내용이라 먼저 보인다)
     var linked = {}, n = 0;
     viewDates().forEach(function (date) {
       items(date).forEach(function (it) {
         if (it.kind === 'move' || (it.places || []).indexOf(id) < 0) return;
         if (state.day === 'all') html += '<p class="fine day-tag">' + esc((dayInfo(date) || {}).label || '') + '</p>';
-        html += cardHtml(it, {}, linked).replace('class="card', 'class="card open static');
+        var c = cardHtml(it, {}, linked).replace('class="card', 'class="card open static');
+        // 창 제목과 같은 장소 이름 줄은 겹치므로 뺀다
+        c = c.replace('<p class="card-place place-line">' + esc(p.name) + '</p>', '');
+        html += c;
         n++;
       });
     });
     if (!n) html += '<div class="card-actions">' + (p.url ? link(p.url, p.urlLabel || '소개 페이지', 'btn') : '') + mapsLink(id) + '</div>';
+    // 3) 같은 건물·바로 옆의 다른 일정 장소 (마커가 겹쳐 누르기 어려울 때)
+    var near = viewPlaceIds().filter(function (o) { return o !== id && distanceM([p.lng, p.lat], [place(o).lng, place(o).lat]) < 150; });
+    if (near.length) {
+      html += '<div class="row-chips"><span class="row-label">가까운 일정</span>' + near.map(function (o) {
+        var ot = PLACE_TYPES[place(o).type] || { icon: '📍' };
+        return '<button type="button" class="chip-sm" data-place="' + o + '">' + ot.icon + ' ' + esc(shortName(place(o).name)) + '</button>';
+      }).join('') + '</div>';
+    }
+    // 4) 주변 가게 찾기 (구글 지도 앱)
+    html += nearbyHtml(p);
     if (p.verified === false) html += '<p class="fine">지도 위 위치는 건물 기준의 대략적인 표시입니다.</p>';
     return html;
   }
+  /* '딘타이펑 (스튜디오 시티)' → '딘타이펑' 처럼 괄호 설명을 뺀 짧은 이름 */
+  function shortName(name) { return String(name).replace(/\s*\([^)]*\)\s*$/, '') || name; }
   function showPlace(id) {
     var p = place(id);
     var t = PLACE_TYPES[p.type] || { icon: '📍' };
     $('place').innerHTML = placeHtml(id);
     openSheet('place', t.icon + ' ' + p.name);
   }
-  function showList() {
+  function showList(restore) {
     openSheet('list', state.day === 'all' ? '전체 일정' : (dayInfo(state.day) || {}).label + ' 일정');
+    if (restore) $('sheet-body').scrollTop = listScroll;
   }
 
   /* 지도 위 이름표. opt.item = 이름표에 보일 일정, opt.color = 빛기둥 색 */
@@ -1142,6 +1151,7 @@
 
   $('btn-list').addEventListener('click', function () { if (sheetMode === 'list') hideSheet(); else showList(); });
   $('sheet-close').addEventListener('click', hideSheet);
+  $('sheet-back').addEventListener('click', function () { if (popup) { popup.remove(); popup = null; } showList(true); });
   $('place').addEventListener('click', function (e) {     // '가까운 곳' 버튼 → 그 장소로
     var b = e.target.closest('[data-place]');
     if (!b) return;
