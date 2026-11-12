@@ -271,16 +271,18 @@ a { color: var(--accent); }
 /* ---------- 날짜 제목 · 준비물 ---------- */
 .day-head {
   display: flex;
+  flex-wrap: wrap;                 /* 비용 버튼이 길면 제목 아래 줄로 내려간다 */
   align-items: center;
   gap: 8px;
   margin: 16px 0 8px;
   padding-left: 10px;
   border-left: 5px solid var(--day-color, var(--accent));
 }
-.day-head h2 { flex: 1 1 auto; min-width: 0; margin: 0; font-size: 18px; line-height: 1.3; }
+.day-head h2 { flex: 1 1 12em; min-width: 0; margin: 0; font-size: 18px; line-height: 1.3; }
 .day-head h2 small { display: block; color: var(--muted); font-size: 14px; font-weight: 500; }
 .day-cost {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-width: 100%;
   min-height: 44px;
   padding: 6px 12px;
   border: 1px solid var(--line);
@@ -290,7 +292,9 @@ a { color: var(--accent); }
   font: inherit;
   font-size: 14px;
   font-weight: 600;
-  white-space: nowrap;
+  white-space: normal;             /* 원화까지 길면 줄을 바꾼다 */
+  text-align: left;
+  line-height: 1.35;
   cursor: pointer;
 }
 
@@ -763,3 +767,13 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .sos-tel { white-space: nowrap; border-color: #d1352b; color: #b42318; }
 
 #sheet, #modal-box, #gm { overscroll-behavior: contain; }
+
+/* 아주 좁은 휴대폰(360px 미만): 날짜 칸 글자·아래 버튼을 줄여 한 줄에 들어가게 */
+@media (max-width: 359px) {
+  .tab { white-space: nowrap; font-size: 14px; padding-left: 2px; padding-right: 2px; }
+  .tab .d { font-size: 15px; }
+  #bar { gap: 3px; padding-left: 6px; padding-right: 6px; }
+  #bar .btn { padding: 8px 6px; min-width: 34px; }
+  #bar .btn.icon { padding: 8px 3px; }
+  #btn-list span { display: none; }   /* '☰ 일정' → '☰' */
+}
