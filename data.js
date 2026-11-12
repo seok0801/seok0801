@@ -61,7 +61,7 @@ window.TRIP_DATA = {
   /* ---------- 날짜 (color = 그날 동선과 카드의 색) ---------- */
   days: [
     { date: '2026-12-27', label: '12/27(일)', color: '#d1451f', summary: '도착 · 윈 팰리스 야경' },
-    { date: '2026-12-28', label: '12/28(월)', color: '#1f6fc4', summary: '구시가지 · 타이파 · 베네시안' },
+    { date: '2026-12-28', label: '12/28(월)', color: '#1f6fc4', summary: '구시가지 · 타이파 · 곤돌라·에펠탑' },
     { date: '2026-12-29', label: '12/29(화)', color: '#0f8a5f', summary: 'W로 이동 · 키즈시티' },
     { date: '2026-12-30', label: '12/30(수)', color: '#8e44ad', summary: '판다 · 콜로안 · 워터파크 · 댄싱 워터' },
     { date: '2026-12-31', label: '12/31(목)', color: '#a86f00', summary: '귀국' }
@@ -622,11 +622,17 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-28', time: '15:30', end: '17:15', kind: 'activity', title: '베네시안·파리지앵 크리스마스 장식 구경', places: ['venetian'],
+          date: '2026-12-28', time: '15:40', end: '16:30', kind: 'activity', title: '파리지앵 에펠탑 37층 전망대', places: ['venetian'],
+          cost: { min: 176, max: 176, type: 'ticket', note: '어른 MOP 88 ×2 (공식). 아이 요금은 현장 확인' },
           tips: [
-            '베네시안과 파리지앵은 실내 통로로 이어져 있어 유모차로 비를 맞지 않고 간다.',
-            '17:15쯤 길 건너 런더너로 출발한다 (도보 약 10분).'
+            '베네시안에서 파리지앵까지 실내 통로로 이어져 있어 유모차로 약 10분.',
+            '전망대 운영 시간은 안내 사이트마다 달라(12:00 또는 10:00 개장) 현장에서 확인한다.',
+            '곤돌라 줄이 길어 늦어지면 다음 크리스마스 장식 구경을 줄인다.'
           ]
+        },
+        {
+          date: '2026-12-28', time: '16:30', end: '17:15', kind: 'activity', title: '파리지앵 크리스마스 장식 구경 후 런더너로', places: ['venetian'],
+          tips: ['17:15쯤 길 건너 런더너로 출발한다 (도보 약 10분).']
         },
         {
           date: '2026-12-28', time: '17:30', kind: 'meal', meal: 'dinner', title: '저녁: 햄튼 코트 뷔페 (런더너 그랜드 2층)', places: ['londoner'], booking: 'hampton',
