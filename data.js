@@ -247,10 +247,11 @@ window.TRIP_DATA = {
       note: '1인 MOP 100, 만 2세 미만만 무료. 현장 구매도 가능.'
     },
     panda: {
-      name: '자이언트 판다관 입장권', level: '현장 구매', linkVerified: false, buttonLabel: '공식 사이트',
-      icon: '🐼', short: '판다관', key: '매표소 회차권 · 어른 10 안팎',
-      url: 'https://www.macaupanda.org.mo',
-      note: '매표소에서 회차권을 받습니다. 어른 MOP 10·12세 이하 무료로 알려져 있으나 무료라는 안내도 있어 현장 확인이 필요합니다.'
+      name: '자이언트 판다관 입장권', level: '현장 구매', linkVerified: true, buttonLabel: '관광청 안내',
+      icon: '🐼', short: '판다관', key: '현장 회차권 · 무료 또는 어른 10 · ☎ 2833 7676',
+      url: 'https://www.macaotourism.gov.mo/ko/sightseeing/other-attractions/macao-giant-panda-pavilion',
+      note: '매표소에서 입장 회차권을 받습니다. 요금은 어른 MOP 10(아이 무료)이라는 안내와 2021년부터 무료(온라인 예약)라는 정부 발표가 함께 있어 현장 확인이 필요합니다. ' +
+        '판다관 자체 사이트(macaupanda.org.mo)는 열리지 않을 때가 있어 마카오 관광청 안내로 연결했습니다. 운영 시간·휴관일 문의: 시민 서비스 전화 2833 7676.'
     },
     waterpark: {
       name: '스튜디오 시티 실내 워터파크', level: '권장', linkVerified: true,
