@@ -1187,7 +1187,7 @@
     var done = doneSet(), left = keys.filter(function (k) { return !done[k] && D.bookings[k].level !== '선택' && D.bookings[k].level !== '현장 구매'; }).length;
     var html = '<p class="bk-sum">' + (left ? '⏳ 미리 할 예약 <strong>' + left + '개</strong> 남음' : '✅ 미리 할 예약 끝!') +
       '<br><span class="fine">⭐ 권장 · ➕ 선택 · 🏷️ 현장 구매 · 🔒 예약번호는 여기 적지 마세요</span>' +
-      '<br><span class="fine">🔗 클룩·마이리얼트립 버튼은 제휴 링크입니다. 이 링크로 예약하면 사이트를 만든 사람이 수수료를 받을 수 있습니다.</span></p>';
+      '<br><span class="fine">🔗 판매처(클룩·마이리얼트립·더라운지)가 표시된 버튼은 제휴 링크입니다. 이 링크로 예약하면 사이트를 만든 사람이 수수료를 받을 수 있습니다.</span></p>';
     keys.forEach(function (k) {
       var b = D.bookings[k];
       html += '<div class="bk2' + (done[k] ? ' done' : '') + '">' +

@@ -212,13 +212,14 @@ window.TRIP_DATA = {
     cod: {
       name: '시티 오브 드림즈 키즈시티', level: '권장', linkVerified: true,
       icon: '🧸', short: '키즈시티', key: '아이 180 · 어른 20',
-      aff: 'https://3ha.in/r/895148', affBy: '클룩',
+      aff: 'https://3ha.in/r/895272', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/kr/attractions/kids-city',
       note: '12/20~31 특별일 요금: 아이(1~17세) MOP 180, 어른 MOP 20. 페이지 안의 예매 버튼으로 온라인 구매.'
     },
     dancingwater: {
       name: '하우스 오브 댄싱 워터 (시티 오브 드림즈 수상 공연)', level: '선택', linkVerified: true,
       icon: '🎭', short: '댄싱 워터 공연 (선택)', key: '어른 698~ · 3세 미만 무릎 무료',
+      aff: 'https://3ha.in/r/895307', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water',
       note: '좌석 요금(공식): 갤러리 MOP 698 · 시그니처 898 · 그랜드 1,098 · 프리미엄 1,298. 어른 2명 가장 싼 좌석이면 MOP 1,396. ' +
         '만 3세 미만은 좌석 없이 어른 무릎에 앉으면 무료(어른 1명당 아이 1명, 신분증 필요)로 판매처들이 안내합니다. 기준 나이를 "만 2세 이하"로 적은 곳도 있어 예매 때 확인하세요. ' +
@@ -226,8 +227,9 @@ window.TRIP_DATA = {
         '큰 소리·불꽃·안개·물 튀김 효과가 있고 6세 미만에게는 권장하지 않는다는 안내가 있습니다. 앞줄은 물이 튈 수 있습니다. 지금 일정에는 넣지 않았습니다.'
     },
     hampton: {
-      name: '햄튼 코트 저녁 뷔페 (런더너 그랜드 2층)', level: '권장', linkVerified: true, buttonLabel: '공식 안내',
+      name: '햄튼 코트 저녁 뷔페 (런더너 그랜드 2층)', level: '권장', linkVerified: true,
       icon: '🍽️', short: '햄튼 코트 뷔페 저녁', key: '어른 988 · 4세 미만 무료 · ☎ 8118 8822',
+      aff: 'https://3ha.in/r/895226', affBy: '클룩', affNote: '클룩 이용권을 사도 12/28 저녁 자리는 전화(+853 8118 8822)로 한 번 더 확인하세요. 공식 안내상 저녁 예약은 전화로만 받습니다.',
       url: 'https://www.londonermacao.com/macau-restaurants/hampton-court.html',
       note: '쉐라톤 그랜드가 런더너 그랜드로 바뀌며 생긴 저녁 뷔페로, 예전 FEAST 대신 이곳을 예약합니다. 공식 요금: 어른 MOP 988, 아이(만 4~12세 미만) 498, 만 4세 미만 무료, 봉사료 10% 별도 → 어른 2명 약 MOP 2,174. ' +
         '저녁 17:30~22:30(금·토·일·공휴일 ~23:00). 저녁 뷔페 예약은 전화만 받는다고 안내되어 있습니다: +853 8118 8822. 복장은 스마트 캐주얼.'
@@ -256,7 +258,7 @@ window.TRIP_DATA = {
     waterpark: {
       name: '스튜디오 시티 실내 워터파크', level: '권장', linkVerified: true,
       icon: '🌊', short: '실내 워터파크', key: '어른 398 · 1m 미만 무료',
-      aff: 'https://3ha.in/r/895145', affBy: '클룩',
+      aff: 'https://3ha.in/r/895274', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/studio-city-water-park',
       note: '12월 겨울 요금: 어른 MOP 398, 아이(키 1~1.19m) MOP 258, 1m 미만 무료. 12/29(화)는 휴장.'
     },
@@ -269,14 +271,30 @@ window.TRIP_DATA = {
     glpbreakfast: {
       name: '그랜드 리스보아 팰리스 조식 뷔페 (더 그랜드 뷔페)', level: '선택', linkVerified: true,
       icon: '🍳', short: '호텔 조식 뷔페', key: '객실에 조식 포함이면 필요 없음', when: '12/28·29',
-      url: 'https://3ha.in/r/895169', aff: 'https://3ha.in/r/895169', affBy: '클룩',
+      url: 'https://3ha.in/r/895275', aff: 'https://3ha.in/r/895275', affBy: '클룩',
       note: '객실 예약에 조식이 포함되어 있는지 먼저 확인하세요. 포함이면 따로 살 필요가 없습니다.'
     },
     pickup: {
       name: '마카오 국제공항 픽업·샌딩', level: '선택', linkVerified: true,
       icon: '🚐', short: '공항 픽업·샌딩', key: '무료 셔틀 대신 · 견적 확인', when: '12/27·31',
-      url: 'https://3ha.in/r/895170', aff: 'https://3ha.in/r/895170', affBy: '클룩',
+      url: 'https://3ha.in/r/895276', aff: 'https://3ha.in/r/895276', affBy: '클룩',
       note: '공항↔호텔 무료 셔틀 대신 쓸 수 있는 차량입니다. 짐과 유모차가 많을 때 편합니다. 날짜·방향·호텔을 넣고 견적을 확인하세요.'
+    },
+    icnlounge: {
+      name: '인천공항 제2터미널 라운지 (출국일 아침)', level: '선택', linkVerified: true, buttonLabel: '라운지 비교', 
+      icon: '🛋️', short: '인천 T2 라운지 (출국일)', key: '1인 약 3.5만 원~ · 카드 혜택 먼저 확인',
+      aff: 'https://3ha.in/r/895305', affBy: '더라운지',
+      url: 'https://www.card-gorilla.com/contents/detail/4176',
+      note: 'KE2015(대한항공)는 인천공항 제2터미널에서 출발합니다. 이코노미 승객은 대한항공 라운지 대신 유료·카드 라운지(마티나 라운지 등)를 씁니다. ' +
+        '1회 이용권은 판매처 기준 1인 약 3만 5천 원부터이고, 신용카드 무료 혜택(PP카드 등)이 있으면 그 카드를 먼저 확인하세요. ' +
+        '아이 요금 기준은 확인하지 못해 라운지 입구나 판매처에서 확인이 필요합니다. 출국일 아침에는 붐벼 대기가 생길 수 있습니다.'
+    },
+    mfmlounge: {
+      name: '마카오 공항 플라자 프리미엄 라운지 (귀국일)', level: '선택', linkVerified: true, buttonLabel: '공식 안내',
+      icon: '🛋️', short: '마카오 공항 라운지 (귀국일)', key: '출발 전 3시간 반 대기용 · 만 2세 미만만 무료',
+      url: 'https://www.plazapremiumlounge.com/en-uk/find/china-regions/macau/macau/macau-international-airport/departures-mezzanine-airside-level',
+      note: '12/31은 공항 도착(11:15)부터 출발(14:55)까지 약 3시간 반이라, 점심과 아이 쉬는 곳으로 쓰기 좋습니다. 9번 게이트 근처 출국장 중층, 05:00~02:00 운영(공식). ' +
+        '공식 안내상 만 2세 미만만 무료라 두 아이(25·35개월)는 요금이 붙을 수 있습니다. 판매처 요금은 1인 약 미화 45달러(3시간)부터로 제각각이니 예약 때 확인하세요. 카드 라운지 혜택도 먼저 확인하세요.'
     },
     package: {
       name: '스튜디오 시티 4종 묶음 (펀타스틱 포)', level: '선택', linkVerified: true,
@@ -414,6 +432,7 @@ window.TRIP_DATA = {
       prep: {
         '2026-12-27': [
           '여권. 입국 때 받는 체류허가서 종이는 여권에 끼워 보관 (W 체크인 때 필요)',
+          '라운지 이용권 또는 무료 라운지 카드 (PP카드 등)',
           '택시용 현금 (MOP 또는 홍콩달러, 1:1 통용)',
           '아이 겉옷 (저녁 분수쇼는 쌀쌀함)'
         ],
@@ -437,7 +456,7 @@ window.TRIP_DATA = {
           '겉옷 (콜로안 야외석은 쌀쌀함)'
         ],
         '2026-12-31': [
-          '여권, 전날 확인한 셔틀 시간표',
+          '여권, 전날 확인한 셔틀 시간표, 라운지 이용권·카드',
           '기내 낮잠용 아이 담요와 간식',
           '남은 MOP는 공항에서 쓰기 (한국에서 바꾸기 어려움)'
         ]
@@ -445,6 +464,10 @@ window.TRIP_DATA = {
 
       items: [
         /* ===== 12/27(일) 도착 ===== */
+        {
+          date: '2026-12-27', time: '08:30', kind: 'meal', title: '인천공항 T2 라운지에서 아침·휴식 (선택)', places: ['icn'], booking: 'icnlounge',
+          tips: ['출국 수속과 보안 검색을 마친 뒤 라운지로 간다. 탑승 시작(약 10:00) 전에 기저귀를 갈고 화장실을 다녀온다.']
+        },
         { date: '2026-12-27', time: '10:40', kind: 'flight', title: '인천 출발 KE2015', places: ['icn'] },
         {
           date: '2026-12-27', time: '13:45', kind: 'flight', title: '마카오 도착', places: ['mfm'],
@@ -684,8 +707,11 @@ window.TRIP_DATA = {
           tips: ['남은 MOP는 한국에서 바꾸기 어려우니 공항에서 쓴다.']
         },
         {
-          date: '2026-12-31', time: '12:00', kind: 'meal', title: '공항 점심 (기내에서 낮잠)', places: ['mfm'],
-          tips: ['기내 낮잠용으로 아이 담요와 간식을 챙긴다.']
+          date: '2026-12-31', time: '12:00', kind: 'meal', title: '공항 점심·휴식 (라운지 선택, 기내에서 낮잠)', places: ['mfm'], booking: 'mfmlounge',
+          tips: [
+            '기내 낮잠용으로 아이 담요와 간식을 챙긴다.',
+            '라운지를 쓰면 점심과 쉬는 곳이 한 번에 해결된다. 9번 게이트 근처 출국장 중층.'
+          ]
         },
         { date: '2026-12-31', time: '14:55', kind: 'flight', title: '마카오 출발 KE2016', places: ['mfm'] },
         {
