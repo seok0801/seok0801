@@ -476,7 +476,7 @@
     pts.forEach(function (p) { b.extend(p); });
     var wide = window.innerWidth >= 900;
     map.fitBounds(b, {
-      padding: wide ? { top: 90, bottom: 70, left: 70, right: 70 } : { top: 70, bottom: 40, left: 40, right: 40 },
+      padding: wide ? { top: 110, bottom: 100, left: 90, right: 90 } : { top: 130, bottom: 110, left: 75, right: 75 },   // 위 날짜 줄·아래 버튼 줄과 펼친 마커가 가려지지 않게
       pitch: 55, bearing: -20, maxZoom: 16.2, duration: 1800
     });
   }
@@ -519,6 +519,7 @@
       el.setAttribute('role', 'button');          // 화면 읽기 프로그램이 장소 이름을 읽도록
       el.setAttribute('aria-label', p.name);
     });
+    spreadMarkers();
 
     // 동선 선: 고른 날짜는 진하게, 나머지는 흐리게
     var feats = D.days.map(function (d) {
@@ -534,6 +535,31 @@
     dashUntil = Date.now() + 8000;
 
     if (moveCamera) fitTo(ids);
+  }
+
+  /* 화면에서 서로 겹치는 마커(같은 건물 안의 일정 등)는 원래 자리 둘레로 동그랗게 펼쳐 모두 보이게 한다 */
+  var SPREAD_PX = 34;
+  function spreadMarkers() {
+    if (!mapReady) return;
+    var ids = Object.keys(markers), pts = {}, used = {};
+    ids.forEach(function (id) { pts[id] = map.project(markers[id].getLngLat()); });
+    ids.forEach(function (id) {
+      if (used[id]) return;
+      var group = [id]; used[id] = true;
+      ids.forEach(function (o) {
+        if (used[o]) return;
+        if (group.some(function (g) { return Math.hypot(pts[g].x - pts[o].x, pts[g].y - pts[o].y) < SPREAD_PX; })) { group.push(o); used[o] = true; }
+      });
+      if (group.length === 1) { markers[id].setOffset([0, 0]); return; }
+      var cx = 0, cy = 0;
+      group.forEach(function (g) { cx += pts[g].x; cy += pts[g].y; });
+      cx /= group.length; cy /= group.length;
+      var r = 16 + group.length * 6;
+      group.forEach(function (g, i) {
+        var a = -Math.PI / 2 + i * 2 * Math.PI / group.length;
+        markers[g].setOffset([cx + Math.cos(a) * r - pts[g].x, cy + Math.sin(a) * r - pts[g].y]);
+      });
+    });
   }
 
   function add3dBuildings() {
@@ -721,7 +747,8 @@
       var out = [];
       for (var i = 0; i < pts.length; i++) {
         var a = pts[i], b = pts[(i + 1) % pts.length];
-        out.push([a[0] * .75 + b[0] * .25, a[1] * .75 + b[1] * .25], [a[0] * .25 + b[0] * .75, a[1] * .25 + b[1] * .75]);
+        var wa = a[2] == null ? 1 : a[2], wb = b[2] == null ? 1 : b[2];
+        out.push([a[0] * .75 + b[0] * .25, a[1] * .75 + b[1] * .25, wa * .75 + wb * .25], [a[0] * .25 + b[0] * .75, a[1] * .25 + b[1] * .75, wa * .25 + wb * .75]);
       }
       pts = out;
     }
@@ -735,7 +762,8 @@
     return pts.map(function (p, i) {
       var a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n];
       var dx = (b[0] - a[0]) * k, dy = (b[1] - a[1]) * 111320, d = Math.sqrt(dx * dx + dy * dy) || 1;
-      return [p[0] + sign * dy / d * m / k, p[1] - sign * dx / d * m / 111320];
+      var mm = m * (p[2] == null ? 1 : p[2]);    // 땅이 맞닿은 쪽(세 번째 값 0)은 흐리지 않고 바로 끊는다
+      return [p[0] + sign * dy / d * mm / k, p[1] - sign * dx / d * mm / 111320];
     });
   }
   function addAreaMask() {
@@ -744,12 +772,21 @@
     try {
       var base = smoothRing(ring, 4), world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
       MASK_FADE_M.forEach(function (m, i) {
-        var hole = growPoints(base, m); hole.push(hole[0]);
+        var hole = growPoints(base, m).map(function (p) { return [p[0], p[1]]; }); hole.push(hole[0]);
         var id = 'tour-mask-' + i, last = i === MASK_FADE_M.length - 1;
         map.addSource(id, { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, hole] } } });
         map.addLayer({ id: id, type: 'fill', source: id, paint: { 'fill-color': MASK_COLOR, 'fill-opacity': last ? 1 : .22, 'fill-antialias': false } });
       });
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
+  }
+
+  /* 바탕 지도의 글자가 3D 건물에 묻히지 않게, 글자 층을 건물 위(바깥 덮개 바로 아래)로 올린다 */
+  function liftBaseLabels() {
+    try {
+      var before = map.getLayer('tour-mask-0') ? 'tour-mask-0' : undefined;
+      (map.getStyle().layers || []).filter(function (l) { return l.type === 'symbol' && l.id.indexOf('tour-') !== 0; })
+        .forEach(function (l) { map.moveLayer(l.id, before); });
+    } catch (e) { /* 못 옮겨도 지도는 그대로 쓴다 */ }
   }
 
   /* 주변 정보: 일정에는 없지만 알아 두면 좋은 호텔·볼거리·경전철역·병원을 한글 이름으로 지도에 적는다 */
@@ -856,7 +893,9 @@
       add3dBuildings();
       localizeLabels();
       addAreaMask();
+      liftBaseLabels();
       addAroundLayer();
+      map.on('moveend', spreadMarkers);
       addBeaconLayer();
       addRouteLayers();
       updateMap(true);
