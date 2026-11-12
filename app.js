@@ -856,9 +856,9 @@
   }
 
   /* 마카오 바깥(헝친·주하이)은 바다색으로 덮는다. 바다와 같은 색이라 경계선이 보이지 않고, 마카오만 섬처럼 남는다 */
-  /* 마카오 땅만 색으로 보이게: 바다와 마카오 바깥은 같은 아주 옅은 바탕색, 해안선만 가는 하늘색 선으로 */
-  var SEA_COLOR = '#f2f6f8';
-  var MASK_COLOR = SEA_COLOR;
+  /* 바다는 가운데 물길과 바깥까지 모두 하늘색으로 남기고, 마카오 밖의 땅(헝친·주하이)만 연회색으로 흐리게 칠한다 */
+  var SEA_COLOR = '#aed6e8';
+  var MASK_COLOR = '#e1e3e3';
   function addAreaMask() {
     var ring = D.map.area;
     if (!ring || ring.length < 4) return;
@@ -866,12 +866,20 @@
       var hole = ring.map(function (p) { return [p[0], p[1]]; });
       var world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
       map.addSource('tour-mask', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, hole] } } });
-      // 해안선: 물 영역의 테두리를 가는 하늘색 선으로 (마카오 바깥은 아래 덮개가 가린다)
-      var vsrc = null;
-      (map.getStyle().layers || []).forEach(function (l) { if (!vsrc && l['source-layer'] === 'water') vsrc = l.source; });
-      if (vsrc) map.addLayer({ id: 'tour-coast', type: 'line', source: vsrc, 'source-layer': 'water',
-        paint: { 'line-color': '#8dbbd3', 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.8, 16, 1.6] } });
-      map.addLayer({ id: 'tour-mask-0', type: 'fill', source: 'tour-mask', paint: { 'fill-color': MASK_COLOR, 'fill-antialias': false } });
+      // 바깥 땅 덮개는 바다(물) 층 바로 아래에 둔다 → 바깥 땅은 회색, 바다는 그 위에 그대로 하늘색
+      var waterId = null;
+      (map.getStyle().layers || []).forEach(function (l) { if (!waterId && l.type === 'fill' && l['source-layer'] === 'water') waterId = l.id; });
+      map.addLayer({ id: 'tour-mask-0', type: 'fill', source: 'tour-mask', paint: { 'fill-color': MASK_COLOR, 'fill-antialias': false } }, waterId || undefined);
+      // 바깥의 도로·글자는 그리지 않는다 (마카오 영역 안에 있는 것만)
+      var inside = ['within', { type: 'Polygon', coordinates: [hole] }];
+      (map.getStyle().layers || []).forEach(function (l) {
+        if (l.id.indexOf('tour-') === 0) return;
+        var sl = l['source-layer'];
+        if (l.type === 'symbol' || (l.type === 'line' && /transportation|aeroway|boundary/.test(sl || ''))) {
+          var f = l.filter;
+          try { map.setFilter(l.id, f ? ['all', f, inside] : inside); } catch (e) { /* 이 층은 그대로 둔다 */ }
+        }
+      });
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
   }
 
@@ -909,9 +917,8 @@
   /* 바탕 지도의 글자가 3D 건물에 묻히지 않게, 글자 층을 건물 위(바깥 덮개 바로 아래)로 올린다 */
   function liftBaseLabels() {
     try {
-      var before = map.getLayer('tour-mask-0') ? 'tour-mask-0' : undefined;
       (map.getStyle().layers || []).filter(function (l) { return l.type === 'symbol' && l.id.indexOf('tour-') !== 0; })
-        .forEach(function (l) { map.moveLayer(l.id, before); });
+        .forEach(function (l) { map.moveLayer(l.id); });   // 맨 위로 (이후에 더하는 동선·이름표는 그 위)
     } catch (e) { /* 못 옮겨도 지도는 그대로 쓴다 */ }
   }
 
