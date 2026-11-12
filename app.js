@@ -217,8 +217,13 @@
 
   function bookingButton(b, small) {
     var must = b.level === '필수';
-    var label = b.buttonLabel || '예약하기';
-    return link(b.url, label + (must ? ' (필수)' : ''), 'btn book' + (must ? ' must' : '') + (small ? ' small' : ''));
+    var label = b.aff ? '예약하기 (' + b.affBy + ')' : (b.buttonLabel || '예약하기');
+    return affLink(b.aff || b.url, label + (must ? ' (필수)' : ''), 'btn book' + (must ? ' must' : '') + (small ? ' small' : ''), !!b.aff);
+  }
+  /* 제휴 링크는 검색엔진에 광고 링크임을 알린다 (rel="sponsored") */
+  function affLink(url, text, cls, sponsored) {
+    var h = link(url, text, cls);
+    return sponsored ? h.replace('rel="noopener noreferrer"', 'rel="sponsored noopener noreferrer"') : h;
   }
 
   /* ---------- 화면 그리기 ---------- */
@@ -1181,16 +1186,20 @@
     });
     var done = doneSet(), left = keys.filter(function (k) { return !done[k] && D.bookings[k].level !== '선택' && D.bookings[k].level !== '현장 구매'; }).length;
     var html = '<p class="bk-sum">' + (left ? '⏳ 미리 할 예약 <strong>' + left + '개</strong> 남음' : '✅ 미리 할 예약 끝!') +
-      '<br><span class="fine">⭐ 권장 · ➕ 선택 · 🏷️ 현장 구매 · 🔒 예약번호는 여기 적지 마세요</span></p>';
+      '<br><span class="fine">⭐ 권장 · ➕ 선택 · 🏷️ 현장 구매 · 🔒 예약번호는 여기 적지 마세요</span>' +
+      '<br><span class="fine">🔗 클룩·마이리얼트립 버튼은 제휴 링크입니다. 이 링크로 예약하면 사이트를 만든 사람이 수수료를 받을 수 있습니다.</span></p>';
     keys.forEach(function (k) {
       var b = D.bookings[k];
       html += '<div class="bk2' + (done[k] ? ' done' : '') + '">' +
         '<label class="bk2-check"><input type="checkbox" data-done="' + k + '"' + (done[k] ? ' checked' : '') + ' aria-label="' + esc(b.short || b.name) + ' 예약 완료"></label>' +
-        '<div class="bk2-main"><p class="bk2-title">' + (b.icon || '🎫') + ' ' + esc(b.short || b.name) + ' <span class="bk2-lvl">' + (LEVEL_ICON[b.level] || '') + '</span></p>' +
-        '<p class="bk2-key">' + (used[k] ? '📅 ' + esc(used[k].filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) + ' · ' : '') + esc(b.key || '') + '</p>' +
+        '<div class="bk2-main"><p class="bk2-title">' + (b.icon || '🎫') + ' ' + esc(b.short || b.name) + ' <span class="bk2-lvl">' + (LEVEL_ICON[b.level] || '') + '</span>' +
+          (b.affBy ? ' <span class="bk2-by">' + esc(b.affBy) + '</span>' : '') + '</p>' +
+        '<p class="bk2-key">' + (used[k] ? '📅 ' + esc(used[k].filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) + ' · ' : b.when ? '📅 ' + esc(b.when) + ' · ' : '') + esc(b.key || '') + '</p>' +
+        (b.affNote ? '<p class="bk2-warn">⚠️ ' + esc(b.affNote) + '</p>' : '') +
         (b.note ? '<details><summary>자세히</summary><p>' + esc(b.note) + '</p>' +
+          (b.aff && b.url !== b.aff ? '<p>' + link(b.url, '🌐 공식 사이트', '') + '</p>' : '') +
           (b.linkVerified === false ? '<p class="fine">링크가 안 열리면 공식 사이트에서 찾아 주세요.</p>' : '') + '</details>' : '') +
-        '</div>' + link(b.url, b.buttonLabel ? '열기' : '예약', 'btn book small') + '</div>';
+        '</div>' + affLink(b.aff || b.url, b.aff ? '예약' : b.buttonLabel ? '열기' : '예약', 'btn book small', !!b.aff) + '</div>';
     });
     return html;
   }

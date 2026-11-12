@@ -642,3 +642,5 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .cost-rate { margin: 6px 0 0 !important; }
 .cd-sum { text-align: right; }
 .cd-sum small { display: block; color: var(--muted); font-size: 12px; }
+.bk2-by { display: inline-block; padding: 1px 7px; border-radius: 9px; background: var(--chip); color: var(--muted); font-size: 12px; font-weight: 600; vertical-align: 1px; }
+.bk2-warn { margin: 4px 0 0; color: #b45309; font-size: 13px; }

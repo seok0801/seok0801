@@ -206,11 +206,13 @@ window.TRIP_DATA = {
   /* ---------- 예약 링크 ----------
    * level: '필수'(빨간 버튼) / '권장' / '선택' / '현장 구매'
    * linkVerified: true = 링크가 열리는 것을 확인함 / false = 확인하지 못함 */
-  /* 예약 링크. icon·short·key 는 예약 체크리스트에 한 줄로 보이는 아이콘·짧은 이름·핵심(금액 단위 MOP), note 는 '자세히'를 눌러야 보이는 설명 */
+  /* 예약 링크. aff 는 제휴 예약 링크(affBy 판매처) — 있으면 '예약' 버튼이 이 링크로 열리고, url(공식 사이트)은 '자세히' 안에 보인다.
+   * when 은 일정에 없는 항목의 이용 날짜. icon·short·key 는 예약 체크리스트에 한 줄로 보이는 아이콘·짧은 이름·핵심(금액 단위 MOP), note 는 '자세히'를 눌러야 보이는 설명 */
   bookings: {
     cod: {
       name: '시티 오브 드림즈 키즈시티', level: '권장', linkVerified: true,
       icon: '🧸', short: '키즈시티', key: '아이 180 · 어른 20',
+      aff: 'https://3ha.in/r/895148', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/kr/attractions/kids-city',
       note: '12/20~31 특별일 요금: 아이(1~17세) MOP 180, 어른 MOP 20. 페이지 안의 예매 버튼으로 온라인 구매.'
     },
@@ -226,18 +228,21 @@ window.TRIP_DATA = {
     feast: {
       name: 'FEAST 뷔페 (런더너 마카오) 저녁 예약', level: '권장', linkVerified: false,
       icon: '🍽️', short: 'FEAST 뷔페 저녁', key: '연말 붐빔 · ☎ 853-8113-1200',
+      aff: 'https://3ha.in/r/895171', affBy: '클룩', affNote: '클룩 상품명이 예전 "셰라톤 FEAST 뷔페"로 되어 있어, 12/28 저녁 이용권이 판매되는지 확인하세요. 없으면 공식 사이트나 전화로 예약하세요.',
       url: 'https://www.feastmacao.com/',
       note: '연말 저녁은 붐빕니다. 아이 요금 기준(나이·키)은 예약할 때 확인하세요. 전화 (853) 8113 1200.'
     },
     funzone: {
       name: '슈퍼 펀 존', level: '권장', linkVerified: true,
       icon: '🎈', short: '슈퍼 펀 존', key: '아이 120 · 어른 120 · 🧦 양말',
+      aff: 'https://3ha.in/r/895138', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/super-fun-zone',
       note: '12/21~31 특별일 요금: 키 1m 미만 아이 MOP 120, 어른 MOP 120. 온라인 사전 예약 권장.'
     },
     wheel: {
       name: '8자 관람차 (골든 릴)', level: '선택', linkVerified: true,
       icon: '🎡', short: '8자 관람차', key: '1인 100 · 현장 구매 가능',
+      aff: 'https://3ha.in/r/895142', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/golden-reel',
       note: '1인 MOP 100, 만 2세 미만만 무료. 현장 구매도 가능.'
     },
@@ -250,8 +255,27 @@ window.TRIP_DATA = {
     waterpark: {
       name: '스튜디오 시티 실내 워터파크', level: '권장', linkVerified: true,
       icon: '🌊', short: '실내 워터파크', key: '어른 398 · 1m 미만 무료',
+      aff: 'https://3ha.in/r/895145', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/studio-city-water-park',
       note: '12월 겨울 요금: 어른 MOP 398, 아이(키 1~1.19m) MOP 258, 1m 미만 무료. 12/29(화)는 휴장.'
+    },
+    esim: {
+      name: '홍콩·마카오 LTE eSIM (유심사)', level: '권장', linkVerified: true,
+      icon: '📶', short: 'eSIM (홍콩·마카오)', key: '5일 이용 · 지도·택시 앱용', when: '12/27~31',
+      url: 'https://3ha.in/r/895160', aff: 'https://3ha.in/r/895160', affBy: '마이리얼트립',
+      note: '이 지도와 구글 지도는 인터넷이 있어야 뜹니다. 이용일수는 5일(12/27~31)에 맞춰 고르세요. 휴대폰이 eSIM을 지원하는지 먼저 확인하세요.'
+    },
+    glpbreakfast: {
+      name: '그랜드 리스보아 팰리스 조식 뷔페 (더 그랜드 뷔페)', level: '선택', linkVerified: true,
+      icon: '🍳', short: '호텔 조식 뷔페', key: '객실에 조식 포함이면 필요 없음', when: '12/28·29',
+      url: 'https://3ha.in/r/895169', aff: 'https://3ha.in/r/895169', affBy: '클룩',
+      note: '객실 예약에 조식이 포함되어 있는지 먼저 확인하세요. 포함이면 따로 살 필요가 없습니다.'
+    },
+    pickup: {
+      name: '마카오 국제공항 픽업·샌딩', level: '선택', linkVerified: true,
+      icon: '🚐', short: '공항 픽업·샌딩', key: '무료 셔틀 대신 · 견적 확인', when: '12/27·31',
+      url: 'https://3ha.in/r/895170', aff: 'https://3ha.in/r/895170', affBy: '클룩',
+      note: '공항↔호텔 무료 셔틀 대신 쓸 수 있는 차량입니다. 짐과 유모차가 많을 때 편합니다. 날짜·방향·호텔을 넣고 견적을 확인하세요.'
     },
     package: {
       name: '스튜디오 시티 4종 묶음 (펀타스틱 포)', level: '선택', linkVerified: true,
