@@ -270,7 +270,7 @@ window.TRIP_DATA = {
     waterpark: {
       name: '스튜디오 시티 실내 워터파크', level: '권장', linkVerified: true,
       kids: '✅ 두 아이 모두 무료 · 키 1m 미만 (입구에서 키 잼)',
-      icon: '🌊', short: '실내 워터파크', key: '30일 13:45 · 어른 398 · 👙 수영복',
+      icon: '🌊', short: '실내 워터파크', key: '30일 13:05 · 어른 398 · 👙 수영복',
       aff: 'https://3ha.in/r/895274', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/studio-city-water-park',
       note: '12월 겨울 요금: 어른 MOP 398, 아이(키 1~1.19m) MOP 258, 1m 미만 무료. 12/29(화)는 휴장.'
@@ -749,19 +749,12 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-30', time: '12:45', end: '13:20', kind: 'activity', title: '콜로안 바닷가 산책로 유모차 산책 (낮잠 시작)', places: ['ngatim'], napOk: true,
-          tips: [
-            '응아팀 카페 앞 광장에서 바닷가 길(콜로안 빌리지 해안 산책로)을 따라 천천히 걷는다. 평지라 유모차가 편하다.',
-            '바람이 차니 유모차 덮개나 담요를 챙긴다.'
-          ]
+          date: '2026-12-30', time: '12:45', kind: 'move', title: '택시로 스튜디오 시티 워터파크',
+          places: ['ngatim', 'waterpark'], transport: 'taxi', cost: { min: 49, max: 61, type: 'taxi', note: '약 4.6km' },
+          tips: ['콜로안 빌리지 성당 앞 광장 쪽 큰길에서 택시를 잡는다. 🚕 버튼의 한자 카드를 기사에게 보여 준다.']
         },
         {
-          date: '2026-12-30', time: '13:20', kind: 'move', title: '택시로 스튜디오 시티 (자는 아이는 그대로 안고 타기)',
-          places: ['ngatim', 'waterpark'], transport: 'taxi', napOk: true, cost: { min: 49, max: 61, type: 'taxi', note: '약 4.6km' },
-          tips: ['도착해서도 자고 있으면 유모차로 옮겨 조금 더 재운 뒤 워터파크에 들어간다 (20:00까지 운영).']
-        },
-        {
-          date: '2026-12-30', time: '13:45', end: '15:15', kind: 'activity', title: '스튜디오 시티 실내 워터파크', places: ['waterpark'], booking: 'waterpark',
+          date: '2026-12-30', time: '13:05', end: '15:15', kind: 'activity', title: '스튜디오 시티 실내 워터파크', places: ['waterpark'], booking: 'waterpark',
           cost: { min: 796, max: 796, type: 'ticket', note: '어른 MOP 398 ×2 (12월 요금), 키 1m 미만 아이 무료' },
           tips: [
             '12월은 실내 구역만 연다 (12:00~20:00, 매표 11:45부터). 수영복·아이 방수 기저귀·수건을 챙긴다.',
