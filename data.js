@@ -207,7 +207,7 @@ window.TRIP_DATA = {
   /* ---------- 예약 링크 ----------
    * level: '필수'(빨간 버튼) / '권장' / '선택' / '현장 구매'
    * linkVerified: true = 링크가 열리는 것을 확인함 / false = 확인하지 못함 */
-  /* 예약 링크. kids 는 두 아이(25개월·35개월) 기준 요금 한 줄. aff 는 제휴 예약 링크(affBy 판매처) — 있으면 '예약' 버튼이 이 링크로 열리고, url(공식 사이트)은 '자세히' 안에 보인다.
+  /* 예약 링크. 체크리스트는 일정 순서(그 항목을 쓰는 첫 일정 날짜·시각, 없으면 sort)로 나열된다. kids 는 두 아이(25개월·35개월) 기준 요금 한 줄. aff 는 제휴 예약 링크(affBy 판매처) — 있으면 '예약' 버튼이 이 링크로 열리고, url(공식 사이트)은 '자세히' 안에 보인다.
    * when 은 일정에 없는 항목의 이용 날짜. icon·short·key 는 예약 체크리스트에 한 줄로 보이는 아이콘·짧은 이름·핵심(금액 단위 MOP), note 는 '자세히'를 눌러야 보이는 설명 */
   bookings: {
     cod: {
@@ -220,6 +220,7 @@ window.TRIP_DATA = {
     },
     dancingwater: {
       name: '하우스 오브 댄싱 워터 (시티 오브 드림즈 수상 공연)', level: '선택', linkVerified: true,
+      sort: '2026-12-30 23:59',   // 체크리스트 순서 (일정에 없는 항목)
       kids: '✅ 두 아이 모두 무료 · 만 3세 미만 무릎 (판매처 따라 만 2세 이하로 적은 곳도 있어 예매 때 확인)',
       icon: '🎭', short: '댄싱 워터 공연 (선택)', key: '어른 698~ · 3세 미만 무릎 무료',
       aff: 'https://3ha.in/r/895307', affBy: '클룩',
@@ -272,6 +273,7 @@ window.TRIP_DATA = {
     },
     insurance: {
       name: '해외여행자보험 (클룩, 한국 거주자 전용)', level: '권장', linkVerified: true,
+      sort: '0 출발 전',   // 체크리스트 순서 (일정에 없는 항목)
       icon: '🛡️', short: '여행자보험', key: '가족 모두 · 출발 전 가입', when: '12/27~31',
       kids: '아이도 각자 가입 (생년월일로 보험료가 정해짐)',
       url: 'https://3ha.in/r/896124', aff: 'https://3ha.in/r/896124', affBy: '클룩',
@@ -280,6 +282,7 @@ window.TRIP_DATA = {
     },
     esim: {
       name: '홍콩·마카오 LTE eSIM (유심사)', level: '권장', linkVerified: true,
+      sort: '1 출발 전',   // 체크리스트 순서 (일정에 없는 항목)
       icon: '📶', short: 'eSIM (홍콩·마카오)', key: '5일 이용 · 지도·택시 앱용', when: '12/27~31',
       url: 'https://3ha.in/r/895160', aff: 'https://3ha.in/r/895160', affBy: '마이리얼트립',
       note: '이 지도와 구글 지도는 인터넷이 있어야 뜹니다. 이용일수는 5일(12/27~31)에 맞춰 고르세요. 휴대폰이 eSIM을 지원하는지 먼저 확인하세요.'
@@ -294,6 +297,7 @@ window.TRIP_DATA = {
     },
     pickup: {
       name: '마카오 국제공항 픽업·샌딩', level: '선택', linkVerified: true,
+      sort: '2026-12-27 14:00',   // 체크리스트 순서 (일정에 없는 항목)
       kids: '차 1대 요금 · 카시트가 필요하면 예약 때 요청',
       icon: '🚐', short: '공항 픽업·샌딩', key: '무료 셔틀 대신 · 견적 확인', when: '12/27·31',
       url: 'https://3ha.in/r/895276', aff: 'https://3ha.in/r/895276', affBy: '클룩',

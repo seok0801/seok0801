@@ -1321,9 +1321,11 @@
       if (!it.booking || !D.bookings[it.booking]) return;
       (used[it.booking] = used[it.booking] || []).push(it.date.slice(5).replace('-', '/'));
     });
-    var keys = Object.keys(D.bookings).sort(function (a, b) {
-      return (order[D.bookings[a].level] || 9) - (order[D.bookings[b].level] || 9);
-    });
+    // 일정 순서로: 그 항목을 쓰는 첫 일정의 날짜·시각 (일정에 없으면 data.js 의 sort)
+    var first = {};
+    items('all').forEach(function (it) { if (it.booking && !first[it.booking]) first[it.booking] = it.date + ' ' + it.time; });
+    var keyOf = function (k) { return first[k] || D.bookings[k].sort || '9'; };
+    var keys = Object.keys(D.bookings).sort(function (a, b) { return keyOf(a) < keyOf(b) ? -1 : keyOf(a) > keyOf(b) ? 1 : 0; });
     var done = doneSet(), left = keys.filter(function (k) { return !done[k] && D.bookings[k].level !== '선택' && D.bookings[k].level !== '현장 구매'; }).length;
     var html = '<p class="bk-sum">' + (left ? '⏳ 미리 할 예약 <strong>' + left + '개</strong> 남음' : '✅ 미리 할 예약 끝!') +
       '<br><span class="fine">⭐ 권장 · ➕ 선택 · 🏷️ 현장 구매 · 🔒 예약번호는 여기 적지 마세요</span>' +
