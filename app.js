@@ -544,7 +544,7 @@
   var flyToken = 0;
   function flyToPlace(id, opt) {
     if (!mapReady || !onMap(id)) return;
-    endFlight(); stopPlane3d();
+    endFlight();
     pauseFollow();
     opt = opt || {};
     var my = ++flyToken;
@@ -642,8 +642,6 @@
       el.addEventListener('click', function (e) {
         e.stopPropagation();
         stopTour();
-        var pk = id === 'mfm' && !is2d && !reducedMotion() ? planeKindFor(state.day) : null;
-        if (pk) { hideSheet(); endFlight(); flyToken++; playPlane3d(pk); return; }   // 첫날·마지막 날 공항을 누르면 착륙·이륙 장면
         flyToPlace(id, { sheet: true });
         openPopup(id);
         showPlace(id);
@@ -970,7 +968,8 @@
   /* 인천 표시는 지도가 아니라 화면 오른쪽 위(1시 방향)에 고정. 비행기와 점선은 그 자리와 '지금 화면의 마카오 공항'을 잇는다
    * → 지도를 움직이거나 투어로 카메라가 움직여도 인천은 늘 1시 방향 끝에 있다 */
   function flightFx() {
-    clearFlight(); stopPlane3d();
+    clearFlight();
+    if (mapReady && map.getSource('plane3d') && state.day === D.days[D.days.length - 1].date) startPlaneLoop();   // 마지막 날은 이륙 장면부터
     if (!mapReady || !onMap('mfm')) return;
     var firstDay = D.days[0].date, lastDay = D.days[D.days.length - 1].date;
     if (state.day !== firstDay && state.day !== lastDay) return;
@@ -1054,7 +1053,9 @@
   function rwyHeading() { return bearingTo(RWY.n, RWY.s); }   // 활주로 16 방향 (북 → 남)
   /* 여객기 위치(경도·위도), 진행 방향(도), 고도(m), 기수 들림(도) → 지도에 그릴 도형들 */
   function planeFeatures(pos, hdg, alt, pitchDeg) {
-    var k = 111320 * Math.cos(pos[1] * Math.PI / 180), r = hdg * Math.PI / 180, S = PLANE_SCALE, tp = Math.tan((pitchDeg || 0) * Math.PI / 180);
+    var k = 111320 * Math.cos(pos[1] * Math.PI / 180), r = hdg * Math.PI / 180,
+      S = Math.min(9, Math.max(PLANE_SCALE, PLANE_SCALE * Math.pow(2, (15 - map.getZoom()) * 0.85))),   // 멀리서 볼수록 크게 (늘 눈에 띄게)
+      tp = Math.tan((pitchDeg || 0) * Math.PI / 180);
     var toLL = function (x, y) { var e = x * Math.cos(r) + y * Math.sin(r), n = -x * Math.sin(r) + y * Math.cos(r); return [pos[0] + e * S / k, pos[1] + n * S / 111320]; };
     var out = [];
     PLANE_PARTS.forEach(function (pt) {
@@ -1071,46 +1072,39 @@
     var src = mapReady && map.getSource('plane3d');
     if (src) src.setData({ type: 'FeatureCollection', features: [] });
   }
-  /* kind: 'land' | 'takeoff'. 끝나면 onDone. 걸리는 시간(ms)을 돌려준다 */
-  function playPlane3d(kind, onDone) {
-    stopPlane3d();
-    if (!mapReady || is2d || !map.getSource('plane3d')) return 0;
-    var my = plane3d.token, L = rwyLength(), H16 = rwyHeading(), src = map.getSource('plane3d');
-    var land = kind === 'land', DUR = 9000;
-    // 진행 거리(d, 활주로 북쪽 끝 기준)·고도·기수 각을 시간 t(0~1)에 따라
-    var path = land ? function (t) {
-      if (t < .62) { var u = t / .62; return { d: -2400 + (2750) * u, alt: 190 * Math.pow(1 - u, 1.15), pitch: 3 + 2 * u }; }   // 접근·착지 (약 3도 강하)
-      var v = (t - .62) / .38, e = 1 - Math.pow(1 - v, 2.2); return { d: 350 + 1500 * e, alt: 0, pitch: Math.max(0, 5 - v * 12) };   // 감속하며 활주
-    } : function (t) {
-      if (t < .5) { var u = t / .5; return { d: L - 150 - 1900 * u * u, alt: 0, pitch: u > .85 ? (u - .85) * 40 : 0 }; }   // 남쪽 끝에서 북쪽으로 가속
-      var v = (t - .5) / .5; return { d: L - 2050 - 2600 * v - 600 * v * v, alt: 260 * Math.pow(v, 1.3), pitch: 8 };   // 이륙·상승
-    };
-    var hdg = land ? H16 : (H16 + 180) % 360;
-    toast(land ? '🛬 13:45 KE2015 마카오 착륙 (인천 10:40 출발)' : '🛫 14:55 KE2016 이륙 → 인천 19:40 도착', DUR);
-    // 카메라: 여객기 뒤쪽 비스듬히 위에서, 활주로가 앞에 보이게 (화면 가운데는 여객기보다 조금 앞)
-    var camB = (hdg + (land ? -28 : 28) + 360) % 360, AHEAD = land ? 380 : 450;
-    var dir = land ? 1 : -1, camAt = function (f) { return rwyPoint(f.d + dir * AHEAD, 0); };
-    map.easeTo({ center: camAt(path(0)), zoom: 14.6, pitch: 66, bearing: camB, duration: 1400 });
-    var t0 = 0;
-    setTimeout(function () {
-      if (my !== plane3d.token) return;
-      t0 = performance.now();
-      (function frame(now) {
-        if (my !== plane3d.token) return;
-        var t = Math.min(1, (now - t0) / DUR), f = path(t), pos = rwyPoint(f.d, 0);
-        src.setData({ type: 'FeatureCollection', features: planeFeatures(pos, hdg, f.alt, f.pitch) });
-        map.jumpTo({ center: camAt(f), bearing: camB + (land ? 1 : -1) * t * 30, zoom: 14.6 + t * 0.6 });
-        if (t < 1) plane3d.raf = requestAnimationFrame(frame);
-        else setTimeout(function () { if (my === plane3d.token) { if (!land) stopPlane3d(); if (onDone) onDone(); } }, 600);
-      })(t0);
-    }, 1450);
-    return DUR + 2100;
+  /* 상시 운항: 착륙(북쪽에서 내려와 활주로 16 착지·감속) → 잠깐 사라짐 → 이륙(활주로 34 가속·상승) → 반복.
+   * 카메라는 건드리지 않는다. 공항이 화면에 보일 때만 그려서 배터리를 아낀다 */
+  var LAND_MS = 9000, TAKEOFF_MS = 9000, GAP_MS = 1500;
+  function landAt(t) {
+    if (t < .62) { var u = t / .62; return { d: -2400 + 2750 * u, alt: 190 * Math.pow(1 - u, 1.15), pitch: 3 + 2 * u }; }
+    var v = (t - .62) / .38, e = 1 - Math.pow(1 - v, 2.2); return { d: 350 + 1500 * e, alt: 0, pitch: Math.max(0, 5 - v * 12) };
   }
-  /* 지금 고른 날이 첫날·마지막 날이고 공항이면 어떤 장면인지 */
-  function planeKindFor(day) {
-    if (day === D.days[0].date) return 'land';
-    if (day === D.days[D.days.length - 1].date) return 'takeoff';
-    return null;
+  function takeoffAt(t, L) {
+    if (t < .5) { var u = t / .5; return { d: L - 150 - 1900 * u * u, alt: 0, pitch: u > .85 ? (u - .85) * 40 : 0 }; }
+    var v = (t - .5) / .5; return { d: L - 2050 - 2600 * v - 600 * v * v, alt: 260 * Math.pow(v, 1.3), pitch: 8 };
+  }
+  function startPlaneLoop() {
+    stopPlane3d();
+    if (!mapReady || !map.getSource('plane3d')) return;
+    var my = plane3d.token, L = rwyLength(), H16 = rwyHeading(), src = map.getSource('plane3d');
+    var area = new maplibregl.LngLatBounds(rwyPoint(-2600, -600), rwyPoint(-2600, -600));
+    [rwyPoint(-2600, 600), rwyPoint(L + 400, -600), rwyPoint(L + 400, 600), rwyPoint(L - 5300, 0)].forEach(function (p) { area.extend(p); });
+    var CYCLE = LAND_MS + GAP_MS + TAKEOFF_MS + GAP_MS, t0 = performance.now(), last = 0, shown = false;
+    // 마지막 날은 이륙부터
+    if (state.day === D.days[D.days.length - 1].date) t0 -= LAND_MS + GAP_MS;
+    (function frame(now) {
+      if (my !== plane3d.token) return;
+      plane3d.raf = requestAnimationFrame(frame);
+      if (now - last < 33 || document.hidden) return;           // 초당 약 30번
+      last = now;
+      var b = map.getBounds(), vis = b.getWest() < area.getEast() && b.getEast() > area.getWest() && b.getSouth() < area.getNorth() && b.getNorth() > area.getSouth();
+      if (!vis) { if (shown) { src.setData({ type: 'FeatureCollection', features: [] }); shown = false; } return; }
+      var c = (now - t0) % CYCLE, f = null, hdg = H16;
+      if (c < LAND_MS) f = landAt(c / LAND_MS);
+      else if (c >= LAND_MS + GAP_MS && c < LAND_MS + GAP_MS + TAKEOFF_MS) { f = takeoffAt((c - LAND_MS - GAP_MS) / TAKEOFF_MS, L); hdg = (H16 + 180) % 360; }
+      src.setData({ type: 'FeatureCollection', features: f ? planeFeatures(rwyPoint(f.d, 0), hdg, f.alt, f.pitch) : [] });
+      shown = !!f;
+    })(t0);
   }
 
   /* 일정 동선 둘레 r 미터 안쪽 영역 (선분마다 띠 + 장소마다 원) */
@@ -1140,7 +1134,7 @@
     }
     if (!mapReady) return;
     (map.getStyle().layers || []).forEach(function (l) {
-      if (l.type === 'fill-extrusion') map.setLayoutProperty(l.id, 'visibility', is2d ? 'none' : 'visible');
+      if (l.type === 'fill-extrusion' && l.id !== 'plane3d') map.setLayoutProperty(l.id, 'visibility', is2d ? 'none' : 'visible');
     });
     ['tour-flat', 'tour-tall-flat'].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', is2d ? 'visible' : 'none'); });
     map.dragRotate.enable(); map.touchZoomRotate.enableRotation();   // 2D 에서도 두 손가락으로 돌릴 수 있다 (기울이기만 막는다)
@@ -1311,6 +1305,7 @@
       addBeaconLayer();
       addRouteLayers();
       addPlane3dLayer();
+      startPlaneLoop();
       addMeLayer();
       fitViewPadding();
       applyMode(false);
@@ -1420,15 +1415,8 @@
     var el = highlight(s.item._i);
     if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     // 투어: 작은 이름표만 띄우고, 머무는 동안 장소 둘레를 돈다
-    var pk = s.place === 'mfm' && !is2d && !reducedMotion() ? planeKindFor(s.item.date) : null;
-    if (pk) {                         // 첫날·마지막 날 공항: 활주로에서 3D 여객기 착륙·이륙
-      endFlight(); flyToken++; state.lastPlace = 'mfm';
-      state.hopMs = playPlane3d(pk) - FLY_MS - STAY_MS + 800;
-    } else {
-      stopPlane3d();
-      flyToPlace(s.place, { orbitMs: STAY_MS - 150, tour: true });
-      openPopup(s.place, { item: s.item, color: (dayInfo(s.item.date) || {}).color });
-    }
+    flyToPlace(s.place, { orbitMs: STAY_MS - 150, tour: true });
+    openPopup(s.place, { item: s.item, color: (dayInfo(s.item.date) || {}).color });
     setTourStatus((idx + 1) + '/' + list.length + ' · ' + s.item.time + ' ' + place(s.place).name);
     return true;
   }
