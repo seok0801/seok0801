@@ -521,12 +521,13 @@
     setTimeout(function () {
       if (my !== flyToken || !mapReady) return;
       map.flyTo({ center: center, offset: offset, zoom: STOP_ZOOM, pitch: tilt(STOP_PITCH), bearing: turnTo(b), duration: FLY_MS });
+      // 도착한(움직임이 끝난) 뒤 장소 둘레를 천천히 돌아 입체감을 준다. 휴대폰이 느려 늦게 도착해도 거른다
+      map.once('moveend', function () {
+        if (is2d || my !== flyToken || !mapReady || reducedMotion()) return;
+        // 멀리서 내려오며 기울기가 덜 된 채 끝났으면 여기서 마저 기울인다
+        map.easeTo({ center: center, offset: offset, pitch: tilt(STOP_PITCH), bearing: b + ORBIT_DEG, duration: opt.orbitMs || 3600, easing: function (x) { return x; } });
+      });
     }, wait);
-    setTimeout(function () {                           // 도착한 뒤 장소 둘레를 천천히 돌아 입체감을 준다
-      if (is2d || my !== flyToken || !mapReady || map.isMoving() || reducedMotion()) return;
-      // 멀리서 내려오며 기울기가 덜 된 채 끝났으면 여기서 마저 기울인다
-      map.easeTo({ center: center, offset: offset, pitch: tilt(STOP_PITCH), bearing: b + ORBIT_DEG, duration: opt.orbitMs || 3600, easing: function (x) { return x; } });
-    }, wait + FLY_MS + 150);
   }
 
   function fitTo(ids) {
