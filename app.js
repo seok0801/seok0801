@@ -29,6 +29,12 @@
   var NO_STOP_KINDS = { nap: true, sleep: true, move: true }; // 투어에서 멈추지 않는 일정
 
   var state = { plan: 0, day: 'all', tourIdx: -1, playing: false, timer: null, lastPlace: null };
+  /* 2D(위에서 내려다본 평면 지도) / 3D(기울인 입체 지도). 고른 방식은 이 휴대폰에 기억해 둔다 */
+  var MODE_KEY = 'macau-map-mode';
+  var is2d = false;
+  try { is2d = localStorage.getItem(MODE_KEY) === '2d'; } catch (e) { /* 기억 못 해도 3D 로 시작 */ }
+  function tilt(p) { return is2d ? 0 : p; }
+  function turnTo(b) { return is2d ? 0 : b; }
   var map = null, mapReady = false, markers = {}, popup = null, dashTimer = null;
   var dashUntil = 0;         // 동선 점선을 이 시각까지만 움직인다(투어 중에는 계속)
 
@@ -467,9 +473,9 @@
       b = cur + Math.max(-100, Math.min(100, turn));
     }
     state.lastPlace = id;
-    map.flyTo({ center: center, offset: offset, zoom: STOP_ZOOM, pitch: STOP_PITCH, bearing: b, duration: FLY_MS });
+    map.flyTo({ center: center, offset: offset, zoom: STOP_ZOOM, pitch: tilt(STOP_PITCH), bearing: turnTo(b), duration: FLY_MS });
     setTimeout(function () {                           // 도착한 뒤 장소 둘레를 천천히 돌아 입체감을 준다
-      if (my !== flyToken || !mapReady || map.isMoving() || reducedMotion()) return;
+      if (is2d || my !== flyToken || !mapReady || map.isMoving() || reducedMotion()) return;
       map.easeTo({ center: center, offset: offset, bearing: b + ORBIT_DEG, duration: opt.orbitMs || 3600, easing: function (x) { return x; } });
     }, FLY_MS + 150);
   }
@@ -480,13 +486,13 @@
     state.lastPlace = null;
     var pts = ids.filter(onMap).map(function (id) { return [place(id).lng, place(id).lat]; });
     if (!pts.length) return;
-    if (pts.length === 1) { map.flyTo({ center: pts[0], zoom: 16, pitch: STOP_PITCH, bearing: -20, duration: 1800 }); return; }
+    if (pts.length === 1) { map.flyTo({ center: pts[0], zoom: 16, pitch: tilt(STOP_PITCH), bearing: turnTo(-20), duration: 1800 }); return; }
     var b = new maplibregl.LngLatBounds(pts[0], pts[0]);
     pts.forEach(function (p) { b.extend(p); });
     var wide = window.innerWidth >= 900;
     map.fitBounds(b, {
       padding: wide ? { top: 110, bottom: 100, left: 90, right: 90 } : { top: 130, bottom: 110, left: 75, right: 75 },   // 위 날짜 줄·아래 버튼 줄과 펼친 마커가 가려지지 않게
-      pitch: 55, bearing: -20, maxZoom: 16.2, duration: 1800
+      pitch: tilt(55), bearing: turnTo(-20), maxZoom: 16.2, duration: 1800
     });
   }
 
@@ -530,6 +536,7 @@
     });
     spreadMarkers();
     if (map.getLayer('tour-tall-roofs')) map.setPaintProperty('tour-tall-roofs', 'fill-extrusion-color', roofColor());
+    if (map.getLayer('tour-tall-flat')) map.setPaintProperty('tour-tall-flat', 'fill-color', roofColor());
 
     // 동선 선: 고른 날짜는 진하게, 나머지는 흐리게
     var feats = D.days.map(function (d) {
@@ -612,9 +619,14 @@
         });
       }
       // 공개 지도에 높이가 없어 납작하게 나오는 주요 건물(data.js 에 height 나 look 을 적은 장소)을 대략의 높이와 실제에 가까운 색으로 그린다
+      // 2D 지도용 평면 건물 (2D 를 고르면 입체 건물 대신 보인다)
+      if (srcId) map.addLayer({ id: 'tour-flat', type: 'fill', source: srcId, 'source-layer': 'building', minzoom: 13,
+        layout: { visibility: 'none' }, paint: { 'fill-color': '#e4e2dc', 'fill-outline-color': '#cfccc4' } });
       map.addSource('tour-tall', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       map.addLayer({ id: 'tour-tall-walls', type: 'fill-extrusion', source: 'tour-tall',
         paint: { 'fill-extrusion-pattern': ['get', 'pat'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-opacity': 1 } });
+      map.addLayer({ id: 'tour-tall-flat', type: 'fill', source: 'tour-tall', layout: { visibility: 'none' },
+        paint: { 'fill-color': roofColor(), 'fill-opacity': .7, 'fill-outline-color': '#a89f92' } });
       map.addLayer({ id: 'tour-tall-roofs', type: 'fill-extrusion', source: 'tour-tall',
         paint: { 'fill-extrusion-color': roofColor(), 'fill-extrusion-base': ['get', 'h'], 'fill-extrusion-height': ['+', ['get', 'h'], 1.2], 'fill-extrusion-opacity': 1 } });
       // 카메라가 멈춘 뒤와 지도 조각이 도착한 뒤에 확인한다
@@ -784,44 +796,47 @@
     } catch (e) { /* 바꾸지 못하면 원래 글자 그대로 쓴다 */ }
   }
 
-  /* 마카오 바깥(주하이 등)은 그리지 않는다.
-   * data.js 의 area 선을 둥글게 다듬고, 그 바깥을 바탕색으로 덮는다.
-   * 경계에는 가는 테두리와 부드러운 그림자를 둘러, 종이 위에 오려 붙인 섬 지도처럼 보이게 한다. */
-  var MASK_COLOR = '#eef0ec';                 // 지도 바깥 바탕색
-  function smoothRing(ring, times) {          // 꼭짓점을 깎아 둥근 곡선으로 (Chaikin)
-    var pts = ring.slice(0, -1);
-    for (var t = 0; t < times; t++) {
-      var out = [];
-      for (var i = 0; i < pts.length; i++) {
-        var a = pts[i], b = pts[(i + 1) % pts.length];
-        var wa = a[2] == null ? 1 : a[2], wb = b[2] == null ? 1 : b[2];
-        out.push([a[0] * .75 + b[0] * .25, a[1] * .75 + b[1] * .25, wa * .75 + wb * .25], [a[0] * .25 + b[0] * .75, a[1] * .25 + b[1] * .75, wa * .25 + wb * .75]);
-      }
-      pts = out;
-    }
-    return pts;
-  }
+  /* 마카오 바깥(헝친·주하이)은 바다색으로 덮는다. 바다와 같은 색이라 경계선이 보이지 않고, 마카오만 섬처럼 남는다 */
+  var MASK_COLOR = '#6f98a0';                 // 바다색 (simplifyBaseMap 의 물 색과 같게)
   function addAreaMask() {
     var ring = D.map.area;
     if (!ring || ring.length < 4) return;
     try {
-      var hole = smoothRing(ring, 4).map(function (p) { return [p[0], p[1]]; });
-      hole.push(hole[0]);
+      var hole = ring.map(function (p) { return [p[0], p[1]]; });
       var world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
       map.addSource('tour-mask', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, hole] } } });
-      map.addSource('tour-edge', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: hole } } });
       map.addLayer({ id: 'tour-mask-0', type: 'fill', source: 'tour-mask', paint: { 'fill-color': MASK_COLOR, 'fill-antialias': false } });
-      map.addLayer({ id: 'tour-edge-shadow', type: 'line', source: 'tour-edge', layout: { 'line-join': 'round' },
-        paint: { 'line-color': '#24414d', 'line-opacity': .28, 'line-width': 16, 'line-blur': 14 } });
-      map.addLayer({ id: 'tour-edge-line', type: 'line', source: 'tour-edge', layout: { 'line-join': 'round' },
-        paint: { 'line-color': '#4f7c86', 'line-width': 1.5 } });
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
+  }
+
+  /* 2D ↔ 3D 전환: 입체 건물·빛기둥을 숨기고 평면 건물을 보이며, 지도를 위에서 똑바로(북쪽 위) 내려다본다 */
+  function applyMode(animate) {
+    var btn = $('btn-mode');
+    if (btn) {
+      btn.textContent = is2d ? '3D' : '2D';
+      btn.setAttribute('aria-label', is2d ? '3D 입체 지도로 보기' : '2D 평면 지도로 보기');
+      btn.setAttribute('aria-pressed', String(is2d));
+    }
+    if (!mapReady) return;
+    (map.getStyle().layers || []).forEach(function (l) {
+      if (l.type === 'fill-extrusion') map.setLayoutProperty(l.id, 'visibility', is2d ? 'none' : 'visible');
+    });
+    ['tour-flat', 'tour-tall-flat'].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', is2d ? 'visible' : 'none'); });
+    if (is2d) { map.dragRotate.disable(); map.touchZoomRotate.disableRotation(); }
+    else { map.dragRotate.enable(); map.touchZoomRotate.enableRotation(); }
+    limitPitch();
+    map.easeTo({ pitch: tilt(Math.min(55, map.getMaxPitch())), bearing: turnTo(-20), duration: animate ? 800 : 0 });
+  }
+  function toggleMode() {
+    is2d = !is2d;
+    try { localStorage.setItem(MODE_KEY, is2d ? '2d' : '3d'); } catch (e) { /* 이번에만 적용 */ }
+    applyMode(true);
   }
 
   /* 멀리 볼수록 덜 기울인다: 축소한 채로 많이 기울이면 지평선 너머 빈 바탕이 화면을 채우므로 */
   function limitPitch() {
     var z = map.getZoom();
-    var max = z >= 15 ? 70 : z >= 14 ? 62 : z >= 13 ? 50 : z >= 12 ? 38 : 25;
+    var max = is2d ? 0 : z >= 15 ? 70 : z >= 14 ? 62 : z >= 13 ? 50 : z >= 12 ? 38 : 25;
     if (map.getMaxPitch() !== max) map.setMaxPitch(max);
   }
 
@@ -917,7 +932,7 @@
     try {
       var opts = {
         container: 'map', style: styleUrl,
-        center: D.map.center, zoom: D.map.zoom, pitch: 55, bearing: -20, maxPitch: 70,
+        center: D.map.center, zoom: D.map.zoom, pitch: tilt(55), bearing: turnTo(-20), maxPitch: is2d ? 0 : 70,
         antialias: true,                       // 3D 건물 모서리를 매끈하게
         attributionControl: { compact: true }
       };
@@ -943,6 +958,7 @@
       map.on('moveend', spreadMarkers);
       addBeaconLayer();
       addRouteLayers();
+      applyMode(false);
       updateMap(true);
     });
   }
@@ -1201,6 +1217,8 @@
 
   $('btn-booking').addEventListener('click', function () { openModal('예약 체크리스트', bookingListHtml()); });
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
+  $('btn-mode').addEventListener('click', toggleMode);
+  applyMode(false);
   $('modal-close').addEventListener('click', closeModal);
   $('modal').addEventListener('click', function (e) { if (e.target === $('modal')) closeModal(); });
   document.addEventListener('keydown', function (e) {

@@ -95,7 +95,7 @@ a { color: var(--accent); }
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background: #d9d6cc;
+  background: #6f98a0;   /* 지도 바깥 바다색과 같게 */
 }
 #map { position: absolute; inset: 0; }
 
@@ -154,6 +154,13 @@ a { color: var(--accent); }
 #bar .btn { pointer-events: auto; border-color: transparent; background: rgba(24, 36, 44, .9); color: #fff; }
 #bar .btn.primary { background: #dbeaf5; color: #16242d; }
 #bar .gap { flex: 1 1 auto; }
+#bar .btn { flex: 0 0 auto; white-space: nowrap; }
+/* 좁은 휴대폰: 버튼 8개가 한 줄에 들어가도록 간격과 여백을 줄인다 */
+@media (max-width: 430px) {
+  #bar { gap: 4px; padding-left: 8px; padding-right: 8px; }
+  #bar .btn { padding: 8px 8px; min-width: 36px; }
+  #bar .btn.icon { padding: 8px 4px; }
+}
 
 /* 아래에서 올라오는 창 */
 #sheet {
