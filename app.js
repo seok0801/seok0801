@@ -396,7 +396,7 @@
     renderCards();
     var R = D.rhythm || {};
     if (R.breakfastStart) {
-      $('foot-rhythm').textContent = '아이 리듬: 조식 ' + R.breakfastStart + ' · 낮잠 ' + R.napStart + '~' + R.napEnd +
+      $('foot-rhythm').textContent = '아이 리듬: 조식 ' + R.breakfastStart + ' · 낮잠 ' + R.napStart + '~' + R.napEnd + (R.napNote ? ' (' + R.napNote + ')' : '') +
         ' · 저녁 ' + R.dinnerStart + ' (늦어도 ' + R.dinnerLatest + ') · ' + R.backToHotel + ' 호텔 복귀 · ' + R.bedtime + ' 취침';
     }
     setTourStatus('');
