@@ -1158,6 +1158,14 @@
     $('modal-close').focus();
   }
   function closeModal() { $('modal').hidden = true; }
+  $('modal-body').addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('[data-copy]');
+    if (!btn) return;
+    copyText(btn.getAttribute('data-copy'), function () {
+      var tag = btn.querySelector('.cp-copy'); tag.textContent = '복사됨 ✓';
+      setTimeout(function () { tag.textContent = '복사'; }, 1500);
+    });
+  });
   /* 예약 체크: 누르면 이 휴대폰에 기억하고 목록을 다시 그린다 */
   $('modal-body').addEventListener('change', function (e) {
     var k = e.target.getAttribute && e.target.getAttribute('data-done');
@@ -1201,7 +1209,27 @@
           (b.linkVerified === false ? '<p class="fine">링크가 안 열리면 공식 사이트에서 찾아 주세요.</p>' : '') + '</details>' : '') +
         '</div>' + affLink(b.aff || b.url, b.aff ? '예약' : b.buttonLabel ? '열기' : '예약', 'btn book small', !!b.aff) + '</div>';
     });
+    var cp = D.coupons;
+    if (cp && cp.codes && cp.codes.length) {
+      html += '<div class="cp"><p class="cp-title">🎫 ' + esc(cp.title) + ' <span class="fine">' + esc(cp.until) + '</span></p>' +
+        cp.codes.map(function (c) {
+          return '<button type="button" class="cp-row" data-copy="' + esc(c.code) + '"><span class="cp-code">' + esc(c.code) + '</span>' +
+            '<span class="cp-off">' + esc(c.min) + ' → <strong>' + esc(c.off) + '</strong></span><span class="cp-copy">복사</span></button>';
+        }).join('') +
+        '<p class="fine">' + esc(cp.note) + '</p></div>';
+    }
     return html;
+  }
+  /* 할인 코드 누르면 복사 */
+  function copyText(t, done) {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(done, function () { fallback(); }); return; }
+    fallback();
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { /* 복사 못 하면 코드를 직접 보고 입력 */ }
+      document.body.removeChild(ta);
+    }
   }
 
   /* 비용 요약: 총액 → 날짜별 합계 → 꼭 알아 둘 것 3가지. 항목별 내역은 '자세히'로 접어 둔다 */

@@ -644,3 +644,14 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .cd-sum small { display: block; color: var(--muted); font-size: 12px; }
 .bk2-by { display: inline-block; padding: 1px 7px; border-radius: 9px; background: var(--chip); color: var(--muted); font-size: 12px; font-weight: 600; vertical-align: 1px; }
 .bk2-warn { margin: 4px 0 0; color: #b45309; font-size: 13px; }
+
+/* 예약 체크리스트 맨 아래: 할인 코드 (누르면 복사) */
+.cp { margin-top: 14px; padding: 12px; border: 1px dashed var(--line); border-radius: 12px; background: var(--card); }
+.cp-title { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+.cp-row { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; margin: 4px 0; padding: 6px 10px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.cp-code { font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .3px; }
+.cp-off { flex: 1 1 auto; font-size: 13px; color: var(--muted); text-align: right; }
+.cp-off strong { color: var(--text); }
+.cp-copy { flex: 0 0 auto; font-size: 12px; font-weight: 700; color: #0f8a5f; }
+.cp .fine { margin: 6px 0 0; }
