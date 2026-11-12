@@ -757,3 +757,10 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .sos-name { margin: 0; font-size: 15px; font-weight: 700; }
 .sos-row .fine { margin: 2px 0 0; }
 .sos-tel { white-space: nowrap; border-color: #d1352b; color: #b42318; }
+
+/* ---------- ✈️ 첫날·마지막 날 비행기 효과 ---------- */
+.korea { display: flex; flex-direction: column; align-items: center; padding: 6px 6px 4px; border-radius: 14px; background: rgba(111, 152, 160, .92); pointer-events: none; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); }
+.korea span { margin-top: 2px; padding: 1px 7px; border-radius: 8px; background: rgba(24, 36, 44, .9); color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.plane { pointer-events: none; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .4)); transition: opacity .6s; }
+.plane svg { display: block; }
+.plane.landed { opacity: 0; }
