@@ -544,6 +544,7 @@
   var flyToken = 0;
   function flyToPlace(id, opt) {
     if (!mapReady || !onMap(id)) return;
+    endFlight();
     pauseFollow();
     opt = opt || {};
     var my = ++flyToken;
@@ -953,6 +954,12 @@
   var KOREA_SVG = '<svg viewBox="0 0 40 60" width="34" height="51" aria-hidden="true"><path d="M14 2 L24 1 L31 6 L30 12 L26 15 L28 22 L33 30 L34 40 L31 49 L24 55 L17 57 L12 52 L14 46 L10 41 L13 35 L9 30 L12 24 L10 18 L14 13 L11 8 Z" fill="#e8e2d2" stroke="#7a8a86" stroke-width="1.5"/><circle cx="12" cy="25" r="3.2" fill="#d1451f"/></svg>';
   // 여객기 (위에서 본 모양, 기본은 위쪽을 향함 → 진행 방향으로 돌린다)
   var PLANE_SVG = '<svg viewBox="0 0 24 24" width="38" height="38" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="#ffffff" stroke="#16242d" stroke-width="1" stroke-linejoin="round"/></svg>';
+  /* 점선·비행기를 지우고 인천 표시만 남긴다 (투어·장소 이동 때도) */
+  function endFlight() {
+    cancelAnimationFrame(fx.raf);
+    if (fx.onMove && map) { map.off('move', fx.onMove); fx.onMove = null; }
+    if (fx.box) fx.box.classList.add('done');
+  }
   function clearFlight() {
     fx.token++; cancelAnimationFrame(fx.raf);
     if (fx.onMove && map) { map.off('move', fx.onMove); fx.onMove = null; }
@@ -1002,10 +1009,11 @@
         if (my !== fx.token) return;
         prog = Math.min(1, (now - t0) / DUR); draw();
         if (prog < 1) fx.raf = requestAnimationFrame(frame);
+        else setTimeout(function () { if (my === fx.token) endFlight(); }, 1100);   // 도착하면 점선·비행기는 사라지고 인천 표시만 남는다
       })(t0);
     };
     draw();
-    if (reducedMotion()) return;
+    if (reducedMotion()) { endFlight(); return; }
     if (map.isMoving()) map.once('moveend', function () { setTimeout(start, 150); }); else setTimeout(start, 300);
   }
   /* 일정 동선 둘레 r 미터 안쪽 영역 (선분마다 띠 + 장소마다 원) */
