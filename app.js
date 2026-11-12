@@ -87,7 +87,7 @@
       KRW.at = t.toISOString().slice(0, 16).replace('T', ' ') + ' (한국 시간)';
       KRW.live = true;
       try { localStorage.setItem('macau-krw', JSON.stringify({ day: today, rate: KRW.rate, at: KRW.at })); } catch (e) { /* 무시 */ }
-      render(false);
+      renderCards();   // 금액 옆 원화만 다시 그린다 (지도는 그대로)
     }).catch(function () { /* 인터넷이 없거나 막히면 data.js 의 환율 */ });
   }
   function isNarrow() { return window.innerWidth < 900; }      // 휴대폰처럼 좁은 화면인지
@@ -535,8 +535,11 @@
     }, wait);
   }
 
+  var firstFit = true;
   function fitTo(ids) {
     if (!mapReady) return;
+    var dur = firstFit && !reducedMotion() ? 3200 : 1800;   // 처음 열 때는 천천히 날아 내려온다
+    firstFit = false;
     flyToken++;
     state.lastPlace = null;
     var pts = ids.filter(onMap).map(function (id) { return [place(id).lng, place(id).lat]; });
@@ -547,7 +550,7 @@
     var wide = window.innerWidth >= 900;
     map.fitBounds(b, {
       padding: wide ? { top: 110, bottom: 100, left: 90, right: 90 } : { top: 130, bottom: 110, left: 75, right: 75 },   // 위 날짜 줄·아래 버튼 줄과 펼친 마커가 가려지지 않게
-      pitch: tilt(55), bearing: turnTo(-20), maxZoom: 16.2, duration: 1800
+      pitch: tilt(55), bearing: turnTo(-20), maxZoom: 16.2, duration: dur
     });
   }
 
@@ -570,11 +573,12 @@
     var ids = viewPlaceIds();
     var nums = state.day === 'all' ? {} : numbering(state.day);
     var color = state.day === 'all' ? '#0b6e99' : dayInfo(state.day).color;
-    ids.forEach(function (id) {
+    ids.forEach(function (id, i) {
       var p = place(id);
       var t = PLACE_TYPES[p.type] || { icon: '📍' };
       var el = document.createElement('div');
       el.className = state.day === 'all' ? 'mk small' : 'mk';   // 전체 보기에서는 작게
+      el.style.setProperty('--d', Math.min(i, 16) * 45 + 'ms');    // 하나씩 톡톡 튀어나오게
       el.style.setProperty('--mk-color', color);
       el.textContent = t.icon;
       if (nums[id]) { var n = document.createElement('span'); n.className = 'n'; n.textContent = nums[id]; el.appendChild(n); }
@@ -603,7 +607,7 @@
       };
     }).filter(function (f) { return f.geometry.coordinates.length > 1; });
     var src = map.getSource('routes');
-    if (src) src.setData({ type: 'FeatureCollection', features: feats });
+    if (src) drawRoutes(src, feats);
     dashUntil = Date.now() + 8000;
 
     if (moveCamera) fitTo(ids);
@@ -948,6 +952,36 @@
     } catch (e) { /* 빛기둥이 없어도 나머지는 그대로 동작한다 */ }
   }
 
+  /* 동선을 출발지부터 차례로 그려 나간다 (약 1.6초). 날짜를 바꾸면 처음부터 다시 그린다 */
+  var drawToken = 0;
+  function drawRoutes(src, feats) {
+    var my = ++drawToken;
+    if (reducedMotion() || !window.requestAnimationFrame) { src.setData({ type: 'FeatureCollection', features: feats }); return; }
+    var lens = feats.map(function (f) {
+      var c = f.geometry.coordinates, acc = [0];
+      for (var i = 1; i < c.length; i++) acc.push(acc[i - 1] + distanceM(c[i - 1], c[i]));
+      return acc;
+    });
+    var t0 = performance.now(), DUR = 1600;
+    function part(f, acc, p) {
+      var c = f.geometry.coordinates, goal = acc[acc.length - 1] * p, out = [c[0]];
+      for (var i = 1; i < c.length; i++) {
+        if (acc[i] <= goal) { out.push(c[i]); continue; }
+        var k = (goal - acc[i - 1]) / ((acc[i] - acc[i - 1]) || 1);
+        out.push([c[i - 1][0] + (c[i][0] - c[i - 1][0]) * k, c[i - 1][1] + (c[i][1] - c[i - 1][1]) * k]);
+        break;
+      }
+      if (out.length < 2) out.push(c[0]);
+      return { type: 'Feature', properties: f.properties, geometry: { type: 'LineString', coordinates: out } };
+    }
+    (function frame(now) {
+      if (my !== drawToken) return;
+      var p = Math.min(1, (now - t0) / DUR), e = 1 - Math.pow(1 - p, 3);   // 끝으로 갈수록 부드럽게 느려진다
+      src.setData({ type: 'FeatureCollection', features: p >= 1 ? feats : feats.map(function (f, i) { return part(f, lens[i], e); }) });
+      if (p < 1) requestAnimationFrame(frame);
+    })(t0);
+  }
+
   function addRouteLayers() {
     map.addSource('routes', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
     map.addLayer({
@@ -987,7 +1021,8 @@
     try {
       var opts = {
         container: 'map', style: styleUrl,
-        center: D.map.center, zoom: D.map.zoom, pitch: tilt(55), bearing: turnTo(-20), maxPitch: is2d ? 0 : 70,
+        // 오프닝: 높은 곳에서 시작해 첫 화면 맞춤(fitTo)이 마카오로 날아 내려오는 장면이 된다
+        center: D.map.center, zoom: reducedMotion() ? D.map.zoom : 10.8, pitch: 0, bearing: turnTo(reducedMotion() ? -20 : -150), maxPitch: is2d ? 0 : 70,
         antialias: true,                       // 3D 건물 모서리를 매끈하게
         attributionControl: { compact: true }
       };
@@ -1015,6 +1050,8 @@
       addRouteLayers();
       applyMode(false);
       updateMap(true);
+      // 덜 그려진 지도가 보이지 않게, 준비가 끝나면 서서히 나타나게 한다
+      setTimeout(function () { $('map').classList.add('shown'); }, 500);
     });
   }
 
@@ -1176,6 +1213,7 @@
     var top = $('modal-body').scrollTop;
     $('modal-body').innerHTML = bookingListHtml();
     $('modal-body').scrollTop = top;
+    if (e.target.checked && !$('modal-body').querySelector('.bk-sum strong')) celebrate();   // 미리 할 예약이 모두 끝났다
   });
 
   /* 예약 체크리스트: 한 줄에 아이콘·이름·날짜·핵심 금액·예약 버튼. 체크한 항목은 이 휴대폰에 기억한다 */
@@ -1219,6 +1257,23 @@
         '<p class="fine">' + esc(cp.note) + '</p></div>';
     }
     return html;
+  }
+  /* 축하 효과: 이모지가 위로 터졌다가 떨어진다 (동작 줄이기 설정이면 생략) */
+  function celebrate() {
+    if (reducedMotion()) return;
+    var box = document.createElement('div'); box.className = 'confetti';
+    var em = ['🎉', '✨', '🎊', '⭐', '🥳'];
+    for (var i = 0; i < 26; i++) {
+      var s = document.createElement('span');
+      s.textContent = em[i % em.length];
+      s.style.setProperty('--x', Math.round((Math.random() - .5) * 320) + 'px');
+      s.style.setProperty('--y', Math.round(-120 - Math.random() * 220) + 'px');
+      s.style.setProperty('--r', Math.round((Math.random() - .5) * 540) + 'deg');
+      s.style.animationDelay = Math.round(Math.random() * 180) + 'ms';
+      box.appendChild(s);
+    }
+    document.body.appendChild(box);
+    setTimeout(function () { box.remove(); }, 2000);
   }
   /* 할인 코드 누르면 복사 */
   function copyText(t, done) {
@@ -1328,6 +1383,17 @@
   $('btn-booking').addEventListener('click', function () { openModal('예약 체크리스트', bookingListHtml()); });
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
   $('btn-mode').addEventListener('click', toggleMode);
+  /* 제목 옆 D-day: 출발 전 'D-45', 여행 중 '2일차', 다녀온 뒤 '다녀왔어요' (한국 시간 기준) */
+  (function () {
+    var first = D.days[0] && D.days[0].date, last = D.days[D.days.length - 1] && D.days[D.days.length - 1].date;
+    if (!first) return;
+    var today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    var dd = Math.round((Date.parse(first) - Date.parse(today)) / 86400000);
+    var txt = dd > 0 ? 'D-' + dd : dd === 0 ? 'D-DAY ✈️' : today <= last ? (1 - dd) + '일차' : '다녀왔어요';
+    var b = document.createElement('span');
+    b.className = 'dday'; b.textContent = txt;
+    $('title').insertBefore(b, $('title').firstChild);
+  })();
   loadRate();
   applyMode(false);
   $('modal-close').addEventListener('click', closeModal);
