@@ -1285,6 +1285,7 @@
     var done = doneSet(), left = keys.filter(function (k) { return !done[k] && D.bookings[k].level !== '선택' && D.bookings[k].level !== '현장 구매'; }).length;
     var html = '<p class="bk-sum">' + (left ? '⏳ 미리 할 예약 <strong>' + left + '개</strong> 남음' : '✅ 미리 할 예약 끝!') +
       '<br><span class="fine">⭐ 권장 · ➕ 선택 · 🏷️ 현장 구매 · 🔒 예약번호는 여기 적지 마세요</span>' +
+      '<br><span class="fine">👶 아이 요금은 25개월·35개월 두 아이 기준 (✅ 무료 · 💳 유료 · ⚠️ 확인 필요)</span>' +
       '<br><span class="fine">🔗 판매처(클룩·마이리얼트립·더라운지)가 표시된 버튼은 제휴 링크입니다. 이 링크로 예약하면 사이트를 만든 사람이 수수료를 받을 수 있습니다.</span></p>';
     keys.forEach(function (k) {
       var b = D.bookings[k];
@@ -1293,6 +1294,7 @@
         '<div class="bk2-main"><p class="bk2-title">' + (b.icon || '🎫') + ' ' + esc(b.short || b.name) + ' <span class="bk2-lvl">' + (LEVEL_ICON[b.level] || '') + '</span>' +
           (b.affBy ? ' <span class="bk2-by">' + esc(b.affBy) + '</span>' : '') + '</p>' +
         '<p class="bk2-key">' + (used[k] ? '📅 ' + esc(used[k].filter(function (v, i, a) { return a.indexOf(v) === i; }).join(', ')) + ' · ' : b.when ? '📅 ' + esc(b.when) + ' · ' : '') + esc(b.key || '') + '</p>' +
+        (b.kids ? '<p class="bk2-kids">👶 ' + esc(b.kids) + '</p>' : '') +
         (b.affNote ? '<p class="bk2-warn">⚠️ ' + esc(b.affNote) + '</p>' : '') +
         (b.note ? '<details><summary>자세히</summary><p>' + esc(b.note) + '</p>' +
           (b.aff && b.url !== b.aff ? '<p>' + link(b.url, '🌐 공식 사이트', '') + '</p>' : '') +

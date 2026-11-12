@@ -206,11 +206,12 @@ window.TRIP_DATA = {
   /* ---------- 예약 링크 ----------
    * level: '필수'(빨간 버튼) / '권장' / '선택' / '현장 구매'
    * linkVerified: true = 링크가 열리는 것을 확인함 / false = 확인하지 못함 */
-  /* 예약 링크. aff 는 제휴 예약 링크(affBy 판매처) — 있으면 '예약' 버튼이 이 링크로 열리고, url(공식 사이트)은 '자세히' 안에 보인다.
+  /* 예약 링크. kids 는 두 아이(25개월·35개월) 기준 요금 한 줄. aff 는 제휴 예약 링크(affBy 판매처) — 있으면 '예약' 버튼이 이 링크로 열리고, url(공식 사이트)은 '자세히' 안에 보인다.
    * when 은 일정에 없는 항목의 이용 날짜. icon·short·key 는 예약 체크리스트에 한 줄로 보이는 아이콘·짧은 이름·핵심(금액 단위 MOP), note 는 '자세히'를 눌러야 보이는 설명 */
   bookings: {
     cod: {
       name: '시티 오브 드림즈 키즈시티', level: '권장', linkVerified: true,
+      kids: '💳 두 아이 모두 유료 · 1~17세 MOP 180씩',
       icon: '🧸', short: '키즈시티', key: '아이 180 · 어른 20',
       aff: 'https://3ha.in/r/895272', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/kr/attractions/kids-city',
@@ -218,6 +219,7 @@ window.TRIP_DATA = {
     },
     dancingwater: {
       name: '하우스 오브 댄싱 워터 (시티 오브 드림즈 수상 공연)', level: '선택', linkVerified: true,
+      kids: '✅ 25개월 무료 · ⚠️ 35개월은 공연일에 만 3세가 넘으면 유료 (만 3세 미만만 무릎 무료)',
       icon: '🎭', short: '댄싱 워터 공연 (선택)', key: '어른 698~ · 3세 미만 무릎 무료',
       aff: 'https://3ha.in/r/895307', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water',
@@ -228,6 +230,7 @@ window.TRIP_DATA = {
     },
     hampton: {
       name: '햄튼 코트 저녁 뷔페 (런더너 그랜드 2층)', level: '권장', linkVerified: true,
+      kids: '✅ 두 아이 모두 무료 · 만 4세 미만',
       icon: '🍽️', short: '햄튼 코트 뷔페 저녁', key: '어른 988 · 4세 미만 무료 · ☎ 8118 8822',
       aff: 'https://3ha.in/r/895226', affBy: '클룩', affNote: '클룩 이용권을 사도 12/28 저녁 자리는 전화(+853 8118 8822)로 한 번 더 확인하세요. 공식 안내상 저녁 예약은 전화로만 받습니다.',
       url: 'https://www.londonermacao.com/macau-restaurants/hampton-court.html',
@@ -236,6 +239,7 @@ window.TRIP_DATA = {
     },
     funzone: {
       name: '슈퍼 펀 존', level: '권장', linkVerified: true,
+      kids: '💳 두 아이 모두 유료 · 키 1m 미만 MOP 120씩',
       icon: '🎈', short: '슈퍼 펀 존', key: '아이 120 · 어른 120 · 🧦 양말',
       aff: 'https://3ha.in/r/895138', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/super-fun-zone',
@@ -243,6 +247,7 @@ window.TRIP_DATA = {
     },
     wheel: {
       name: '8자 관람차 (골든 릴)', level: '선택', linkVerified: true,
+      kids: '💳 두 아이 모두 유료 · 만 2세 미만만 무료, 1인 MOP 100',
       icon: '🎡', short: '8자 관람차', key: '1인 100 · 현장 구매 가능',
       aff: 'https://3ha.in/r/895142', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/golden-reel',
@@ -250,6 +255,7 @@ window.TRIP_DATA = {
     },
     panda: {
       name: '자이언트 판다관 입장권', level: '현장 구매', linkVerified: true, buttonLabel: '관광청 안내',
+      kids: '✅ 두 아이 모두 무료 · 아이 무료 (현장 확인)',
       icon: '🐼', short: '판다관', key: '현장 회차권 · 무료 또는 어른 10 · ☎ 2833 7676',
       url: 'https://www.macaotourism.gov.mo/ko/sightseeing/other-attractions/macao-giant-panda-pavilion',
       note: '매표소에서 입장 회차권을 받습니다. 요금은 어른 MOP 10(아이 무료)이라는 안내와 2021년부터 무료(온라인 예약)라는 정부 발표가 함께 있어 현장 확인이 필요합니다. ' +
@@ -257,6 +263,7 @@ window.TRIP_DATA = {
     },
     waterpark: {
       name: '스튜디오 시티 실내 워터파크', level: '권장', linkVerified: true,
+      kids: '✅ 두 아이 모두 무료 · 키 1m 미만 (입구에서 키 잼)',
       icon: '🌊', short: '실내 워터파크', key: '어른 398 · 1m 미만 무료',
       aff: 'https://3ha.in/r/895274', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/studio-city-water-park',
@@ -270,6 +277,7 @@ window.TRIP_DATA = {
     },
     glpbreakfast: {
       name: '그랜드 리스보아 팰리스 조식 뷔페 (더 그랜드 뷔페)', level: '선택', linkVerified: true,
+      kids: '✅ 두 아이 모두 무료 · 만 6세 이하 (어른 1명당 1명)',
       icon: '🍳', short: '호텔 조식 뷔페', key: '어른 268 · 만 6세 이하 무료 · 조식 포함 객실이면 불필요', when: '12/28·29',
       url: 'https://3ha.in/r/895275', aff: 'https://3ha.in/r/895275', affBy: '클룩',
       note: '공식 요금: 조식 어른 MOP 268, 아이(만 7~12세) MOP 134, 봉사료 10% 별도. 어른 1명당 만 6세 이하 아이 1명은 무료(공식)라 두 아이 모두 요금이 없습니다. ' +
@@ -277,12 +285,14 @@ window.TRIP_DATA = {
     },
     pickup: {
       name: '마카오 국제공항 픽업·샌딩', level: '선택', linkVerified: true,
+      kids: '차 1대 요금 · 카시트가 필요하면 예약 때 요청',
       icon: '🚐', short: '공항 픽업·샌딩', key: '무료 셔틀 대신 · 견적 확인', when: '12/27·31',
       url: 'https://3ha.in/r/895276', aff: 'https://3ha.in/r/895276', affBy: '클룩',
       note: '공항↔호텔 무료 셔틀 대신 쓸 수 있는 차량입니다. 짐과 유모차가 많을 때 편합니다. 날짜·방향·호텔을 넣고 견적을 확인하세요.'
     },
     icnlounge: {
       name: '인천공항 제2터미널 라운지 (출국일 아침)', level: '선택', linkVerified: true,
+      kids: '⚠️ 라운지마다 기준이 달라 입장 때 확인',
       icon: '🛋️', short: '인천 T2 라운지 (출국일)', key: '1인 35,000원 · 최대 3시간 · 마티나 골드 제외',
       aff: 'https://3ha.in/r/895305', affBy: '더라운지',
       url: 'https://3ha.in/r/895305',
@@ -292,6 +302,7 @@ window.TRIP_DATA = {
     },
     mfmlounge: {
       name: '마카오 공항 플라자 프리미엄 라운지 (귀국일)', level: '선택', linkVerified: true,
+      kids: '💳 두 아이 모두 유료 · 만 2세 미만만 무료',
       icon: '🛋️', short: '마카오 공항 라운지 (귀국일)', key: '3·6시간권 선택 · 만 2세 미만만 무료',
       aff: 'https://experiences.myrealtrip.com/products/5867485?mylink_id=6791630&t_scope=604800&utm_source=mktpartner', affBy: '마이리얼트립',
       url: 'https://www.plazapremiumlounge.com/en-uk/find/china-regions/macau/macau/macau-international-airport/departures-mezzanine-airside-level',
