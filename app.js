@@ -586,6 +586,7 @@
   function fitViewPadding() {
     if (!mapReady) return;
     var r = $('map').getBoundingClientRect(), top = $('top').getBoundingClientRect(), bar = $('bar').getBoundingClientRect();
+    $('app').style.setProperty('--top-h', Math.round(top.bottom - r.top) + 'px');   // 인천 표시 등 위쪽 메뉴 바로 아래에 둘 것
     map.setPadding({ top: Math.max(0, Math.round(top.bottom - r.top) + 6), bottom: Math.max(0, Math.round(r.bottom - bar.top) + 6), left: 0, right: 0 });
   }
   window.addEventListener('resize', function () { setTimeout(fitViewPadding, 120); });
@@ -666,7 +667,7 @@
     dashUntil = Date.now() + 8000;
 
     if (moveCamera) fitTo(ids);
-    flightFx(moveCamera);
+    flightFx();
   }
 
   /* 화면에서 서로 겹치는 마커(같은 건물 안의 일정 등)는 원래 자리 둘레로 동그랗게 펼쳐 모두 보이게 한다 */
@@ -948,66 +949,65 @@
    * 첫날을 고르면 바다 너머 '한반도·인천' 표시에서 마카오 공항으로 비행기가 날아오고,
    * 마지막 날을 고르면 마카오 공항에서 인천으로 날아간다. 인천 표시는 실제 위치가 아니라
    * 지금 화면 축척 그대로, 마카오 공항에서 한국 쪽(북동쪽) 화면 가장자리 근처 바다 위에 둔다. */
-  var fx = { korea: null, plane: null, raf: 0, token: 0 };
+  var fx = { box: null, raf: 0, token: 0, onMove: null };
   var KOREA_SVG = '<svg viewBox="0 0 40 60" width="34" height="51" aria-hidden="true"><path d="M14 2 L24 1 L31 6 L30 12 L26 15 L28 22 L33 30 L34 40 L31 49 L24 55 L17 57 L12 52 L14 46 L10 41 L13 35 L9 30 L12 24 L10 18 L14 13 L11 8 Z" fill="#e8e2d2" stroke="#7a8a86" stroke-width="1.5"/><circle cx="12" cy="25" r="3.2" fill="#d1451f"/></svg>';
   // 여객기 (위에서 본 모양, 기본은 위쪽을 향함 → 진행 방향으로 돌린다)
   var PLANE_SVG = '<svg viewBox="0 0 24 24" width="38" height="38" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="#ffffff" stroke="#16242d" stroke-width="1" stroke-linejoin="round"/></svg>';
   function clearFlight() {
     fx.token++; cancelAnimationFrame(fx.raf);
-    if (fx.korea) { fx.korea.remove(); fx.korea = null; }
-    if (fx.plane) { fx.plane.remove(); fx.plane = null; }
-    var src = mapReady && map.getSource('flight');
-    if (src) src.setData({ type: 'FeatureCollection', features: [] });
+    if (fx.onMove && map) { map.off('move', fx.onMove); fx.onMove = null; }
+    if (fx.box) { fx.box.remove(); fx.box = null; }
   }
-  function flightFx(waitMove) {
+  /* 인천 표시는 지도가 아니라 화면 오른쪽 위(1시 방향)에 고정. 비행기와 점선은 그 자리와 '지금 화면의 마카오 공항'을 잇는다
+   * → 지도를 움직이거나 투어로 카메라가 움직여도 인천은 늘 1시 방향 끝에 있다 */
+  function flightFx() {
     clearFlight();
     if (!mapReady || !onMap('mfm')) return;
     var firstDay = D.days[0].date, lastDay = D.days[D.days.length - 1].date;
     if (state.day !== firstDay && state.day !== lastDay) return;
     var outbound = state.day === firstDay, my = fx.token;
-    var go = function () {
+    var box = document.createElement('div'); box.className = 'flight-fx';
+    box.innerHTML = '<svg class="flight-line"><path/></svg><div class="korea">' + KOREA_SVG + '<span>인천 ✈</span></div><div class="plane">' + PLANE_SVG + '</div>';
+    $('app').appendChild(box); fx.box = box;
+    var path = box.querySelector('path'), plane = box.querySelector('.plane'), korea = box.querySelector('.korea');
+    var prog = reducedMotion() ? 1 : 0;
+    function geom() {
+      var r = $('app').getBoundingClientRect(), kr = korea.getBoundingClientRect(), mr = map.getContainer().getBoundingClientRect();
+      var k = { x: kr.left - r.left + kr.width / 2, y: kr.top - r.top + kr.height * 0.4 };
+      var mp = map.project([place('mfm').lng, place('mfm').lat]), m = { x: mp.x + mr.left - r.left, y: mp.y + mr.top - r.top };
+      var a = outbound ? k : m, b = outbound ? m : k;
+      var c = { x: (a.x + b.x) / 2 + (b.y - a.y) * 0.25, y: (a.y + b.y) / 2 - (b.x - a.x) * 0.25 };
+      return { a: a, b: b, c: c };
+    }
+    function at(g, u) {
+      return { x: (1 - u) * (1 - u) * g.a.x + 2 * (1 - u) * u * g.c.x + u * u * g.b.x, y: (1 - u) * (1 - u) * g.a.y + 2 * (1 - u) * u * g.c.y + u * u * g.b.y };
+    }
+    function draw() {
       if (my !== fx.token) return;
-      var c = map.getContainer(), W = c.clientWidth, H = c.clientHeight, pad = map.getPadding();
-      var m = map.project([place('mfm').lng, place('mfm').lat]);
-      // 인천 표시 자리: 화면 오른쪽 위 구석 (한국 쪽). 공항이 그 근처면 왼쪽 위 구석으로
-      var top = pad.top + 62, k = { x: W - 48, y: top };
-      if (Math.hypot(k.x - m.x, k.y - m.y) < 170) k = { x: 48, y: top };
-      var kll = map.unproject([k.x, k.y]);
-      var el = document.createElement('div'); el.className = 'korea'; el.innerHTML = KOREA_SVG + '<span>인천 ✈</span>';
-      fx.korea = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(kll).addTo(map);
-      // 휘어진 비행 경로 (화면에서 그린 곡선을 지도 좌표로)
-      var a = outbound ? k : m, b = outbound ? m : k, n = 48, pts = [], ctl = { x: (a.x + b.x) / 2 - (b.y - a.y) * 0.28, y: (a.y + b.y) / 2 + (b.x - a.x) * 0.28 };
-      for (var i = 0; i <= n; i++) {
-        var u = i / n, x = (1 - u) * (1 - u) * a.x + 2 * (1 - u) * u * ctl.x + u * u * b.x, y = (1 - u) * (1 - u) * a.y + 2 * (1 - u) * u * ctl.y + u * u * b.y;
-        pts.push({ x: x, y: y, ll: map.unproject([x, y]).toArray() });
-      }
-      var src = map.getSource('flight');
-      var setLine = function (j) { if (src) src.setData({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: pts.slice(0, Math.max(2, j + 1)).map(function (p) { return p.ll; }) } }); };
-      var pe = document.createElement('div'); pe.className = 'plane'; pe.innerHTML = PLANE_SVG;
-      fx.plane = new maplibregl.Marker({ element: pe, anchor: 'center' }).setLngLat(pts[0].ll).addTo(map);
-      var turn = function (j) { var p = pts[Math.max(0, j - 1)], q = pts[Math.min(n, j + 1)]; pe.firstChild.style.transform = 'rotate(' + (Math.atan2(q.y - p.y, q.x - p.x) + Math.PI / 2) + 'rad)'; };
-      if (reducedMotion()) { setLine(n); fx.plane.setLngLat(pts[n].ll); turn(n); return; }
+      var g = geom(), e = prog < .5 ? 2 * prog * prog : 1 - Math.pow(-2 * prog + 2, 2) / 2;
+      // 지나온 곡선만 점선으로 (끝까지 가면 전체)
+      var d = 'M' + g.a.x + ' ' + g.a.y, n = 30;
+      for (var i = 1; i <= Math.round(n * e); i++) { var q = at(g, i / n); d += ' L' + q.x + ' ' + q.y; }
+      path.setAttribute('d', d);
+      var p = at(g, e), p2 = at(g, Math.min(1, e + 0.02)), p1 = at(g, Math.max(0, e - 0.02));
+      var ang = Math.atan2(p2.y - p1.y, p2.x - p1.x) + Math.PI / 2;
+      plane.style.transform = 'translate(' + (p.x - 19) + 'px,' + (p.y - 19) + 'px) rotate(' + ang + 'rad) scale(' + (1 + Math.sin(e * Math.PI) * 0.35) + ')';
+      plane.style.opacity = outbound && prog >= 1 ? '0' : '1';   // 마카오에 내려앉으면 사라진다
+    }
+    fx.onMove = draw; map.on('move', draw);
+    var start = function () {
+      if (my !== fx.token) return;
       var t0 = performance.now(), DUR = 2600;
       (function frame(now) {
         if (my !== fx.token) return;
-        var p = Math.min(1, (now - t0) / DUR), e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2, j = Math.round(e * n);
-        fx.plane.setLngLat(pts[j].ll); turn(j); setLine(j);
-        pe.style.scale = String(1 + Math.sin(p * Math.PI) * 0.35);    // 가운데쯤 살짝 커졌다가 내려앉는다
-        if (p < 1) fx.raf = requestAnimationFrame(frame);
-        else if (outbound) setTimeout(function () { if (my === fx.token && fx.plane) fx.plane.getElement().classList.add('landed'); }, 300);
+        prog = Math.min(1, (now - t0) / DUR); draw();
+        if (prog < 1) fx.raf = requestAnimationFrame(frame);
       })(t0);
     };
-    // 날짜 화면 맞춤(카메라 이동)이 끝난 뒤에 그린다
-    if (waitMove || map.isMoving()) map.once('moveend', function () { setTimeout(go, 150); }); else setTimeout(go, 150);
+    draw();
+    if (reducedMotion()) return;
+    if (map.isMoving()) map.once('moveend', function () { setTimeout(start, 150); }); else setTimeout(start, 300);
   }
-  function addFlightLayer() {
-    try {
-      map.addSource('flight', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-      map.addLayer({ id: 'flight-line', type: 'line', source: 'flight', layout: { 'line-cap': 'round' },
-        paint: { 'line-color': '#16242d', 'line-width': 2.5, 'line-opacity': .75, 'line-dasharray': [1.5, 2] } });
-    } catch (e) { /* 효과 없이 지도는 그대로 */ }
-  }
-
   /* 일정 동선 둘레 r 미터 안쪽 영역 (선분마다 띠 + 장소마다 원) */
   function routeCorridor(r) {
     var polys = [], seen = {};
@@ -1205,7 +1205,6 @@
       map.on('moveend', spreadMarkers);
       addBeaconLayer();
       addRouteLayers();
-      addFlightLayer();
       addMeLayer();
       fitViewPadding();
       applyMode(false);
