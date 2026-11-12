@@ -30,6 +30,7 @@
 
   var state = { plan: 0, day: 'all', tourIdx: -1, playing: false, timer: null, lastPlace: null };
   var map = null, mapReady = false, markers = {}, popup = null, dashTimer = null;
+  var dashUntil = 0;         // 동선 점선을 이 시각까지만 움직인다(투어 중에는 계속)
 
   /* ---------- 3D 투어 카메라 설정 (숫자를 바꾸면 연출이 달라집니다) ---------- */
   var STOP_ZOOM = 16.1;      // 장소에 도착했을 때의 확대 정도 (클수록 가까이)
@@ -58,7 +59,7 @@
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
   }
   /* 그 장소를 구글 지도에서 여는 주소 (길찾기·리뷰·사진을 볼 수 있다) */
-  function earthLink(id) {
+  function mapsLink(id) {
     var p = place(id);
     var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(p.mapQuery || (p.lat + ',' + p.lng));
     return link(url, '📍 구글 지도', 'btn');
@@ -261,7 +262,7 @@
     }
     if (!isMove && !quiet) {
       var first = (it.places || []).filter(onMap)[0];
-      if (first) actions.push(earthLink(first));
+      if (first) actions.push(mapsLink(first));
     }
     if (actions.length) more += '<div class="card-actions">' + actions.join('') + '</div>';
     if (sh) more += '<p class="fine">' + esc(sh.info) + ' · 운행 시각은 현장 확인</p>';
@@ -330,31 +331,6 @@
   }
 
   /* ---------- 지도 ---------- */
-  function popupHtml(id) {
-    var p = place(id);
-    var t = PLACE_TYPES[p.type] || { icon: '📍', label: '' };
-    var html = '<div class="pop"><h3>' + t.icon + ' ' + esc(p.name) + '</h3><p class="pop-type">' + esc(t.label) + '</p>';
-    if (p.note) html += '<p>' + esc(p.note) + '</p>';
-    if (p.hours) html += '<p>🕒 ' + esc(p.hours) + '</p>';
-    if (p.verified === false) html += '<p class="unverified">위치는 건물 기준의 대략적인 표시입니다</p>';
-
-    // 이 장소에서 하는 일정의 시간과 꿀팁을 모은다
-    var tips = [], when = [], bk = null;
-    viewDates().forEach(function (date) {
-      items(date).forEach(function (it) {
-        if (it.kind === 'move' || (it.places || []).indexOf(id) < 0) return;
-        if (!QUIET_KINDS[it.kind]) when.push((state.day === 'all' ? it.date.slice(5).replace('-', '/') + ' ' : '') + it.time + ' ' + it.title);
-        (it.tips || []).forEach(function (x) { if (tips.indexOf(x) < 0) tips.push(x); });
-        if (!bk && it.booking && D.bookings[it.booking]) bk = D.bookings[it.booking];
-      });
-    });
-    if (when.length) html += '<p>' + when.slice(0, 4).map(esc).join('<br>') + '</p>';
-    if (tips.length) html += '<ul>' + tips.slice(0, 3).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
-    if (bk) html += bookingButton(bk);
-    if (p.url && !(bk && bk.url === p.url)) html += link(p.url, p.urlLabel || '소개 페이지', 'btn');
-    html += earthLink(id);
-    return html + '</div>';
-  }
 
   /* 투어 중에 마커 아래에 띄우는 작은 이름표 */
   function compactHtml(id, it) {
@@ -404,6 +380,14 @@
     if (p.note) meta.push(p.note);
     var html = meta.length ? '<p class="fine">' + esc(meta.join(' · ')) + '</p>' : '';
     if (p.hours) html += '<p class="fine">🕒 ' + esc(p.hours) + '</p>';
+    // 마커가 겹쳐 누르기 어려운 곳을 위해, 150m 안의 다른 장소로 바로 가는 버튼을 둔다
+    var near = viewPlaceIds().filter(function (o) { return o !== id && distanceM([p.lng, p.lat], [place(o).lng, place(o).lat]) < 150; });
+    if (near.length) {
+      html += '<div class="near"><span class="fine">가까운 곳</span>' + near.map(function (o) {
+        var ot = PLACE_TYPES[place(o).type] || { icon: '📍' };
+        return '<button type="button" class="chip-btn" data-place="' + o + '">' + ot.icon + ' ' + esc(place(o).name) + '</button>';
+      }).join('') + '</div>';
+    }
     var linked = {}, n = 0;
     viewDates().forEach(function (date) {
       items(date).forEach(function (it) {
@@ -413,7 +397,7 @@
         n++;
       });
     });
-    if (!n) html += '<div class="card-actions">' + (p.url ? link(p.url, p.urlLabel || '소개 페이지', 'btn') : '') + earthLink(id) + '</div>';
+    if (!n) html += '<div class="card-actions">' + (p.url ? link(p.url, p.urlLabel || '소개 페이지', 'btn') : '') + mapsLink(id) + '</div>';
     if (p.verified === false) html += '<p class="fine">지도 위 위치는 건물 기준의 대략적인 표시입니다.</p>';
     return html;
   }
@@ -534,6 +518,7 @@
     }).filter(function (f) { return f.geometry.coordinates.length > 1; });
     var src = map.getSource('routes');
     if (src) src.setData({ type: 'FeatureCollection', features: feats });
+    dashUntil = Date.now() + 8000;
 
     if (moveCamera) fitTo(ids);
   }
@@ -562,15 +547,8 @@
         });
       }
       if (bLayer) {
-        // 벽에 창문 무늬를 입힌다 (작은 그림을 만들어 반복해서 붙인다)
-        var cv = document.createElement('canvas'); cv.width = 32; cv.height = 32;
-        var g = cv.getContext('2d');
-        g.fillStyle = '#ece6d8'; g.fillRect(0, 0, 32, 32);
-        g.fillStyle = '#5f7f96';
-        [2, 10, 18, 26].forEach(function (x) { [2, 10, 18, 26].forEach(function (y) { g.fillRect(x, y, 4, 5); }); });
-        var img = g.getImageData(0, 0, 32, 32);
-        if (!map.hasImage('tour-windows')) map.addImage('tour-windows', { width: 32, height: 32, data: new Uint8Array(img.data.buffer) });
-        map.setPaintProperty(bLayer, 'fill-extrusion-pattern', 'tour-windows');
+        // 벽에 창문 무늬를 입힌다
+        map.setPaintProperty(bLayer, 'fill-extrusion-pattern', windowPattern('#ece6d8', '#5f7f96'));
         // 지붕: 높은 건물은 청록색, 낮은 건물은 회색
         map.addLayer({
           id: 'tour-roofs', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
@@ -743,7 +721,7 @@
     var step = 0;
     if (dashTimer) clearInterval(dashTimer);
     dashTimer = setInterval(function () {
-      if (document.hidden || !mapReady) return;
+      if (document.hidden || !mapReady || (!state.playing && Date.now() > dashUntil)) return;
       step = (step + 1) % seq.length;
       try { map.setPaintProperty('routes-dash', 'line-dasharray', seq[step]); } catch (e) { /* 무시 */ }
     }, 90);
@@ -1022,6 +1000,12 @@
 
   $('btn-list').addEventListener('click', function () { if (sheetMode === 'list') hideSheet(); else showList(); });
   $('sheet-close').addEventListener('click', hideSheet);
+  $('place').addEventListener('click', function (e) {     // '가까운 곳' 버튼 → 그 장소로
+    var b = e.target.closest('[data-place]');
+    if (!b) return;
+    var id = b.getAttribute('data-place');
+    flyToPlace(id, { sheet: true }); openPopup(id); showPlace(id);
+  });
 
   $('tour-play').addEventListener('click', function () { if (state.playing) stopTour(); else playTour(); });
   $('tour-next').addEventListener('click', function () { stepTour(1); });
@@ -1031,7 +1015,10 @@
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
   $('modal-close').addEventListener('click', closeModal);
   $('modal').addEventListener('click', function (e) { if (e.target === $('modal')) closeModal(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('modal').hidden) closeModal(); else hideSheet();
+  });
 
   /* ---------- 시작 ---------- */
   render(false);          // 일정 목록을 먼저 그린다(지도와 무관)
