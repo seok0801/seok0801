@@ -290,11 +290,12 @@ window.TRIP_DATA = {
         '구매 후 14일 안에만 취소·환불되고, 다른 할인 쿠폰과 같이 쓸 수 없습니다. 아이 요금은 라운지마다 달라 입장 전에 확인하세요. 신용카드 무료 혜택(PP카드 등)이 있으면 먼저 확인하세요.'
     },
     mfmlounge: {
-      name: '마카오 공항 플라자 프리미엄 라운지 (귀국일)', level: '선택', linkVerified: true, buttonLabel: '공식 안내',
-      icon: '🛋️', short: '마카오 공항 라운지 (귀국일)', key: '출발 전 3시간 반 대기용 · 만 2세 미만만 무료',
+      name: '마카오 공항 플라자 프리미엄 라운지 (귀국일)', level: '선택', linkVerified: true,
+      icon: '🛋️', short: '마카오 공항 라운지 (귀국일)', key: '3·6시간권 선택 · 만 2세 미만만 무료',
+      aff: 'https://experiences.myrealtrip.com/products/5867485?mylink_id=6791630&t_scope=604800&utm_source=mktpartner', affBy: '마이리얼트립',
       url: 'https://www.plazapremiumlounge.com/en-uk/find/china-regions/macau/macau/macau-international-airport/departures-mezzanine-airside-level',
       note: '12/31은 공항 도착(11:15)부터 출발(14:55)까지 약 3시간 반이라, 점심과 아이 쉬는 곳으로 쓰기 좋습니다. 9번 게이트 근처 출국장 중층, 05:00~02:00 운영(공식). ' +
-        '공식 안내상 만 2세 미만만 무료라 두 아이(25·35개월)는 요금이 붙을 수 있습니다. 판매처 요금은 1인 약 미화 45달러(3시간)부터로 제각각이니 예약 때 확인하세요. 카드 라운지 혜택도 먼저 확인하세요.'
+        '공식 안내상 만 2세 미만만 무료라 두 아이(25·35개월)는 요금이 붙을 수 있습니다. 예약 버튼은 마이리얼트립 상품으로, 3시간권과 6시간권 중에서 고릅니다(출발까지 3시간 반이라 3시간권이면 충분). 요금은 예약 화면에서 확인하세요. 카드 라운지 혜택도 먼저 확인하세요.'
     }
   },
 
