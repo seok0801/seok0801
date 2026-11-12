@@ -537,7 +537,7 @@
         if (l.type === 'fill-extrusion') {
           has = true; bLayer = l.id;
           map.setLayerZoomRange(l.id, 13, 24);
-          map.setPaintProperty(l.id, 'fill-extrusion-color', '#e9e3d4');
+          map.setPaintProperty(l.id, 'fill-extrusion-color', '#e3e1dc');
           map.setPaintProperty(l.id, 'fill-extrusion-opacity', 1);
         }
       });
@@ -545,18 +545,18 @@
         bLayer = 'tour-3d-buildings';
         map.addLayer({
           id: bLayer, type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
-          paint: { 'fill-extrusion-color': '#e9e3d4', 'fill-extrusion-height': H,
+          paint: { 'fill-extrusion-color': '#e3e1dc', 'fill-extrusion-height': H,
             'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0], 'fill-extrusion-opacity': 1 }
         });
       }
       if (bLayer) {
-        // 벽에 창문 무늬를 입힌다
-        map.setPaintProperty(bLayer, 'fill-extrusion-pattern', windowPattern('#ece6d8', '#5f7f96'));
-        // 지붕: 높은 건물은 청록색, 낮은 건물은 회색
+        // 주변 건물은 옅은 회색 벽에 흐린 창문 무늬만 입혀, 일정에 있는 건물이 눈에 띄게 한다
+        map.setPaintProperty(bLayer, 'fill-extrusion-pattern', windowPattern('#e6e4df', '#b9c0c4'));
+        // 주변 건물 지붕도 회색 계열로만
         map.addLayer({
           id: 'tour-roofs', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
           paint: {
-            'fill-extrusion-color': ['step', H, '#c4c0b4', 28, '#6f9085'],
+            'fill-extrusion-color': ['step', H, '#d2cfc8', 28, '#bfc3c2'],
             'fill-extrusion-base': H,
             'fill-extrusion-height': ['+', H, 1.2],
             'fill-extrusion-opacity': 1
@@ -596,13 +596,15 @@
 
   /* 높이가 적힌 장소(height)가 납작한 건물 위에 있으면, 그 건물 바닥 모양을 그대로 써서 적힌 높이로 세운다 */
   /* 또 look(벽·유리·지붕 색)이 적힌 장소는 그 건물(과 radius 미터 안의 건물)을 그 색으로 칠한다 */
+  /* 일정에 있는 건물 표시 색: 지붕은 모두 주황색, 벽은 장소마다 적어 둔 색(look)이 없으면 아래 색 */
+  var ACCENT = { wall: '#f3c477', glass: '#8a5a22', roof: '#e0662f' }, NEAR_M = 18;
   var tallKeys = {}, tallFeatures = [];   // 지도 조각이 나중에 도착해도 빠진 건물을 이어서 칠한다
   function raiseFlatBuildings() {
     if (!mapReady || map.getZoom() < 14.5) return;
     var changed = false, all = null;
     Object.keys(D.places).forEach(function (id) {
       var p = D.places[id];
-      if ((!p.height && !p.look) || !onMap(id)) return;
+      if (!onMap(id)) return;
       var pt = map.project([p.lng, p.lat]);
       var c = map.getContainer();
       if (pt.x < 0 || pt.y < 0 || pt.x > c.clientWidth || pt.y > c.clientHeight) return;
@@ -619,16 +621,16 @@
       all.forEach(function (o) {
         var geom = { type: 'Polygon', coordinates: o.rings };
         var own = insidePolygon(here, geom);
-        if (!own && !(look.radius && nearPolygon(here, geom, look.radius))) return;
+        if (!own && !nearPolygon(here, geom, look.radius || NEAR_M)) return;
         var first = o.rings[0][0];
         var key = first[0].toFixed(6) + ',' + first[1].toFixed(6);
         if (tallKeys[key]) return;                   // 이미 다른 장소의 색으로 칠한 건물은 건드리지 않는다
         tallKeys[key] = true; changed = true;
-        pat = pat || windowPattern(look.wall || '#ece6d8', look.glass || '#5f7f96');
+        pat = pat || windowPattern(look.wall || ACCENT.wall, look.glass || ACCENT.glass);
         var h = Math.max(o.props.render_height || 5, own && p.height ? p.height : 0);
         // 원래 건물과 벽·지붕이 정확히 겹치면 카메라가 돌 때 깜빡이므로, 바깥으로 0.8m 넓히고 조금 높인다
         tallFeatures.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: o.rings.map(growRing) },
-          properties: { h: h + 1.4, b: o.props.render_min_height || 0, pat: pat, roof: look.roof || (h >= 28 ? '#6f9085' : '#c4c0b4') } });
+          properties: { h: h + 1.4, b: o.props.render_min_height || 0, pat: pat, roof: ACCENT.roof } });
       });
     });
     if (changed) map.getSource('tour-tall').setData({ type: 'FeatureCollection', features: tallFeatures });
@@ -696,6 +698,22 @@
     } catch (e) { /* 바꾸지 못하면 원래 글자 그대로 쓴다 */ }
   }
 
+  /* 일정과 상관없는 마카오 바깥(주하이 등)은 바다색으로 덮어 그리지 않는다 */
+  function addAreaMask() {
+    var ring = D.map.area;
+    if (!ring || ring.length < 4) return;
+    try {
+      map.addSource('tour-mask', {
+        type: 'geojson',
+        data: {
+          type: 'Feature', properties: {},
+          geometry: { type: 'Polygon', coordinates: [[[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]], ring] }
+        }
+      });
+      map.addLayer({ id: 'tour-mask', type: 'fill', source: 'tour-mask', paint: { 'fill-color': '#6f98a0', 'fill-antialias': false } });
+    } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
+  }
+
   /* 지금 보는 장소에 세우는 3D 빛기둥 (건물이 납작하게 그려진 곳에서도 위치와 입체감이 보인다) */
   function addBeaconLayer() {
     try {
@@ -757,6 +775,8 @@
         antialias: true,                       // 3D 건물 모서리를 매끈하게
         attributionControl: { compact: true }
       };
+      if (D.map.bounds) opts.maxBounds = D.map.bounds;   // 마카오 밖으로는 지도를 움직일 수 없게
+      if (D.map.minZoom) opts.minZoom = D.map.minZoom;
       var extra = D.map.mapOptions || {};      // (선택) data.js 의 map.mapOptions 로 지도 옵션을 더할 수 있다
       Object.keys(extra).forEach(function (k) { opts[k] = extra[k]; });
       map = new maplibregl.Map(opts);
@@ -769,6 +789,7 @@
       if (att) { att.classList.remove('maplibregl-compact-show'); att.removeAttribute('open'); }
       add3dBuildings();
       localizeLabels();
+      addAreaMask();
       addBeaconLayer();
       addRouteLayers();
       updateMap(true);
