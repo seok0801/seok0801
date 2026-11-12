@@ -95,7 +95,7 @@ a { color: var(--accent); }
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  background: #6f98a0;   /* 지도 바깥 바다색과 같게 */
+  background: #f2f6f8;   /* 지도 바다·바깥 색과 같게 */
 }
 #map { position: absolute; inset: 0; }
 

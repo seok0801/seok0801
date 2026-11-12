@@ -822,19 +822,19 @@
         // 바탕 지도의 가게·시설·도로·동네 이름은 그대로 둔다. 도로 번호판과 나라·주 이름만 숨긴다
         if (/shield|country|state|continent/.test(id)) map.setLayoutProperty(id, 'visibility', 'none');
       } else if (l.type === 'background') {
-        set('background-color', '#d9d6cc');
+        set('background-color', '#eee3c4');          // 마카오 땅: 따뜻한 모래색
       } else if (l.type === 'fill') {
-        if (/water/.test(id)) set('fill-color', '#6f98a0');
-        else if (/park|wood|grass|landcover|green|pitch|cemetery/.test(id)) { set('fill-color', '#a9b79a'); set('fill-opacity', 0.9); }
-        else if (/building/.test(id)) set('fill-color', '#cbc7bb');
-        else if (/aeroway/.test(id)) set('fill-color', '#c9c6bc');
-        else { set('fill-color', '#d4d1c7'); }
+        if (/water/.test(id)) set('fill-color', SEA_COLOR);
+        else if (/park|wood|grass|landcover|green|pitch|cemetery/.test(id)) { set('fill-color', '#b9c99c'); set('fill-opacity', 0.9); }
+        else if (/building/.test(id)) set('fill-color', '#e2d6b4');
+        else if (/aeroway/.test(id)) set('fill-color', '#d9d3c2');
+        else { set('fill-color', '#e9ddbd'); }
         try { map.setPaintProperty(id, 'fill-pattern', undefined); } catch (e) { /* 무시 */ }
       } else if (l.type === 'line') {
-        if (/water/.test(id)) set('line-color', '#6f98a0');
+        if (/water/.test(id)) set('line-color', '#9cc4d8');
         else if (/boundary|ferry|cablecar|rail|pier/.test(id)) map.setLayoutProperty(id, 'visibility', 'none');
-        else if (/casing/.test(id)) set('line-color', '#b3b0a6');
-        else set('line-color', '#c6c3b9');
+        else if (/casing/.test(id)) set('line-color', '#d3c4a0');   // 도로: 흰 길에 옅은 테두리
+        else set('line-color', '#fffdf7');
       }
     });
   }
@@ -856,7 +856,9 @@
   }
 
   /* 마카오 바깥(헝친·주하이)은 바다색으로 덮는다. 바다와 같은 색이라 경계선이 보이지 않고, 마카오만 섬처럼 남는다 */
-  var MASK_COLOR = '#6f98a0';                 // 바다색 (simplifyBaseMap 의 물 색과 같게)
+  /* 마카오 땅만 색으로 보이게: 바다와 마카오 바깥은 같은 아주 옅은 바탕색, 해안선만 가는 하늘색 선으로 */
+  var SEA_COLOR = '#f2f6f8';
+  var MASK_COLOR = SEA_COLOR;
   function addAreaMask() {
     var ring = D.map.area;
     if (!ring || ring.length < 4) return;
@@ -864,6 +866,11 @@
       var hole = ring.map(function (p) { return [p[0], p[1]]; });
       var world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
       map.addSource('tour-mask', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, hole] } } });
+      // 해안선: 물 영역의 테두리를 가는 하늘색 선으로 (마카오 바깥은 아래 덮개가 가린다)
+      var vsrc = null;
+      (map.getStyle().layers || []).forEach(function (l) { if (!vsrc && l['source-layer'] === 'water') vsrc = l.source; });
+      if (vsrc) map.addLayer({ id: 'tour-coast', type: 'line', source: vsrc, 'source-layer': 'water',
+        paint: { 'line-color': '#8dbbd3', 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.8, 16, 1.6] } });
       map.addLayer({ id: 'tour-mask-0', type: 'fill', source: 'tour-mask', paint: { 'fill-color': MASK_COLOR, 'fill-antialias': false } });
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
   }
