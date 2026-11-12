@@ -77,13 +77,13 @@ date: '2026-12-30', time: '18:00', kind: 'meal', meal: 'dinner', title: '저녁:
 date: '2026-12-30', time: '17:30', kind: 'meal', meal: 'dinner', title: '저녁: 딘타이펑 (스튜디오 시티)', places: ['dtf'],
 ```
 
-**예시 2 — 예약 링크 바꾸기.** FEAST 뷔페 예약 주소를 바꾸려면, 파일 가운데 '예약 링크' 부분에서 이 줄을 찾아
+**예시 2 — 예약 링크 바꾸기.** 햄튼 코트 뷔페 예약 주소를 바꾸려면, 파일 가운데 '예약 링크' 부분에서 이 줄을 찾아
 
 ```js
-url: 'https://www.feastmacao.com/',
+url: 'https://www.londonermacao.com/macau-restaurants/hampton-court.html',
 ```
 
-작은따옴표 안의 주소만 새 주소로 바꿉니다. 주소가 열리는 것을 직접 확인했다면 그 위 줄의 `linkVerified: false` 를 `linkVerified: true` 로 바꿉니다.
+작은따옴표 안의 주소만 새 주소로 바꿉니다. 제휴 링크가 있으면 그 위에 `aff: '제휴 주소', affBy: '클룩',` 한 줄을 더하면 `예약` 버튼이 그 링크로 열립니다.
 
 ## 파일 설명
 

@@ -132,11 +132,11 @@ window.TRIP_DATA = {
       note: '마카오 명물 돼지갈비빵', hours: '매일 08:00~18:00 (소개 페이지 기준)', open: '08:00', close: '18:00',
       url: 'https://www.taipavillagemacau.com/directory/cafe-dai-lei-loi-kei/', urlLabel: '소개 페이지'
     },
-    londoner: { mapQuery: 'FEAST The Londoner Macao',
-      name: 'FEAST 뷔페 (런더너 마카오)', type: 'food', lng: 113.56534, lat: 22.14581, verified: true,
+    londoner: { mapQuery: 'Hampton Court Londoner Grand Macao',
+      name: '햄튼 코트 뷔페 (런더너 그랜드 2층)', type: 'food', lng: 113.56540, lat: 22.14470, verified: true,
       look: { wall: '#e6dcc3', glass: '#55606b', roof: '#b9b3a3', radius: 110 },  // 크림색 석조풍
-      note: '쉐라톤 그랜드 마카오 1층 · 시장 콘셉트의 가족형 뷔페', hours: '저녁 18:00~22:30 (2차 출처 기준, 공식 사이트 미확인)', open: '18:00', close: '22:30',
-      url: 'https://macau.com/listing/feast/', urlLabel: '소개 페이지'
+      note: '런더너 그랜드(옛 쉐라톤) 2층 Henry\'s Kitchen · 국제식·중식 저녁 뷔페', hours: '저녁 뷔페 17:30~22:30 (금·토·일·공휴일 ~23:00, 공식)', open: '17:30', close: '22:30',
+      url: 'https://www.londonermacao.com/macau-restaurants/hampton-court.html', urlLabel: '공식 안내'
     },
     venetian: { mapQuery: 'The Venetian Macao', name: '베네시안·파리지앵', type: 'shop', lng: 113.56047, lat: 22.14820, verified: true, note: '크리스마스 장식 구경', look: { wall: '#dccaa2', glass: '#6a5f4e', roof: '#e9e6dc', radius: 160 } },
 
@@ -225,12 +225,12 @@ window.TRIP_DATA = {
         '공연 시각은 16:30·19:30으로 안내되지만 요일마다 달라 예매 달력에서 확인하세요. 19:30 공연은 아이 취침(21:00)과 겹치니 16:30 공연이 낫습니다. ' +
         '큰 소리·불꽃·안개·물 튀김 효과가 있고 6세 미만에게는 권장하지 않는다는 안내가 있습니다. 앞줄은 물이 튈 수 있습니다. 지금 일정에는 넣지 않았습니다.'
     },
-    feast: {
-      name: 'FEAST 뷔페 (런더너 마카오) 저녁 예약', level: '권장', linkVerified: false,
-      icon: '🍽️', short: 'FEAST 뷔페 저녁', key: '연말 붐빔 · ☎ 853-8113-1200',
-      aff: 'https://3ha.in/r/895171', affBy: '클룩', affNote: '클룩 상품명이 예전 "셰라톤 FEAST 뷔페"로 되어 있어, 12/28 저녁 이용권이 판매되는지 확인하세요. 없으면 공식 사이트나 전화로 예약하세요.',
-      url: 'https://www.feastmacao.com/',
-      note: '연말 저녁은 붐빕니다. 아이 요금 기준(나이·키)은 예약할 때 확인하세요. 전화 (853) 8113 1200.'
+    hampton: {
+      name: '햄튼 코트 저녁 뷔페 (런더너 그랜드 2층)', level: '권장', linkVerified: true, buttonLabel: '공식 안내',
+      icon: '🍽️', short: '햄튼 코트 뷔페 저녁', key: '어른 988 · 4세 미만 무료 · ☎ 8118 8822',
+      url: 'https://www.londonermacao.com/macau-restaurants/hampton-court.html',
+      note: '쉐라톤 그랜드가 런더너 그랜드로 바뀌며 생긴 저녁 뷔페로, 예전 FEAST 대신 이곳을 예약합니다. 공식 요금: 어른 MOP 988, 아이(만 4~12세 미만) 498, 만 4세 미만 무료, 봉사료 10% 별도 → 어른 2명 약 MOP 2,174. ' +
+        '저녁 17:30~22:30(금·토·일·공휴일 ~23:00). 저녁 뷔페 예약은 전화만 받는다고 안내되어 있습니다: +853 8118 8822. 복장은 스마트 캐주얼.'
     },
     funzone: {
       name: '슈퍼 펀 존', level: '권장', linkVerified: true,
@@ -420,7 +420,7 @@ window.TRIP_DATA = {
           '아기띠 (오전 구시가지 돌길·계단은 유모차가 불편)',
           '접이식 유모차 (오후 타이파 빌리지 골목이 좁음)',
           '보호자 연락처를 적은 팔찌나 스티커 (베네시안 인파)',
-          'FEAST 저녁 예약 확인, 택시용 현금'
+          '햄튼 코트 저녁 뷔페 전화 예약 확인 (+853 8118 8822), 택시용 현금'
         ],
         '2026-12-29': [
           '양말 여러 켤레: 키즈시티·슈퍼 펀 존 모두 아이·어른 양말 필수',
@@ -535,9 +535,12 @@ window.TRIP_DATA = {
           tips: ['크리스마스 시즌이라 사람이 많다. 아이에게 보호자 연락처를 적은 팔찌나 스티커를 붙여 둔다.']
         },
         {
-          date: '2026-12-28', time: '18:00', kind: 'meal', meal: 'dinner', title: '저녁: 런더너 FEAST 뷔페', places: ['londoner'], booking: 'feast',
-          memo: '베네시안에서 길 건너편입니다. 저녁 뷔페는 18:00 시작으로 안내됩니다.',
-          tips: ['연말 저녁은 붐비므로 미리 예약하고, 아이 요금 기준(나이·키)을 예약할 때 확인한다 (공식 사이트가 열리지 않아 미확인).']
+          date: '2026-12-28', time: '18:00', kind: 'meal', meal: 'dinner', title: '저녁: 햄튼 코트 뷔페 (런더너 그랜드 2층)', places: ['londoner'], booking: 'hampton',
+          memo: '베네시안에서 길 건너편 런더너 그랜드(옛 쉐라톤) 2층입니다. 예전 FEAST 대신 이곳으로 바꿨습니다. 저녁 뷔페는 17:30부터입니다.',
+          tips: [
+            '저녁 뷔페 예약은 전화(+853 8118 8822)로만 받는다고 안내되어 있다. 연말이라 미리 예약한다.',
+            '만 4세 미만은 무료라 두 아이 모두 요금이 없다 (공식). 어른 MOP 988 + 봉사료 10%.'
+          ]
         },
         {
           date: '2026-12-28', time: '19:15', kind: 'sleep', title: '택시로 호텔 복귀, 20:00 목욕, 21:00 취침', places: ['glp'],
