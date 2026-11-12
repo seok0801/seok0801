@@ -499,8 +499,11 @@ window.TRIP_DATA = {
         { date: '2026-12-29', time: '07:30', kind: 'meal', title: '조식', places: ['glp'] },
         { date: '2026-12-29', time: '09:30', kind: 'hotel', title: '그랜드 리스보아 팰리스 체크아웃 (11:00 마감), 짐을 모두 챙겨 나옴', places: ['glp'] },
         {
-          date: '2026-12-29', time: '09:45', kind: 'move', title: '택시로 W 마카오에 가서 짐만 먼저 맡김',
-          places: ['glp', 'wmacau'], transport: 'taxi', cost: { min: 46, max: 58, type: 'taxi', note: '약 3.2km, 짐 3개 포함' },
+          date: '2026-12-29', time: '09:45', kind: 'move', title: '짐을 모두 싣고 택시로 W 마카오',
+          places: ['glp', 'wmacau'], transport: 'taxi', cost: { min: 46, max: 58, type: 'taxi', note: '약 3.2km, 짐 3개 포함' }
+        },
+        {
+          date: '2026-12-29', time: '10:00', kind: 'hotel', title: 'W 마카오에 짐 맡기기 (체크인은 15:00), 얼리 체크인 부탁', places: ['wmacau'],
           warn: '체크인 전 짐 보관은 호텔에 미리 확인',
           tips: [
             '프런트나 벨데스크에 "오후에 체크인한다"고 말하고 짐을 맡긴 뒤 짐표를 받아 둔다. 체크인 전 짐 보관은 대부분의 호텔이 해 주지만 W 마카오 공식 안내에서는 확인하지 못했다.',
@@ -530,7 +533,7 @@ window.TRIP_DATA = {
           tips: ['짐이 없으니 아이가 차에서 잠들어도 그대로 안고 들어가면 된다.']
         },
         {
-          date: '2026-12-29', time: '13:00', end: '15:00', kind: 'nap', title: 'W 마카오 도착, 얼리 체크인 요청, 낮잠', places: ['wmacau'],
+          date: '2026-12-29', time: '13:00', end: '15:00', kind: 'nap', title: 'W 마카오 복귀, 방이 준비됐으면 바로 들어가 낮잠', places: ['wmacau'],
           warn: '얼리 체크인 미확정',
           tips: ['방이 아직이면 유모차에서 재우고 어른은 로비·같은 건물 카페에서 쉰다. 정식 체크인은 15:00.']
         },
