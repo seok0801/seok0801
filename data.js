@@ -20,9 +20,9 @@ window.TRIP_DATA = {
   rhythm: {
     breakfastStart: '07:30',   // 조식 시작
     breakfastLatest: '08:00',  // 조식은 늦어도 이때까지 시작
-    napStart: '12:45',         // 낮잠 (호텔에 고정하지 않음: 택시·유모차·광장에서 재우고 시설은 그대로 이용)
-    napEnd: '15:00',           // 낮잠 끝
-    napNote: '유동 · 택시·유모차에서',
+    napStart: '12:45',         // 낮잠은 따로 일정으로 잡지 않는다: 점심 뒤 유모차 산책·택시 구간(napOk: true, 😴 표시)에서 재운다
+    napEnd: '15:00',
+    napNote: '점심 뒤 유모차·차에서 (😴 표시 구간)',
     dinnerStart: '17:30',      // 저녁 시작
     dinnerLatest: '18:30',     // 저녁이 이보다 늦게 시작하면 '아이 리듬 주의'
     backToHotel: '20:00',      // 활동이 이보다 늦게 끝나면 '아이 리듬 주의' (호텔 복귀 후 목욕)
@@ -270,7 +270,7 @@ window.TRIP_DATA = {
     waterpark: {
       name: '스튜디오 시티 실내 워터파크', level: '권장', linkVerified: true,
       kids: '✅ 두 아이 모두 무료 · 키 1m 미만 (입구에서 키 잼)',
-      icon: '🌊', short: '실내 워터파크', key: '30일 13:10 · 어른 398 · 👙 수영복',
+      icon: '🌊', short: '실내 워터파크', key: '30일 13:45 · 어른 398 · 👙 수영복',
       aff: 'https://3ha.in/r/895274', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/studio-city-water-park',
       note: '12월 겨울 요금: 어른 MOP 398, 아이(키 1~1.19m) MOP 258, 1m 미만 무료. 12/29(화)는 휴장.'
@@ -535,7 +535,7 @@ window.TRIP_DATA = {
         },
         {
           date: '2026-12-27', time: '14:30', kind: 'move', title: '공항 무료 셔틀(그랜드 리스보아 팰리스행) 탑승, 짐이 많으면 택시',
-          places: ['mfm', 'glp'], transport: 'shuttle', shuttle: 'glpAirport', warn: '공항 셔틀 노선 미확인 · 택시 가능성 높음',
+          places: ['mfm', 'glp'], transport: 'shuttle', shuttle: 'glpAirport', napOk: true, warn: '공항 셔틀 노선 미확인 · 택시 가능성 높음',
           cost: { min: 48, max: 60, type: 'taxi', optional: true, note: '셔틀이 없어 택시를 탈 때만. 약 2.6km, 공항 할증 MOP 8과 짐 3개 포함' },
           tips: ['택시는 현금(MOP, 홍콩달러 1:1 통용)이 가장 확실하다. 트렁크 짐은 1개당 MOP 3이 붙는다.']
         },
@@ -593,7 +593,7 @@ window.TRIP_DATA = {
         },
         {
           date: '2026-12-28', time: '12:40', kind: 'move', title: '택시로 타이파 빌리지 (아이는 차에서 낮잠 시작)',
-          places: ['wongchikei', 'taipa'], transport: 'taxi', cost: { min: 60, max: 80, type: 'taxi', note: '약 6km, 다리를 건너는 구간' },
+          places: ['wongchikei', 'taipa'], transport: 'taxi', napOk: true, cost: { min: 60, max: 80, type: 'taxi', note: '약 6km, 다리를 건너는 구간' },
           tips: [
             '호텔로 돌아가지 않고 바로 타이파로 간다. 차에서 잠들면 내려서 유모차로 옮겨 계속 재운다.',
             '세나도 광장 앞 큰길(신마로)에서 택시를 잡는다. 🚕 버튼의 한자 카드를 기사에게 보여 준다.'
@@ -601,7 +601,7 @@ window.TRIP_DATA = {
         },
         {
           date: '2026-12-28', time: '13:00', end: '14:30', kind: 'snack', title: '타이파 빌리지 유모차 낮잠 산책 · 쿤하 거리 간식 (돼지갈비빵, 세라두라, 아몬드 쿠키)',
-          places: ['taipa', 'taileiloikei'],
+          places: ['taipa', 'taileiloikei'], napOk: true,
           tips: [
             '아이가 유모차에서 자는 동안 어른은 골목 구경과 간식. 깨면 근처 광장(타이파 주택박물관 쪽 산책로)에서 뛰어놀게 한다.',
             '골목이 좁고 사람이 많아 접이식 유모차가 편하다.',
@@ -614,19 +614,17 @@ window.TRIP_DATA = {
           cost: { min: 21, max: 27, type: 'taxi', optional: true, note: '아이가 지쳐 택시를 탈 때만. 차로 약 1.5km' }
         },
         {
-          date: '2026-12-28', time: '14:45', end: '15:30', kind: 'activity', title: '베네시안 실내 곤돌라 (선택) · 크리스마스 장식', places: ['venetian'],
-          cost: { min: 434, max: 434, type: 'ticket', optional: true, note: '평일 어른 MOP 158 ×2 + 아이 MOP 118 (만 1세 미만만 무료, 공식 안내 기준)' },
+          date: '2026-12-28', time: '14:45', end: '15:30', kind: 'activity', title: '베네시안 실내 곤돌라', places: ['venetian'],
+          cost: { min: 434, max: 434, type: 'ticket', note: '평일 어른 MOP 158 ×2 + 아이 MOP 118 (만 1세 미만만 무료, 공식 안내 기준)' },
           tips: [
             '곤돌라는 3층 쇼핑몰 실내 운하에서 탄다. 만 1세 이상은 아이 요금이 붙는다 (공식 안내, 현장 확인).',
             '크리스마스 시즌이라 사람이 많다. 아이에게 보호자 연락처를 적은 팔찌나 스티커를 붙여 둔다.'
           ]
         },
         {
-          date: '2026-12-28', time: '15:30', end: '17:15', kind: 'activity', title: '파리지앵 에펠탑 37층 전망대 (선택) · 파리지앵 크리스마스 장식', places: ['venetian'],
-          cost: { min: 176, max: 176, type: 'ticket', optional: true, note: '어른 MOP 88 ×2 (공식). 아이 요금은 현장 확인' },
+          date: '2026-12-28', time: '15:30', end: '17:15', kind: 'activity', title: '베네시안·파리지앵 크리스마스 장식 구경', places: ['venetian'],
           tips: [
             '베네시안과 파리지앵은 실내 통로로 이어져 있어 유모차로 비를 맞지 않고 간다.',
-            '전망대 운영 시간은 안내 사이트마다 달라(12:00 또는 10:00 개장) 현장에서 확인한다.',
             '17:15쯤 길 건너 런더너로 출발한다 (도보 약 10분).'
           ]
         },
@@ -678,11 +676,11 @@ window.TRIP_DATA = {
         },
         {
           date: '2026-12-29', time: '12:45', kind: 'move', title: '택시로 W 마카오 (스튜디오 시티)',
-          places: ['cod', 'wmacau'], transport: 'taxi', cost: { min: 21, max: 27, type: 'taxi', note: '약 1.6km' },
+          places: ['cod', 'wmacau'], transport: 'taxi', napOk: true, cost: { min: 21, max: 27, type: 'taxi', note: '약 1.6km' },
           tips: ['짐은 맡겨 둔 그대로. 아이가 차에서 잠들면 유모차로 옮긴다.']
         },
         {
-          date: '2026-12-29', time: '13:00', end: '15:00', kind: 'nap', title: '유모차 낮잠 · 어른은 스튜디오 시티 실내 구경·카페 (방이 준비됐으면 방에서)', places: ['wmacau'],
+          date: '2026-12-29', time: '13:00', end: '15:00', kind: 'activity', title: '스튜디오 시티 실내 유모차 산책 · 어른은 구경·카페 (방이 준비됐으면 방에서)', places: ['wmacau'], napOk: true,
           tips: ['스튜디오 시티는 실내가 넓고 따뜻해 유모차 산책에 좋다. 얼리 체크인이 되면 방에서 재워도 된다.']
         },
         {
@@ -745,24 +743,31 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-30', time: '12:50', kind: 'move', title: '택시로 스튜디오 시티 (아이는 차에서 낮잠)',
-          places: ['ngatim', 'waterpark'], transport: 'taxi', cost: { min: 49, max: 61, type: 'taxi', note: '약 4.6km' },
-          tips: ['차에서 잠들면 유모차로 옮겨 30분쯤 더 재운 뒤 워터파크에 들어가도 된다 (20:00까지 운영).']
+          date: '2026-12-30', time: '12:45', end: '13:20', kind: 'activity', title: '콜로안 바닷가 산책로 유모차 산책 (낮잠 시작)', places: ['ngatim'], napOk: true,
+          tips: [
+            '응아팀 카페 앞 광장에서 바닷가 길(콜로안 빌리지 해안 산책로)을 따라 천천히 걷는다. 평지라 유모차가 편하다.',
+            '바람이 차니 유모차 덮개나 담요를 챙긴다.'
+          ]
         },
         {
-          date: '2026-12-30', time: '13:10', end: '15:00', kind: 'activity', title: '스튜디오 시티 실내 워터파크', places: ['waterpark'], booking: 'waterpark',
+          date: '2026-12-30', time: '13:20', kind: 'move', title: '택시로 스튜디오 시티 (자는 아이는 그대로 안고 타기)',
+          places: ['ngatim', 'waterpark'], transport: 'taxi', napOk: true, cost: { min: 49, max: 61, type: 'taxi', note: '약 4.6km' },
+          tips: ['도착해서도 자고 있으면 유모차로 옮겨 조금 더 재운 뒤 워터파크에 들어간다 (20:00까지 운영).']
+        },
+        {
+          date: '2026-12-30', time: '13:45', end: '15:15', kind: 'activity', title: '스튜디오 시티 실내 워터파크', places: ['waterpark'], booking: 'waterpark',
           cost: { min: 796, max: 796, type: 'ticket', note: '어른 MOP 398 ×2 (12월 요금), 키 1m 미만 아이 무료' },
           tips: [
             '12월은 실내 구역만 연다 (12:00~20:00, 매표 11:45부터). 수영복·아이 방수 기저귀·수건을 챙긴다.',
             '아이 키 1m 미만이면 무료다. 입구에서 키를 잰다.',
-            '15:00에 나와 W 객실에서 씻고 옷을 갈아입는다 (W는 같은 스튜디오 시티 안).'
+            '15:15에는 꼭 나와 W 객실에서 씻고 옷을 갈아입는다 (W는 같은 스튜디오 시티 안). 공연 시간 때문에 늦으면 안 되는 날.'
           ]
         },
-        { date: '2026-12-30', time: '15:00', end: '15:40', kind: 'hotel', title: 'W 객실에서 씻고 옷 갈아입기', places: ['wmacau'] },
+        { date: '2026-12-30', time: '15:15', end: '15:45', kind: 'hotel', title: 'W 객실에서 씻고 옷 갈아입기 (빠르게)', places: ['wmacau'] },
         {
-          date: '2026-12-30', time: '15:45', kind: 'move', title: '택시로 시티 오브 드림즈 (공연장, 약 5분)',
+          date: '2026-12-30', time: '15:50', kind: 'move', title: '택시로 시티 오브 드림즈 (공연장, 약 5분)',
           places: ['wmacau', 'dancingwater'], transport: 'taxi', cost: { min: 21, max: 27, type: 'taxi', note: '약 1.6km' },
-          tips: ['공연 30~40분 전에 도착해 표를 받고 화장실·기저귀를 마친다.', '물놀이 뒤라 아이가 공연 중 무릎에서 잠들 수도 있다. 얇은 담요를 챙긴다.']
+          tips: ['공연 30분 전에 도착해 표를 받고 화장실·기저귀를 마친다.', '물놀이 뒤라 아이가 공연 중 무릎에서 잠들 수도 있다. 얇은 담요를 챙긴다.']
         },
         {
           date: '2026-12-30', time: '16:30', end: '18:00', kind: 'activity', title: '하우스 오브 댄싱 워터 공연 (16:30)', places: ['dancingwater'], booking: 'dancingwater',
@@ -787,20 +792,15 @@ window.TRIP_DATA = {
 
         /* ===== 12/31(목) 귀국 ===== */
         { date: '2026-12-31', time: '07:30', kind: 'meal', title: '조식, 09:00 짐 정리', places: ['wmacau'] },
-        { date: '2026-12-31', time: '10:15', kind: 'hotel', title: 'W 마카오 체크아웃, 짐은 벨데스크에 잠깐 맡기기', places: ['wmacau'] },
+        { date: '2026-12-31', time: '10:30', kind: 'hotel', title: 'W 마카오 체크아웃 (11:00 마감)', places: ['wmacau'] },
         {
-          date: '2026-12-31', time: '10:30', end: '11:15', kind: 'activity', title: '슈퍼 펀 존 한 번 더 (선택, 같은 건물)', places: ['funzone'],
-          cost: { min: 240, max: 360, type: 'ticket', optional: true, note: '다시 갈 때만. 아이 MOP 120 + 어른 1명당 MOP 120' },
-          tips: ['11:15에는 꼭 나와 짐을 찾는다. 시간이 빠듯하면 건너뛰고 바로 공항으로 간다.']
-        },
-        {
-          date: '2026-12-31', time: '11:20', kind: 'move', title: '스튜디오 시티 무료 셔틀(공항·타이파 페리 방면) 탑승',
+          date: '2026-12-31', time: '10:45', kind: 'move', title: '스튜디오 시티 무료 셔틀(공항·타이파 페리 방면) 탑승',
           places: ['wmacau', 'mfm'], transport: 'shuttle', shuttle: 'scAirport',
           cost: { min: 58, max: 72, type: 'taxi', optional: true, note: '셔틀을 놓쳐 택시를 탈 때만. 약 4.6km, 짐 3개 포함' },
           tips: ['셔틀 시간표를 전날 확인하고, 놓치면 바로 택시로 바꾼다.']
         },
         {
-          date: '2026-12-31', time: '11:40', kind: 'flight', title: '공항 도착', places: ['mfm'],
+          date: '2026-12-31', time: '11:15', kind: 'flight', title: '공항 도착', places: ['mfm'],
           tips: ['남은 MOP는 한국에서 바꾸기 어려우니 공항에서 쓴다.']
         },
         {

@@ -307,6 +307,7 @@
       var opt = it.cost.optional ? ' (선택)' : '';
       chips.push(chip('💰 ' + mopShort(it.cost) + opt, '💰 1가족 예상 ' + mop(it.cost) + (KRW.rate ? ' (' + won(it.cost) + ')' : '') + opt));
     }
+    if (it.napOk) chips.push(chip('😴 낮잠', '😴 유모차·차에서 낮잠 가능', 'nap'));
     var rw = rhythmWarning(it);
     if (rw) chips.push(chip('⚠️ 아이 리듬', '⚠️ 아이 리듬 주의 · ' + esc(rw), 'warn'));
     closedWarning(it).forEach(function (n) { chips.push(chip('⛔ 휴무', '⛔ 휴무 주의 · ' + esc(n), 'closed')); });
@@ -396,7 +397,7 @@
     renderCards();
     var R = D.rhythm || {};
     if (R.breakfastStart) {
-      $('foot-rhythm').textContent = '아이 리듬: 조식 ' + R.breakfastStart + ' · 낮잠 ' + R.napStart + '~' + R.napEnd + (R.napNote ? ' (' + R.napNote + ')' : '') +
+      $('foot-rhythm').textContent = '아이 리듬: 조식 ' + R.breakfastStart + ' · 낮잠 ' + (R.napNote || (R.napStart + '~' + R.napEnd)) +
         ' · 저녁 ' + R.dinnerStart + ' (늦어도 ' + R.dinnerLatest + ') · ' + R.backToHotel + ' 호텔 복귀 · ' + R.bedtime + ' 취침';
     }
     setTourStatus('');

@@ -393,6 +393,7 @@ a { color: var(--accent); }
   white-space: nowrap;
 }
 .chip.warn { background: var(--orange-bg); color: var(--orange); }
+.chip.nap { background: #e8eefc; color: #3b4fa0; }
 .chip.closed { background: var(--orange-bg); color: var(--red); }
 .chip .f, .chip.f-only { display: none; }
 .card.open .chip.f-only { display: inline; }
