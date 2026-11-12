@@ -693,7 +693,8 @@
       (map.getStyle().layers || []).forEach(function (l) {
         var tf = l.type === 'symbol' && l.layout && l.layout['text-field'];
         if (!Array.isArray(tf) || JSON.stringify(tf).indexOf('name') < 0) return;   // 도로 번호 등은 그대로 둔다
-        map.setLayoutProperty(l.id, 'text-field', ['case', ['has', 'name:ko'], ['get', 'name:ko'], tf]);
+        // 한글 이름이 없는 곳은 글자를 비운다 (필요한 곳은 data.js 의 around 에 한글로 적어 둔다)
+        map.setLayoutProperty(l.id, 'text-field', D.around ? ['coalesce', ['get', 'name:ko'], ''] : ['case', ['has', 'name:ko'], ['get', 'name:ko'], tf]);
       });
     } catch (e) { /* 바꾸지 못하면 원래 글자 그대로 쓴다 */ }
   }
@@ -712,6 +713,34 @@
       });
       map.addLayer({ id: 'tour-mask', type: 'fill', source: 'tour-mask', paint: { 'fill-color': '#6f98a0', 'fill-antialias': false } });
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
+  }
+
+  /* 주변 정보: 일정에는 없지만 알아 두면 좋은 호텔·볼거리·경전철역·병원을 한글 이름으로 지도에 적는다 */
+  function addAroundLayer() {
+    if (!D.around || !D.around.length) return;
+    try {
+      var font = null;
+      (map.getStyle().layers || []).forEach(function (l) { if (!font && l.type === 'symbol' && l.layout && l.layout['text-font']) font = l.layout['text-font']; });
+      var feats = D.around.filter(function (a) {
+        // 일정에 있는 장소 바로 옆(90m 안)은 마커와 겹치므로 뺀다
+        return a.kind === 'area' || !Object.keys(D.places).some(function (id) { return distanceM([a.lng, a.lat], [D.places[id].lng, D.places[id].lat]) < 90; });
+      }).map(function (a) {
+        return { type: 'Feature', properties: { name: a.name, kind: a.kind }, geometry: { type: 'Point', coordinates: [a.lng, a.lat] } };
+      });
+      var color = ['match', ['get', 'kind'], 'hotel', '#c2377d', 'see', '#7a4fc9', 'rail', '#1f6fc4', 'care', '#d1352b', '#4a5560'];
+      var spot = ['!=', ['get', 'kind'], 'area'];
+      map.addSource('tour-around', { type: 'geojson', data: { type: 'FeatureCollection', features: feats } });
+      map.addLayer({ id: 'tour-around-dot', type: 'circle', source: 'tour-around', minzoom: 13.2, filter: spot,
+        paint: { 'circle-radius': 4, 'circle-color': color, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1.5 } });
+      var layout = { 'text-field': ['get', 'name'], 'text-size': 12, 'text-anchor': 'top', 'text-offset': [0, 0.5], 'text-max-width': 7, 'text-padding': 3 };
+      if (font) layout['text-font'] = font;
+      map.addLayer({ id: 'tour-around-text', type: 'symbol', source: 'tour-around', minzoom: 13.2, filter: spot, layout: layout,
+        paint: { 'text-color': color, 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 } });
+      var big = { 'text-field': ['get', 'name'], 'text-size': 15, 'text-letter-spacing': 0.15 };
+      if (font) big['text-font'] = font;
+      map.addLayer({ id: 'tour-around-area', type: 'symbol', source: 'tour-around', maxzoom: 14.5, filter: ['==', ['get', 'kind'], 'area'], layout: big,
+        paint: { 'text-color': '#4a5560', 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 } });
+    } catch (e) { /* 주변 정보를 못 그려도 지도는 그대로 쓴다 */ }
   }
 
   /* 지금 보는 장소에 세우는 3D 빛기둥 (건물이 납작하게 그려진 곳에서도 위치와 입체감이 보인다) */
@@ -790,6 +819,7 @@
       add3dBuildings();
       localizeLabels();
       addAreaMask();
+      addAroundLayer();
       addBeaconLayer();
       addRouteLayers();
       updateMap(true);

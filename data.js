@@ -241,6 +241,74 @@ window.TRIP_DATA = {
     }
   },
 
+  /* ---------- 주변 정보 (일정에는 없지만 지도에 한글 이름으로 표시하는 곳) ----------
+   * 위치는 공개 지도(OpenStreetMap) 자료이고, 이름은 한글로 옮겨 적었습니다.
+   * kind 종류: hotel 호텔·리조트 / see 볼거리·공연장 / rail 경전철역·터미널 / care 병원 / area 지역 이름
+   * 한 줄을 지우면 지도에서 사라지고, 같은 모양으로 한 줄을 더하면 지도에 생깁니다. */
+  around: [
+    // 지역 이름
+    { name: '타이파', kind: 'area', lng: 113.5560, lat: 22.1585 },
+    { name: '콜로안', kind: 'area', lng: 113.5660, lat: 22.1200 },
+    // 코타이 호텔·리조트
+    { name: '갤럭시 마카오', kind: 'hotel', lng: 113.5546, lat: 22.1474 },
+    { name: 'JW 메리어트 · 리츠칼튼', kind: 'hotel', lng: 113.5555, lat: 22.1467 },
+    { name: '안다즈 마카오', kind: 'hotel', lng: 113.5565, lat: 22.1452 },
+    { name: '브로드웨이 마카오', kind: 'hotel', lng: 113.5516, lat: 22.1467 },
+    { name: '포시즌스 호텔', kind: 'hotel', lng: 113.5616, lat: 22.1455 },
+    { name: '파리지앵 마카오', kind: 'hotel', lng: 113.5608, lat: 22.1437 },
+    { name: 'MGM 코타이', kind: 'hotel', lng: 113.5682, lat: 22.1456 },
+    { name: '모피어스 호텔', kind: 'hotel', lng: 113.5666, lat: 22.1498 },
+    { name: '그랜드 하얏트', kind: 'hotel', lng: 113.5676, lat: 22.1488 },
+    { name: '세인트 레지스 · 콘래드', kind: 'hotel', lng: 113.5656, lat: 22.1475 },
+    { name: '리스보에타 호텔', kind: 'hotel', lng: 113.5728, lat: 22.1406 },
+    { name: '스튜디오 시티 호텔', kind: 'hotel', lng: 113.5618, lat: 22.1410 },
+    { name: '알티라 마카오', kind: 'hotel', lng: 113.5551, lat: 22.1617 },
+    // 마카오 반도 호텔
+    { name: '윈 마카오', kind: 'hotel', lng: 113.5466, lat: 22.1881 },
+    { name: 'MGM 마카오', kind: 'hotel', lng: 113.5483, lat: 22.1856 },
+    { name: '호텔 리스보아', kind: 'hotel', lng: 113.5445, lat: 22.1898 },
+    { name: '샌즈 마카오', kind: 'hotel', lng: 113.5548, lat: 22.1917 },
+    { name: '만다린 오리엔탈', kind: 'hotel', lng: 113.5470, lat: 22.1843 },
+    { name: '소피텔 폰테 16', kind: 'hotel', lng: 113.5361, lat: 22.1976 },
+    // 볼거리·공연장
+    { name: '마카오 에펠탑', kind: 'see', lng: 113.5628, lat: 22.1436 },
+    { name: '팀랩 슈퍼네이처', kind: 'see', lng: 113.5585, lat: 22.1436 },
+    { name: '갤럭시 아레나', kind: 'see', lng: 113.5569, lat: 22.1439 },
+    { name: '베네시안 아레나', kind: 'see', lng: 113.5590, lat: 22.1477 },
+    { name: '하우스 오브 댄싱 워터', kind: 'see', lng: 113.5680, lat: 22.1499 },
+    { name: '윈 팰리스 케이블카', kind: 'see', lng: 113.5695, lat: 22.1480 },
+    { name: '스튜디오 시티 이벤트 센터', kind: 'see', lng: 113.5602, lat: 22.1412 },
+    { name: '동아시아 경기대회 돔', kind: 'see', lng: 113.5705, lat: 22.1404 },
+    { name: '마카오 스타디움', kind: 'see', lng: 113.5535, lat: 22.1547 },
+    { name: '타이파 주택 박물관', kind: 'see', lng: 113.5597, lat: 22.1539 },
+    { name: '마카오 동물원', kind: 'see', lng: 113.5581, lat: 22.1262 },
+    { name: '마카오 타워', kind: 'see', lng: 113.5368, lat: 22.1798 },
+    { name: '마카오 과학관', kind: 'see', lng: 113.5565, lat: 22.1864 },
+    { name: '마카오 예술 박물관', kind: 'see', lng: 113.5546, lat: 22.1889 },
+    { name: '피셔맨스 워프', kind: 'see', lng: 113.5560, lat: 22.1928 },
+    { name: '그랑프리 박물관', kind: 'see', lng: 113.5527, lat: 22.1946 },
+    { name: '몬테 요새 · 마카오 박물관', kind: 'see', lng: 113.5422, lat: 22.1971 },
+    { name: '돔 페드로 5세 극장', kind: 'see', lng: 113.5382, lat: 22.1919 },
+    { name: '만다린 하우스', kind: 'see', lng: 113.5344, lat: 22.1886 },
+    { name: '해사 박물관', kind: 'see', lng: 113.5306, lat: 22.1859 },
+    // 경전철역·터미널
+    { name: '경전철 코타이 서역', kind: 'rail', lng: 113.5579, lat: 22.1451 },
+    { name: '경전철 코타이 동역', kind: 'rail', lng: 113.5691, lat: 22.1483 },
+    { name: '경전철 로터스역', kind: 'rail', lng: 113.5598, lat: 22.1395 },
+    { name: '경전철 유니온 병원역', kind: 'rail', lng: 113.5633, lat: 22.1387 },
+    { name: '경전철 동아시아경기역', kind: 'rail', lng: 113.5686, lat: 22.1424 },
+    { name: '경전철 파이콕역', kind: 'rail', lng: 113.5545, lat: 22.1509 },
+    { name: '경전철 스타디움역', kind: 'rail', lng: 113.5519, lat: 22.1544 },
+    { name: '경전철 공항역', kind: 'rail', lng: 113.5746, lat: 22.1594 },
+    { name: '경전철 타이파 페리터미널역', kind: 'rail', lng: 113.5739, lat: 22.1630 },
+    { name: '경전철 석배만역', kind: 'rail', lng: 113.5615, lat: 22.1314 },
+    { name: '경전철 바라역', kind: 'rail', lng: 113.5294, lat: 22.1837 },
+    { name: '타이파 페리 터미널', kind: 'rail', lng: 113.5770, lat: 22.1652 },
+    { name: '외항 페리 터미널', kind: 'rail', lng: 113.5592, lat: 22.1970 },
+    // 병원
+    { name: '산 자누아리오 병원 (공립, 응급실)', kind: 'care', lng: 113.5466, lat: 22.1939 }
+  ],
+
   /* ---------- 호텔 무료 셔틀버스 (info = 카드에 보이는 안내, url = 시간표 링크) ---------- */
   shuttles: {
     glpAirport: {
