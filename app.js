@@ -176,13 +176,21 @@
   }
 
   /* 투어가 멈추는 곳: (일정, 장소) 쌍 */
+  /* 투어가 멈추는 장소: 보통 일정은 그 장소, 무료 셔틀 이동은 내리는 곳(마지막 장소)에 한 번 멈춘다.
+   * 낮잠·취침·그 밖의 이동(택시·도보)은 멈추지 않는다 */
+  function stopPlacesOf(it) {
+    var ps = (it.places || []).filter(onMap);
+    if (it.kind === 'move' && it.transport === 'shuttle') return ps.length ? [ps[ps.length - 1]] : [];
+    return NO_STOP_KINDS[it.kind] ? [] : ps;
+  }
   function stops() {
     var out = [];
     viewDates().forEach(function (date) {
       items(date).forEach(function (it) {
-        if (NO_STOP_KINDS[it.kind]) return;
-        (it.places || []).forEach(function (id) {
-          if (onMap(id)) out.push({ item: it, place: id });
+        stopPlacesOf(it).forEach(function (id) {
+          var prev = out[out.length - 1];
+          if (prev && prev.place === id) return;     // 바로 앞과 같은 곳이면 한 번만 멈춘다
+          out.push({ item: it, place: id });
         });
       });
     });
@@ -320,9 +328,8 @@
   function numbering(date) {
     var n = 0, by = {};
     items(date).forEach(function (it) {
-      if (NO_STOP_KINDS[it.kind]) return;
-      (it.places || []).forEach(function (id) {
-        if (onMap(id) && !by[id]) by[id] = ++n;
+      stopPlacesOf(it).forEach(function (id) {
+        if (!by[id]) by[id] = ++n;
       });
     });
     return by;
@@ -430,7 +437,7 @@
     var linked = {}, n = 0;
     viewDates().forEach(function (date) {
       items(date).forEach(function (it) {
-        if (it.kind === 'move' || (it.places || []).indexOf(id) < 0) return;
+        if ((it.places || []).indexOf(id) < 0 || (it.kind === 'move' && stopPlacesOf(it).indexOf(id) < 0)) return;   // 셔틀은 내리는 곳에서 보인다
         if (state.day === 'all') html += '<p class="fine day-tag">' + esc((dayInfo(date) || {}).label || '') + '</p>';
         var c = cardHtml(it, {}, linked).replace('class="card', 'class="card open static');
         // 창 제목과 같은 장소 이름 줄은 겹치므로 뺀다
@@ -1066,7 +1073,7 @@
     var found = null;
     viewDates().forEach(function (date) {
       items(date).forEach(function (it) {
-        if (!found && !NO_STOP_KINDS[it.kind] && (it.places || []).indexOf(id) >= 0) found = it;
+        if (!found && stopPlacesOf(it).indexOf(id) >= 0) found = it;
       });
     });
     if (found) { var el = highlight(found._i); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
