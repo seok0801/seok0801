@@ -739,17 +739,20 @@
       (map.getStyle().layers || []).forEach(function (l) {
         var tf = l.type === 'symbol' && l.layout && l.layout['text-field'];
         if (!Array.isArray(tf) || JSON.stringify(tf).indexOf('name') < 0) return;   // 도로 번호 등은 그대로 둔다
-        // 한글 이름이 있으면 한글로, 없으면 바탕 지도에 적힌 이름(한자·포르투갈어·영어) 그대로 보여 준다
-        map.setLayoutProperty(l.id, 'text-field', ['case', ['has', 'name:ko'], ['get', 'name:ko'], tf]);
+        // 순서: 지도에 등록된 한글 이름 → 한글 사전(ko-names.js) → 영어 한 줄 → 원래 이름
+        map.setLayoutProperty(l.id, 'text-field', ['coalesce',
+          ['get', 'name:ko'],
+          ['get', ['to-string', ['get', 'name']], ['literal', window.KO_NAMES || {}]],
+          ['get', ['to-string', ['get', 'name:en']], ['literal', window.KO_NAMES || {}]],
+          ['get', 'name:en'], ['get', 'name:latin'], ['get', 'name']]);
       });
     } catch (e) { /* 바꾸지 못하면 원래 글자 그대로 쓴다 */ }
   }
 
   /* 마카오 바깥(주하이 등)은 그리지 않는다.
    * data.js 의 area 선을 둥글게 다듬고, 그 바깥을 바탕색으로 덮는다.
-   * 경계에서 바깥으로 몇 겹을 옅게 겹쳐 덮어, 바다가 바탕색으로 부드럽게 흐려지게 한다. */
+   * 경계에는 가는 테두리와 부드러운 그림자를 둘러, 종이 위에 오려 붙인 섬 지도처럼 보이게 한다. */
   var MASK_COLOR = '#eef0ec';                 // 지도 바깥 바탕색
-  var MASK_FADE_M = [0, 35, 75, 120, 170, 225, 290, 360];   // 경계에서 바깥으로 흐려지는 거리(m)
   function smoothRing(ring, times) {          // 꼭짓점을 깎아 둥근 곡선으로 (Chaikin)
     var pts = ring.slice(0, -1);
     for (var t = 0; t < times; t++) {
@@ -763,30 +766,28 @@
     }
     return pts;
   }
-  function growPoints(pts, m) {               // 선을 바깥쪽으로 m 미터 넓힌다
-    if (!m) return pts;
-    var k = 111320 * Math.cos(pts[0][1] * Math.PI / 180), area = 0, n = pts.length;
-    for (var i = 0; i < n; i++) { var p = pts[i], q = pts[(i + 1) % n]; area += (p[0] * q[1] - q[0] * p[1]); }
-    var sign = area > 0 ? 1 : -1;
-    return pts.map(function (p, i) {
-      var a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n];
-      var dx = (b[0] - a[0]) * k, dy = (b[1] - a[1]) * 111320, d = Math.sqrt(dx * dx + dy * dy) || 1;
-      var mm = m * (p[2] == null ? 1 : p[2]);    // 땅이 맞닿은 쪽(세 번째 값 0)은 흐리지 않고 바로 끊는다
-      return [p[0] + sign * dy / d * mm / k, p[1] - sign * dx / d * mm / 111320];
-    });
-  }
   function addAreaMask() {
     var ring = D.map.area;
     if (!ring || ring.length < 4) return;
     try {
-      var base = smoothRing(ring, 4), world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
-      MASK_FADE_M.forEach(function (m, i) {
-        var hole = growPoints(base, m).map(function (p) { return [p[0], p[1]]; }); hole.push(hole[0]);
-        var id = 'tour-mask-' + i, last = i === MASK_FADE_M.length - 1;
-        map.addSource(id, { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, hole] } } });
-        map.addLayer({ id: id, type: 'fill', source: id, paint: { 'fill-color': MASK_COLOR, 'fill-opacity': last ? 1 : .22, 'fill-antialias': false } });
-      });
+      var hole = smoothRing(ring, 4).map(function (p) { return [p[0], p[1]]; });
+      hole.push(hole[0]);
+      var world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+      map.addSource('tour-mask', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, hole] } } });
+      map.addSource('tour-edge', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: hole } } });
+      map.addLayer({ id: 'tour-mask-0', type: 'fill', source: 'tour-mask', paint: { 'fill-color': MASK_COLOR, 'fill-antialias': false } });
+      map.addLayer({ id: 'tour-edge-shadow', type: 'line', source: 'tour-edge', layout: { 'line-join': 'round' },
+        paint: { 'line-color': '#24414d', 'line-opacity': .28, 'line-width': 16, 'line-blur': 14 } });
+      map.addLayer({ id: 'tour-edge-line', type: 'line', source: 'tour-edge', layout: { 'line-join': 'round' },
+        paint: { 'line-color': '#4f7c86', 'line-width': 1.5 } });
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
+  }
+
+  /* 멀리 볼수록 덜 기울인다: 축소한 채로 많이 기울이면 지평선 너머 빈 바탕이 화면을 채우므로 */
+  function limitPitch() {
+    var z = map.getZoom();
+    var max = z >= 15 ? 70 : z >= 14 ? 62 : z >= 13 ? 50 : z >= 12 ? 38 : 25;
+    if (map.getMaxPitch() !== max) map.setMaxPitch(max);
   }
 
   /* 바탕 지도의 글자가 3D 건물에 묻히지 않게, 글자 층을 건물 위(바깥 덮개 바로 아래)로 올린다 */
@@ -903,6 +904,8 @@
       localizeLabels();
       addAreaMask();
       liftBaseLabels();
+      limitPitch();
+      map.on('zoom', limitPitch);
       addAroundLayer();
       map.on('moveend', spreadMarkers);
       addBeaconLayer();
