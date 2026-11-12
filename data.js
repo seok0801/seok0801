@@ -119,6 +119,10 @@ window.TRIP_DATA = {
       note: '실내 놀이터 (3층)', hours: '10:30~19:00 (마지막 입장 18:00) · 평소 수·목 휴무지만 12/20~31은 매일 운영',
       open: '10:30', close: '19:00'
     },
+    dancingwater: { mapQuery: 'House of Dancing Water Theatre City of Dreams Macau', zh: '新濠天地 水舞間劇場', zhArea: "路氹 · City of Dreams",
+      name: '하우스 오브 댄싱 워터 극장 (시티 오브 드림즈)', type: 'show', lng: 113.56795, lat: 22.14990, verified: true,
+      note: '수상 공연 전용 극장', hours: '30일 16:30 공연 (약 90분)', url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water', urlLabel: '공식 안내'
+    },
     chankee: { mapQuery: 'Chan Kee Roast Goose City of Dreams Macau', zh: '新濠天地', zhArea: "路氹 · City of Dreams",
       name: '찬키 로스트 구스 (시티 오브 드림즈 SOHO)', type: 'food', lng: 113.56670, lat: 22.14856, verified: true,
       note: '2층 SOHO 식당가 · 거위구이 덮밥·국수', hours: '월~목 11:00~22:00, 금~일 11:00~23:00', open: '11:00', close: '22:00',
@@ -220,9 +224,8 @@ window.TRIP_DATA = {
     },
     dancingwater: {
       name: '하우스 오브 댄싱 워터 (시티 오브 드림즈 수상 공연)', level: '선택', linkVerified: true,
-      sort: '2026-12-30 23:59',   // 체크리스트 순서 (일정에 없는 항목)
       kids: '✅ 두 아이 모두 무료 · 만 3세 미만 무릎 (판매처 따라 만 2세 이하로 적은 곳도 있어 예매 때 확인)',
-      icon: '🎭', short: '댄싱 워터 공연 (선택)', key: '어른 698~ · 3세 미만 무릎 무료',
+      icon: '🎭', short: '댄싱 워터 공연', key: '30일 16:30 · 어른 698~ · 3세 미만 무릎 무료',
       aff: 'https://3ha.in/r/895307', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water',
       note: '좌석 요금(공식): 갤러리 MOP 698 · 시그니처 898 · 그랜드 1,098 · 프리미엄 1,298. 어른 2명 가장 싼 좌석이면 MOP 1,396. ' +
@@ -264,9 +267,10 @@ window.TRIP_DATA = {
         '판다관 자체 사이트(macaupanda.org.mo)는 열리지 않을 때가 있어 마카오 관광청 안내로 연결했습니다. 운영 시간·휴관일 문의: 시민 서비스 전화 2833 7676.'
     },
     waterpark: {
-      name: '스튜디오 시티 실내 워터파크', level: '권장', linkVerified: true,
+      name: '스튜디오 시티 실내 워터파크', level: '선택', linkVerified: true,
+      sort: '2026-12-30 23:58',   // 체크리스트 순서 (일정에 없는 항목)
       kids: '✅ 두 아이 모두 무료 · 키 1m 미만 (입구에서 키 잼)',
-      icon: '🌊', short: '실내 워터파크', key: '어른 398 · 1m 미만 무료',
+      icon: '🌊', short: '실내 워터파크 (날짜 미정)', key: '30일 공연과 겹쳐 일정에서 뺌 · 어른 398',
       aff: 'https://3ha.in/r/895274', affBy: '클룩',
       url: 'https://www.studiocity-macau.com/kr/attractions/studio-city-water-park',
       note: '12월 겨울 요금: 어른 MOP 398, 아이(키 1~1.19m) MOP 258, 1m 미만 무료. 12/29(화)는 휴장.'
@@ -442,7 +446,6 @@ window.TRIP_DATA = {
   },
   costNote: '아이는 키 1m 미만으로 가정했습니다. 2026년 11월에 확인한 공개 가격이며, 연말에는 요금이 달라질 수 있습니다.',
   costExtras: [
-    '하우스 오브 댄싱 워터(선택, 일정·합계 제외): 어른 2명 가장 싼 좌석 MOP 1,396, 만 3세 미만 아이는 무릎에 앉으면 무료.',
     '택시 요금 계산식(마카오 교통국): 처음 1.6km MOP 21 + 이후 220m마다 MOP 2 + 정차 55초마다 MOP 2 + 트렁크 짐 1개당 MOP 3 + 공항·페리터미널에서 탈 때 MOP 8 + 타이파→콜로안 MOP 2. 범위의 높은 값은 신호 대기·정체를 25% 더한 값입니다.',
     '한 가족(어른 2·아이 1)이 택시 1대를 타는 것으로 계산했습니다. (선택)으로 표시한 택시는 셔틀이 없거나 아이가 지쳤을 때만 드는 비용이라 합계에서 뺐습니다.',
     '셔틀 구간(12/28 구시가지 왕복, 12/31 공항)은 무료입니다. 택시는 현금(MOP, 홍콩달러 1:1 통용)이 가장 확실하고 카드는 잘 받지 않습니다.'
@@ -492,8 +495,8 @@ window.TRIP_DATA = {
         ],
         '2026-12-30': [
           '현금 (로드 스토우는 현금만 받는다는 안내가 있음, 택시 3번)',
-          '아이 여권 (워터파크 키 1m 미만 무료 확인용)',
-          '수영복, 아쿠아슈즈, 빨리 마르는 옷, 방수 파우치',
+          '아이 여권 (공연 무릎 무료 나이 확인용)',
+          '댄싱 워터 표(예매 확인 화면), 아이 여벌옷 (앞줄은 물이 튈 수 있음)',
           '겉옷 (콜로안 야외석은 쌀쌀함)'
         ],
         '2026-12-31': [
@@ -734,18 +737,28 @@ window.TRIP_DATA = {
         },
         { date: '2026-12-30', time: '13:10', end: '15:00', kind: 'nap', title: '낮잠', places: ['wmacau'] },
         {
-          date: '2026-12-30', time: '15:15', end: '17:00', kind: 'activity', title: '실내 워터파크, 이후 샤워·환복', places: ['waterpark'], booking: 'waterpark',
-          cost: { min: 796, max: 796, type: 'ticket', note: '어른 MOP 398 × 2, 키 1m 미만 무료 (1~1.19m면 MOP 258 추가)' },
+          date: '2026-12-30', time: '15:30', kind: 'move', title: '택시로 시티 오브 드림즈 (공연장, 약 5분)',
+          places: ['wmacau', 'dancingwater'], transport: 'taxi', cost: { min: 21, max: 27, type: 'taxi', note: '약 1.6km' },
+          tips: ['공연 30~40분 전에 도착해 표를 받고 화장실·기저귀를 마친다.']
+        },
+        {
+          date: '2026-12-30', time: '16:30', end: '18:00', kind: 'activity', title: '하우스 오브 댄싱 워터 공연 (16:30)', places: ['dancingwater'], booking: 'dancingwater',
+          cost: { min: 1396, max: 1796, type: 'ticket', note: '어른 2명 · 갤러리 698 ~ 시그니처 898 좌석, 두 아이는 만 3세 미만 무릎 무료' },
+          memo: '공연은 약 90분입니다. 시티 오브 드림즈 안 전용 극장.',
           tips: [
-            '실내는 연중 30도로 유지된다. 키 1m 미만은 무료라 아이 신분증(여권)을 챙긴다.',
-            '아쿠아슈즈, 빨리 마르는 옷, 방수 파우치를 준비한다.',
-            '호텔 투숙객 전용 입구가 따로 있는지 프런트에 물어본다.'
+            '큰 소리·불꽃·물 튀김 효과가 있다. 아이가 놀라면 잠깐 나갔다 들어올 수 있게 통로 쪽 좌석이 편하다.',
+            '앞쪽 몇 줄은 물이 튈 수 있다. 아이 여벌옷이나 얇은 겉옷을 챙긴다.',
+            '무릎에 앉는 아이는 신분증(여권)으로 나이를 확인할 수 있다.'
           ]
         },
         {
-          date: '2026-12-30', time: '18:00', kind: 'meal', meal: 'dinner', title: '저녁: 푸드 리퍼블릭 (스튜디오 시티)', places: ['foodrepublic'],
-          memo: "'친친'은 미국 LA의 식당이라 뺐습니다. W 마카오 안의 '호커 호커' 저녁 뷔페(18:00~22:00)도 가능합니다.",
-          tips: ['국수·딤섬 등 여러 가게가 모인 푸드코트라 빠르게 먹기 좋다.']
+          date: '2026-12-30', time: '18:10', kind: 'meal', meal: 'dinner', title: '저녁: 찬키 로스트 구스 (시티 오브 드림즈 SOHO)', places: ['chankee'],
+          memo: '공연장과 같은 건물 2층 식당가라 이동 없이 바로 먹습니다. 붐비면 같은 층 다른 식당도 많습니다.',
+          tips: ['공연이 끝나면 한꺼번에 나와 붐빈다. 한 사람이 먼저 가서 자리를 잡는다.']
+        },
+        {
+          date: '2026-12-30', time: '19:10', kind: 'move', title: '택시로 W 마카오 복귀',
+          places: ['chankee', 'wmacau'], transport: 'taxi', cost: { min: 21, max: 27, type: 'taxi', note: '약 1.6km' }
         },
         { date: '2026-12-30', time: '19:30', kind: 'sleep', title: '객실 복귀, 20:00 목욕, 21:00 취침', places: ['wmacau'] },
 

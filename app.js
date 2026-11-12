@@ -16,6 +16,7 @@
     hotel: { icon: '🏨', label: '호텔' },
     kids: { icon: '🧸', label: '키즈' },
     sight: { icon: '📸', label: '구경' },
+    show: { icon: '🎭', label: '공연' },
     shop: { icon: '🛍️', label: '쇼핑·구경' },
     oldtown: { icon: '🏛️', label: '구시가지' },
     transport: { icon: '🚌', label: '교통' },
