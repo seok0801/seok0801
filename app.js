@@ -372,6 +372,15 @@
   function hideSheet() { sheetMode = ''; $('sheet').hidden = true; }
 
   /* 장소를 눌렀을 때 보여 줄 내용: 그 장소에서 하는 일정(시간·메모·꿀팁·예약 버튼) */
+  /* 주변 찾기: 그 장소 둘레의 식당·카페·편의점·약국을 구글 지도(앱)에서 바로 연다. 키가 필요 없다 */
+  var NEARBY = [['🍜', '식당', 'restaurants'], ['☕', '카페', 'cafe'], ['🏪', '편의점', 'convenience store'], ['💊', '약국', 'pharmacy']];
+  function nearbyHtml(p) {
+    return '<div class="near"><span class="fine">주변 찾기 (구글 지도)</span>' + NEARBY.map(function (n) {
+      var url = 'https://www.google.com/maps/search/' + encodeURIComponent(n[2]) + '/@' + p.lat + ',' + p.lng + ',17z?hl=ko';
+      return '<a class="chip-btn" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + n[0] + ' ' + n[1] + '</a>';
+    }).join('') + '</div>';
+  }
+
   function placeHtml(id) {
     var p = place(id);
     var t = PLACE_TYPES[p.type] || { icon: '📍', label: '' };
@@ -380,6 +389,7 @@
     if (p.note) meta.push(p.note);
     var html = meta.length ? '<p class="fine">' + esc(meta.join(' · ')) + '</p>' : '';
     if (p.hours) html += '<p class="fine">🕒 ' + esc(p.hours) + '</p>';
+    html += nearbyHtml(p);
     // 마커가 겹쳐 누르기 어려운 곳을 위해, 150m 안의 다른 장소로 바로 가는 버튼을 둔다
     var near = viewPlaceIds().filter(function (o) { return o !== id && distanceM([p.lng, p.lat], [place(o).lng, place(o).lat]) < 150; });
     if (near.length) {
@@ -700,19 +710,45 @@
     } catch (e) { /* 바꾸지 못하면 원래 글자 그대로 쓴다 */ }
   }
 
-  /* 일정과 상관없는 마카오 바깥(주하이 등)은 바다색으로 덮어 그리지 않는다 */
+  /* 마카오 바깥(주하이 등)은 그리지 않는다.
+   * data.js 의 area 선을 둥글게 다듬고, 그 바깥을 바탕색으로 덮는다.
+   * 경계에서 바깥으로 몇 겹을 옅게 겹쳐 덮어, 바다가 바탕색으로 부드럽게 흐려지게 한다. */
+  var MASK_COLOR = '#eef0ec';                 // 지도 바깥 바탕색
+  var MASK_FADE_M = [0, 35, 75, 120, 170, 225, 290, 360];   // 경계에서 바깥으로 흐려지는 거리(m)
+  function smoothRing(ring, times) {          // 꼭짓점을 깎아 둥근 곡선으로 (Chaikin)
+    var pts = ring.slice(0, -1);
+    for (var t = 0; t < times; t++) {
+      var out = [];
+      for (var i = 0; i < pts.length; i++) {
+        var a = pts[i], b = pts[(i + 1) % pts.length];
+        out.push([a[0] * .75 + b[0] * .25, a[1] * .75 + b[1] * .25], [a[0] * .25 + b[0] * .75, a[1] * .25 + b[1] * .75]);
+      }
+      pts = out;
+    }
+    return pts;
+  }
+  function growPoints(pts, m) {               // 선을 바깥쪽으로 m 미터 넓힌다
+    if (!m) return pts;
+    var k = 111320 * Math.cos(pts[0][1] * Math.PI / 180), area = 0, n = pts.length;
+    for (var i = 0; i < n; i++) { var p = pts[i], q = pts[(i + 1) % n]; area += (p[0] * q[1] - q[0] * p[1]); }
+    var sign = area > 0 ? 1 : -1;
+    return pts.map(function (p, i) {
+      var a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n];
+      var dx = (b[0] - a[0]) * k, dy = (b[1] - a[1]) * 111320, d = Math.sqrt(dx * dx + dy * dy) || 1;
+      return [p[0] + sign * dy / d * m / k, p[1] - sign * dx / d * m / 111320];
+    });
+  }
   function addAreaMask() {
     var ring = D.map.area;
     if (!ring || ring.length < 4) return;
     try {
-      map.addSource('tour-mask', {
-        type: 'geojson',
-        data: {
-          type: 'Feature', properties: {},
-          geometry: { type: 'Polygon', coordinates: [[[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]], ring] }
-        }
+      var base = smoothRing(ring, 4), world = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+      MASK_FADE_M.forEach(function (m, i) {
+        var hole = growPoints(base, m); hole.push(hole[0]);
+        var id = 'tour-mask-' + i, last = i === MASK_FADE_M.length - 1;
+        map.addSource(id, { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [world, hole] } } });
+        map.addLayer({ id: id, type: 'fill', source: id, paint: { 'fill-color': MASK_COLOR, 'fill-opacity': last ? 1 : .22, 'fill-antialias': false } });
       });
-      map.addLayer({ id: 'tour-mask', type: 'fill', source: 'tour-mask', paint: { 'fill-color': '#6f98a0', 'fill-antialias': false } });
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
   }
 

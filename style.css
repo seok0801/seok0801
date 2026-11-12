@@ -564,6 +564,7 @@ h3.sec { margin: 18px 0 4px; font-size: 17px; }
   font-weight: 600;
   cursor: pointer;
 }
+a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 /* 지도 출처 표시(ⓘ)가 아래 버튼 줄에 가려지지 않게 위로 올린다 */
 #map .maplibregl-ctrl-bottom-right { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
 
