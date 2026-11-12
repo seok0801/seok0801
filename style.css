@@ -725,3 +725,5 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 #gm-frame { flex: 1 1 auto; width: 100%; border: 0; background: #e8eaed; }
 @media (min-width: 900px) { #gm { left: auto; width: 460px; right: 12px; } }
 @media (prefers-reduced-motion: no-preference) { #gm:not([hidden]) { animation: rise .24s ease-out; } }
+/* PC 에서는 오른쪽 아래에 확대·축소 버튼이 있으므로 📍 버튼을 그 위로 올린다 */
+@media (min-width: 900px) { .locate { bottom: calc(222px + env(safe-area-inset-bottom, 0px)); right: 10px; } }
