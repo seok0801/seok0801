@@ -946,77 +946,12 @@
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
   }
 
-  /* ---------- ✈️ 첫날·마지막 날 비행기 효과 ----------
-   * 첫날을 고르면 바다 너머 '한반도·인천' 표시에서 마카오 공항으로 비행기가 날아오고,
-   * 마지막 날을 고르면 마카오 공항에서 인천으로 날아간다. 인천 표시는 실제 위치가 아니라
-   * 지금 화면 축척 그대로, 마카오 공항에서 한국 쪽(북동쪽) 화면 가장자리 근처 바다 위에 둔다. */
-  var fx = { box: null, raf: 0, token: 0, onMove: null };
-  var KOREA_SVG = '<svg viewBox="0 0 40 60" width="34" height="51" aria-hidden="true"><path d="M14 2 L24 1 L31 6 L30 12 L26 15 L28 22 L33 30 L34 40 L31 49 L24 55 L17 57 L12 52 L14 46 L10 41 L13 35 L9 30 L12 24 L10 18 L14 13 L11 8 Z" fill="#e8e2d2" stroke="#7a8a86" stroke-width="1.5"/><circle cx="12" cy="25" r="3.2" fill="#d1451f"/></svg>';
-  // 여객기 (위에서 본 모양, 기본은 위쪽을 향함 → 진행 방향으로 돌린다)
-  var PLANE_SVG = '<svg viewBox="0 0 24 24" width="38" height="38" aria-hidden="true"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" fill="#ffffff" stroke="#16242d" stroke-width="1" stroke-linejoin="round"/></svg>';
-  /* 점선·비행기를 지우고 인천 표시만 남긴다 (투어·장소 이동 때도) */
-  function endFlight() {
-    cancelAnimationFrame(fx.raf);
-    if (fx.onMove && map) { map.off('move', fx.onMove); fx.onMove = null; }
-    if (fx.box) fx.box.classList.add('done');
-  }
-  function clearFlight() {
-    fx.token++; cancelAnimationFrame(fx.raf);
-    if (fx.onMove && map) { map.off('move', fx.onMove); fx.onMove = null; }
-    if (fx.box) { fx.box.remove(); fx.box = null; }
-  }
-  /* 인천 표시는 지도가 아니라 화면 오른쪽 위(1시 방향)에 고정. 비행기와 점선은 그 자리와 '지금 화면의 마카오 공항'을 잇는다
-   * → 지도를 움직이거나 투어로 카메라가 움직여도 인천은 늘 1시 방향 끝에 있다 */
+  /* 마지막 날을 고르면 활주로 여객기를 이륙 장면부터 다시 시작한다 (인천 표시·화면 위 비행 효과는 없앰) */
+  function endFlight() {}
   function flightFx() {
-    clearFlight();
-    if (mapReady && map.getSource('plane3d') && state.day === D.days[D.days.length - 1].date) startPlaneLoop();   // 마지막 날은 이륙 장면부터
-    if (!mapReady || !onMap('mfm')) return;
-    var firstDay = D.days[0].date, lastDay = D.days[D.days.length - 1].date;
-    if (state.day !== firstDay && state.day !== lastDay) return;
-    var outbound = state.day === firstDay, my = fx.token;
-    var box = document.createElement('div'); box.className = 'flight-fx';
-    box.innerHTML = '<svg class="flight-line"><path/></svg><div class="korea">' + KOREA_SVG + '<span>인천 ✈</span></div><div class="plane">' + PLANE_SVG + '</div>';
-    $('app').appendChild(box); fx.box = box;
-    var path = box.querySelector('path'), plane = box.querySelector('.plane'), korea = box.querySelector('.korea');
-    var prog = reducedMotion() ? 1 : 0;
-    function geom() {
-      var r = $('app').getBoundingClientRect(), kr = korea.getBoundingClientRect(), mr = map.getContainer().getBoundingClientRect();
-      var k = { x: kr.left - r.left + kr.width / 2, y: kr.top - r.top + kr.height * 0.4 };
-      var mp = map.project([place('mfm').lng, place('mfm').lat]), m = { x: mp.x + mr.left - r.left, y: mp.y + mr.top - r.top };
-      var a = outbound ? k : m, b = outbound ? m : k;
-      var c = { x: (a.x + b.x) / 2 + (b.y - a.y) * 0.25, y: (a.y + b.y) / 2 - (b.x - a.x) * 0.25 };
-      return { a: a, b: b, c: c };
-    }
-    function at(g, u) {
-      return { x: (1 - u) * (1 - u) * g.a.x + 2 * (1 - u) * u * g.c.x + u * u * g.b.x, y: (1 - u) * (1 - u) * g.a.y + 2 * (1 - u) * u * g.c.y + u * u * g.b.y };
-    }
-    function draw() {
-      if (my !== fx.token) return;
-      var g = geom(), e = prog < .5 ? 2 * prog * prog : 1 - Math.pow(-2 * prog + 2, 2) / 2;
-      // 지나온 곡선만 점선으로 (끝까지 가면 전체)
-      var d = 'M' + g.a.x + ' ' + g.a.y, n = 30;
-      for (var i = 1; i <= Math.round(n * e); i++) { var q = at(g, i / n); d += ' L' + q.x + ' ' + q.y; }
-      path.setAttribute('d', d);
-      var p = at(g, e), p2 = at(g, Math.min(1, e + 0.02)), p1 = at(g, Math.max(0, e - 0.02));
-      var ang = Math.atan2(p2.y - p1.y, p2.x - p1.x) + Math.PI / 2;
-      plane.style.transform = 'translate(' + (p.x - 19) + 'px,' + (p.y - 19) + 'px) rotate(' + ang + 'rad) scale(' + (1 + Math.sin(e * Math.PI) * 0.35) + ')';
-      plane.style.opacity = outbound && prog >= 1 ? '0' : '1';   // 마카오에 내려앉으면 사라진다
-    }
-    fx.onMove = draw; map.on('move', draw);
-    var start = function () {
-      if (my !== fx.token) return;
-      var t0 = performance.now(), DUR = 2600;
-      (function frame(now) {
-        if (my !== fx.token) return;
-        prog = Math.min(1, (now - t0) / DUR); draw();
-        if (prog < 1) fx.raf = requestAnimationFrame(frame);
-        else setTimeout(function () { if (my === fx.token) endFlight(); }, 1100);   // 도착하면 점선·비행기는 사라지고 인천 표시만 남는다
-      })(t0);
-    };
-    draw();
-    if (reducedMotion()) { endFlight(); return; }
-    if (map.isMoving()) map.once('moveend', function () { setTimeout(start, 150); }); else setTimeout(start, 300);
+    if (mapReady && map.getSource('plane3d') && state.day === D.days[D.days.length - 1].date) startPlaneLoop();
   }
+
   /* ---------- 🛬🛫 마카오 공항 활주로 3D 여객기 ----------
    * 첫날(13:45 도착)은 북쪽에서 내려와 활주로 16 에 착륙, 마지막 날(14:55 출발)은 활주로 34 에서 북쪽으로 이륙.
    * 투어가 공항에 멈출 때, 또는 그날 공항 마커를 누르면 나온다. 지도의 입체 건물 기능(fill-extrusion)으로 공중에 띄운 여객기다 */
