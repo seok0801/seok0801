@@ -946,6 +946,89 @@
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
   }
 
+  /* ---------- 🚢 바다 위 3D 배 ----------
+   * 고속 여객선(홍콩행 페리)·작은 배가 바다 뱃길을 천천히 오간다. 뱃길은 모두 바다 위인지 확인한 선이다.
+   * 공항 여객기와 같은 방식(입체 도형)이고, 화면에 보이는 배만 그린다 */
+  var SHIP_MODELS = {
+    // 고속 여객선: 흰 선체, 빨간 띠, 짙은 창, 위 갑판
+    ferry: [
+      [[[-5, -22], [5, -22], [5, 14], [3, 20], [0, 23], [-3, 20], [-5, 14]], 0, 3.5, '#f4f6f8'],
+      [[[-5.1, -22], [5.1, -22], [5.1, 12], [-5.1, 12]], 2.2, 3, '#d2453a'],
+      [[[-4, -16], [4, -16], [4, 9], [2.5, 13], [-2.5, 13], [-4, 9]], 3.5, 7, '#e9edf1'],
+      [[[-4.05, -14], [4.05, -14], [4.05, 10], [-4.05, 10]], 5, 6.1, '#1f3b57'],
+      [[[-2.5, 2], [2.5, 2], [2.5, 8], [-2.5, 8]], 7, 9, '#f4f6f8']
+    ],
+    // 작은 배: 남색 선체, 흰 조타실
+    boat: [
+      [[[-2.5, -9], [2.5, -9], [2.5, 5], [0, 10], [-2.5, 5]], 0, 2, '#2f5d7c'],
+      [[[-1.8, -6], [1.8, -6], [1.8, 0], [-1.8, 0]], 2, 4.5, '#f4f6f8'],
+      [[[-1.85, -4], [1.85, -4], [1.85, -1], [-1.85, -1]], 3.2, 4, '#1f3b57']
+    ]
+  };
+  var SHIPS = [
+    { model: 'ferry', speed: 9, path: [[113.574, 22.1880], [113.585, 22.196], [113.603, 22.203]] },   // 외항 페리 → 홍콩 방향
+    { model: 'ferry', speed: 9, path: [[113.5835, 22.1668], [113.590, 22.1700], [113.606, 22.1760]], phase: .5 },   // 타이파 페리 터미널
+    { model: 'boat', speed: 4, path: [[113.547, 22.1775], [113.560, 22.1810], [113.575, 22.1850]] },   // 반도·타이파 사이 물길
+    { model: 'boat', speed: 3.5, path: [[113.575, 22.1120], [113.590, 22.1060], [113.605, 22.1120]], phase: .3 },   // 콜로안 남쪽
+    { model: 'boat', speed: 4, path: [[113.600, 22.145], [113.606, 22.160], [113.604, 22.135]], phase: .6 },   // 공항 동쪽 바다
+    { model: 'boat', speed: 3, path: [[113.583, 22.121], [113.595, 22.119], [113.603, 22.124]], phase: .2 }    // 카호 앞바다
+  ];
+  var ships = { token: 0, raf: 0 };
+  function modelFeatures(parts, pos, hdg, S, wake) {
+    var k = 111320 * Math.cos(pos[1] * Math.PI / 180), r = hdg * Math.PI / 180;
+    var toLL = function (x, y) { var e = x * Math.cos(r) + y * Math.sin(r), n = -x * Math.sin(r) + y * Math.cos(r); return [pos[0] + e * S / k, pos[1] + n * S / 111320]; };
+    var out = parts.map(function (pt) {
+      var ring = pt[0].map(function (v) { return toLL(v[0], v[1]); }); ring.push(ring[0]);
+      return { type: 'Feature', properties: { b: pt[1] * S, h: pt[2] * S, c: pt[3] }, geometry: { type: 'Polygon', coordinates: [ring] } };
+    });
+    if (wake) {   // 뒤로 퍼지는 흰 물결
+      var w = [toLL(-3, -20), toLL(3, -20), toLL(8, -46), toLL(-8, -46)]; w.push(w[0]);
+      out.push({ type: 'Feature', properties: { wake: 1 }, geometry: { type: 'Polygon', coordinates: [w] } });
+    }
+    return out;
+  }
+  function addShipLayer() {
+    try {
+      map.addSource('ships', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({ id: 'ships-wake', type: 'fill', source: 'ships', filter: ['==', ['get', 'wake'], 1], paint: { 'fill-color': '#ffffff', 'fill-opacity': .22 } });
+      map.addLayer({ id: 'ships3d', type: 'fill-extrusion', source: 'ships', filter: ['!=', ['get', 'wake'], 1],
+        paint: { 'fill-extrusion-color': ['get', 'c'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-opacity': 1 } });
+    } catch (e) { /* 배 없이 지도는 그대로 */ }
+  }
+  function startShips() {
+    ships.token++; cancelAnimationFrame(ships.raf);
+    if (!mapReady || !map.getSource('ships')) return;
+    var my = ships.token, src = map.getSource('ships'), last = 0;
+    // 뱃길마다 길이(m)와 구간 누적 거리
+    SHIPS.forEach(function (sh) {
+      sh.acc = [0];
+      for (var i = 1; i < sh.path.length; i++) sh.acc.push(sh.acc[i - 1] + distanceM(sh.path[i - 1], sh.path[i]));
+      sh.len = sh.acc[sh.acc.length - 1];
+    });
+    var t0 = performance.now();
+    (function frame(now) {
+      if (my !== ships.token) return;
+      ships.raf = requestAnimationFrame(frame);
+      if (now - last < 50 || document.hidden) return;   // 초당 약 20번 (배는 느리다)
+      last = now;
+      var b = map.getBounds(), z = map.getZoom(), feats = [];
+      var S = Math.min(8.5, Math.max(2.2, 2.2 * Math.pow(2, (15 - z) * 0.85)));   // 멀리서 볼수록 크게
+      var vs = Math.max(1, S / 2.2);                                            // 크게 그리면 그만큼 빨리 (화면에서 비슷한 속도로)
+      SHIPS.forEach(function (sh) {
+        // 뱃길을 갔다가 돌아온다 (왕복)
+        var cyc = 2 * sh.len, dist = ((now - t0) / 1000 * sh.speed * vs * 3 + (sh.phase || 0) * cyc) % cyc, back = dist > sh.len;
+        var d = back ? cyc - dist : dist, i = 1;
+        while (i < sh.acc.length - 1 && sh.acc[i] < d) i++;
+        var a = sh.path[i - 1], c = sh.path[i], u = (d - sh.acc[i - 1]) / ((sh.acc[i] - sh.acc[i - 1]) || 1);
+        var pos = [a[0] + (c[0] - a[0]) * u, a[1] + (c[1] - a[1]) * u];
+        if (pos[0] < b.getWest() - .01 || pos[0] > b.getEast() + .01 || pos[1] < b.getSouth() - .01 || pos[1] > b.getNorth() + .01) return;
+        var hdg = back ? bearingTo(c, a) : bearingTo(a, c);
+        feats = feats.concat(modelFeatures(SHIP_MODELS[sh.model], pos, hdg, S, true));
+      });
+      src.setData({ type: 'FeatureCollection', features: feats });
+    })(t0);
+  }
+
   /* 마지막 날을 고르면 활주로 여객기를 이륙 장면부터 다시 시작한다 (인천 표시·화면 위 비행 효과는 없앰) */
   function endFlight() {}
   function flightFx() {
@@ -1069,7 +1152,7 @@
     }
     if (!mapReady) return;
     (map.getStyle().layers || []).forEach(function (l) {
-      if (l.type === 'fill-extrusion' && l.id !== 'plane3d') map.setLayoutProperty(l.id, 'visibility', is2d ? 'none' : 'visible');
+      if (l.type === 'fill-extrusion' && l.id !== 'plane3d' && l.id !== 'ships3d') map.setLayoutProperty(l.id, 'visibility', is2d ? 'none' : 'visible');
     });
     ['tour-flat', 'tour-tall-flat'].forEach(function (id) { if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', is2d ? 'visible' : 'none'); });
     map.dragRotate.enable(); map.touchZoomRotate.enableRotation();   // 2D 에서도 두 손가락으로 돌릴 수 있다 (기울이기만 막는다)
@@ -1241,6 +1324,8 @@
       addRouteLayers();
       addPlane3dLayer();
       startPlaneLoop();
+      addShipLayer();
+      startShips();
       addMeLayer();
       fitViewPadding();
       applyMode(false);
