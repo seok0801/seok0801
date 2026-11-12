@@ -194,6 +194,9 @@ a { color: var(--accent); }
 #sheet-body {
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;              /* 창은 위아래로만 움직인다 (좌우 흔들림 없음) */
+  overscroll-behavior: contain;    /* 끝까지 밀어도 뒤의 지도·페이지가 끌려가지 않게 */
+  touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   padding: 6px 14px 18px;
 }
@@ -534,7 +537,7 @@ a { color: var(--accent); }
   border-bottom: 1px solid var(--line);
 }
 #modal-title { margin: 0; font-size: 19px; }
-#modal-body { padding: 12px 16px 24px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+#modal-body { padding: 12px 16px 24px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
 
 .bk {
   margin: 10px 0;
@@ -598,8 +601,9 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .place-meta { margin-bottom: 10px; }
 .row-chips {
   display: flex; align-items: center; gap: 6px;
-  margin: 10px -16px 0; padding: 2px 16px 4px;
-  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  margin: 10px -14px 0; padding: 2px 14px 4px;   /* 창 안쪽 여백(14px)과 딱 맞춘다 */
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain; touch-action: pan-x;
 }
 .row-chips::-webkit-scrollbar { display: none; }
 .row-label { flex: 0 0 auto; color: var(--muted); font-size: 13px; }
@@ -758,3 +762,4 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .sos-row .fine { margin: 2px 0 0; }
 .sos-tel { white-space: nowrap; border-color: #d1352b; color: #b42318; }
 
+#sheet, #modal-box, #gm { overscroll-behavior: contain; }
