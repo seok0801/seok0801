@@ -436,7 +436,10 @@
     var my = ++flyToken;
     var center = [place(id).lng, place(id).lat];
     // 장소를 지도 가운데보다 아래에 두어, 그 위로 3D 풍경(또는 팝업)이 보이게 한다
-    var offset = [0, Math.round(mapHeight() * (opt.sheet ? -0.22 : 0.04))];   // 아래 창이 열리면 장소를 화면 위쪽에 둔다
+    // 창이 열리면 장소가 창에 가리지 않는 쪽에 오게 한다 (세로 화면: 위쪽, 가로로 돌린 화면·PC: 오른쪽)
+    var side = window.innerWidth >= 900 || (window.innerWidth > window.innerHeight && window.innerHeight <= 520);
+    var offset = !opt.sheet ? [0, Math.round(mapHeight() * 0.04)]
+      : side ? [Math.round(Math.min(230, window.innerWidth * 0.23)), 0] : [0, Math.round(mapHeight() * -0.22)];
     var cur = map.getBearing(), b = cur + 40;
     var from = state.lastPlace && state.lastPlace !== id && onMap(state.lastPlace) ? [place(state.lastPlace).lng, place(state.lastPlace).lat] : null;
     if (from && distanceM(from, center) > 80) {
@@ -623,11 +626,23 @@
         tallKeys[key] = true; changed = true;
         pat = pat || windowPattern(look.wall || '#ece6d8', look.glass || '#5f7f96');
         var h = Math.max(o.props.render_height || 5, own && p.height ? p.height : 0);
-        tallFeatures.push({ type: 'Feature', geometry: geom,
-          properties: { h: h, b: o.props.render_min_height || 0, pat: pat, roof: look.roof || (h >= 28 ? '#6f9085' : '#c4c0b4') } });
+        // 원래 건물과 벽·지붕이 정확히 겹치면 카메라가 돌 때 깜빡이므로, 바깥으로 0.8m 넓히고 조금 높인다
+        tallFeatures.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: o.rings.map(growRing) },
+          properties: { h: h + 1.4, b: o.props.render_min_height || 0, pat: pat, roof: look.roof || (h >= 28 ? '#6f9085' : '#c4c0b4') } });
       });
     });
     if (changed) map.getSource('tour-tall').setData({ type: 'FeatureCollection', features: tallFeatures });
+  }
+  /* 건물 바깥선을 중심에서 바깥쪽으로 0.8m 넓힌다 */
+  function growRing(ring) {
+    var cx = 0, cy = 0;
+    ring.forEach(function (v) { cx += v[0]; cy += v[1]; });
+    cx /= ring.length; cy /= ring.length;
+    var k = Math.cos(cy * Math.PI / 180);
+    return ring.map(function (v) {
+      var dx = (v[0] - cx) * 111320 * k, dy = (v[1] - cy) * 111320, d = Math.sqrt(dx * dx + dy * dy) || 1;
+      return [v[0] + dx / d * 0.8 / (111320 * k), v[1] + dy / d * 0.8 / 111320];
+    });
   }
   /* 건물 바깥선의 어느 꼭짓점이든 pt 에서 r 미터 안에 있는지 */
   function nearPolygon(pt, geom, r) {

@@ -353,24 +353,23 @@ window.TRIP_DATA = {
         /* ===== 12/28(월) 키즈시티 · 타이파 빌리지 ===== */
         { date: '2026-12-28', time: '07:30', kind: 'meal', title: '조식 (호텔 뷔페)', places: ['glp'] },
         {
-          date: '2026-12-28', time: '09:30', kind: 'move', title: '택시로 시티 오브 드림즈 (직행 셔틀 없음)',
+          date: '2026-12-28', time: '10:00', kind: 'move', title: '택시로 시티 오브 드림즈 (직행 셔틀 없음)',
           places: ['glp', 'cod'], transport: 'taxi', cost: { min: 27, max: 34, type: 'taxi', note: '약 2.1km' }
         },
         {
-          date: '2026-12-28', time: '10:00', end: '11:30', kind: 'activity', title: '키즈시티', places: ['cod'], booking: 'cod',
+          date: '2026-12-28', time: '10:30', end: '11:45', kind: 'activity', title: '키즈시티', places: ['cod'], booking: 'cod',
           cost: { min: 200, max: 220, type: 'ticket', note: '아이 MOP 180 + 어른 1명당 MOP 20 (12/20~31 요금)' },
-          memo: '10:30에 문을 엽니다. 택시를 10:00쯤 타고 10:30 입장에 맞추세요.',
           tips: [
             '아이·어른 모두 양말이 필수다 (공식 안내).',
             '당일 1회 입장이고 이용 시간 제한이 없다 (예전의 2시간권과 다름).'
           ]
         },
         {
-          date: '2026-12-28', time: '11:30', kind: 'meal', title: '점심: 찬키 로스트 구스 (시티 오브 드림즈 SOHO)', places: ['chankee'],
+          date: '2026-12-28', time: '11:45', kind: 'meal', title: '점심: 찬키 로스트 구스 (시티 오브 드림즈 SOHO)', places: ['chankee'],
           memo: '키즈시티와 같은 건물 2층 식당가. 11:00 개점 (옆의 딘타이펑은 12:00). 밥·국수. 아기 의자는 현장 확인.'
         },
         {
-          date: '2026-12-28', time: '12:15', kind: 'move', title: '택시로 호텔 복귀',
+          date: '2026-12-28', time: '12:30', kind: 'move', title: '택시로 호텔 복귀',
           places: ['cod', 'glp'], transport: 'taxi', cost: { min: 27, max: 34, type: 'taxi', note: '약 2.1km' }
         },
         { date: '2026-12-28', time: '13:00', end: '15:00', kind: 'nap', title: '낮잠', places: ['glp'] },
@@ -388,22 +387,22 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-28', time: '16:45', kind: 'move', title: '런더너로 이동 (도보, 아이가 지치면 택시)',
-          places: ['taipa', 'londoner'], transport: 'walk',
-          cost: { min: 31, max: 39, type: 'taxi', optional: true, note: '아이가 지쳐 택시를 탈 때만. 차로 약 2.7km' }
+          date: '2026-12-28', time: '16:45', kind: 'move', title: '베네시안으로 이동 (도보, 아이가 지치면 택시)',
+          places: ['taipa', 'venetian'], transport: 'walk',
+          cost: { min: 21, max: 27, type: 'taxi', optional: true, note: '아이가 지쳐 택시를 탈 때만. 차로 약 1.5km' }
         },
         {
-          date: '2026-12-28', time: '17:30', kind: 'meal', meal: 'dinner', title: '저녁: 런더너 FEAST 뷔페', places: ['londoner'], booking: 'feast',
-          memo: '저녁 뷔페는 18:00 시작으로 안내됩니다. 베네시안 구경을 먼저(17:00~17:50) 하고 18:00에 들어가세요.',
-          tips: ['연말 저녁은 붐비므로 미리 예약하고, 아이 요금 기준(나이·키)을 예약할 때 확인한다 (공식 사이트가 열리지 않아 미확인).']
-        },
-        {
-          date: '2026-12-28', time: '18:45', kind: 'activity', title: '베네시안·파리지앵 크리스마스 장식 짧게 구경', places: ['venetian'],
+          date: '2026-12-28', time: '17:00', end: '17:50', kind: 'activity', title: '베네시안·파리지앵 크리스마스 장식 구경', places: ['venetian'],
           tips: ['크리스마스 시즌이라 사람이 많다. 아이에게 보호자 연락처를 적은 팔찌나 스티커를 붙여 둔다.']
         },
         {
-          date: '2026-12-28', time: '19:30', kind: 'sleep', title: '택시로 호텔 복귀, 20:00 목욕, 21:00 취침', places: ['glp'],
-          transport: 'taxi', cost: { min: 37, max: 46, type: 'taxi', note: '베네시안 → 호텔 약 3.3km' }
+          date: '2026-12-28', time: '18:00', kind: 'meal', meal: 'dinner', title: '저녁: 런더너 FEAST 뷔페', places: ['londoner'], booking: 'feast',
+          memo: '베네시안에서 길 건너편입니다. 저녁 뷔페는 18:00 시작으로 안내됩니다.',
+          tips: ['연말 저녁은 붐비므로 미리 예약하고, 아이 요금 기준(나이·키)을 예약할 때 확인한다 (공식 사이트가 열리지 않아 미확인).']
+        },
+        {
+          date: '2026-12-28', time: '19:15', kind: 'sleep', title: '택시로 호텔 복귀, 20:00 목욕, 21:00 취침', places: ['glp'],
+          transport: 'taxi', cost: { min: 29, max: 36, type: 'taxi', note: '런더너 → 호텔 약 2.5km' }
         },
 
         /* ===== 12/29(화) 구시가지 · W로 이동 ===== */
@@ -496,18 +495,17 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-30', time: '11:45', kind: 'meal', title: '점심: 응아팀 카페 (성당 앞 광장, 아이가 뛰어놀기 좋음)', places: ['ngatim'],
-          memo: '12:00 개점으로 안내됩니다. 에그타르트를 먹으며 광장에서 잠깐 기다리세요.',
+          date: '2026-12-30', time: '12:00', kind: 'meal', title: '점심: 응아팀 카페 (성당 앞 광장, 아이가 뛰어놀기 좋음)', places: ['ngatim'],
           tips: [
             '성당 앞 광장에 자리가 있어 아이가 뛰어놀기 좋다. 영어 메뉴가 있다.',
             '야외석은 쌀쌀할 수 있으니 겉옷을 챙긴다.'
           ]
         },
         {
-          date: '2026-12-30', time: '12:45', kind: 'move', title: '택시로 W 복귀',
+          date: '2026-12-30', time: '12:50', kind: 'move', title: '택시로 W 복귀',
           places: ['ngatim', 'wmacau'], transport: 'taxi', cost: { min: 49, max: 61, type: 'taxi', note: '약 4.6km' }
         },
-        { date: '2026-12-30', time: '13:00', end: '15:00', kind: 'nap', title: '낮잠', places: ['wmacau'] },
+        { date: '2026-12-30', time: '13:10', end: '15:00', kind: 'nap', title: '낮잠', places: ['wmacau'] },
         {
           date: '2026-12-30', time: '15:15', end: '17:00', kind: 'activity', title: '실내 워터파크, 이후 샤워·환복', places: ['waterpark'], booking: 'waterpark',
           cost: { min: 796, max: 796, type: 'ticket', note: '어른 MOP 398 × 2, 키 1m 미만 무료 (1~1.19m면 MOP 258 추가)' },

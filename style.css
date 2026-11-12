@@ -561,3 +561,16 @@ h3.sec { margin: 18px 0 4px; font-size: 17px; }
 }
 /* 지도 출처 표시(ⓘ)가 아래 버튼 줄에 가려지지 않게 위로 올린다 */
 #map .maplibregl-ctrl-bottom-right { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+
+/* 휴대폰을 가로로 돌렸을 때(화면이 낮을 때): 창을 왼쪽에 두고 지도를 오른쪽에 넓게 본다 */
+@media (orientation: landscape) and (max-height: 520px) {
+  #top { flex-direction: row; align-items: center; right: 0; width: auto; }
+  #title { flex: 0 1 auto; font-size: 13px; }
+  #tabs { flex: 1 1 auto; max-width: 420px; margin-left: auto; }
+  .tab { min-height: 40px; }
+  .tab .d, .tab .w { display: inline; font-size: 14px; }
+  .tab .w { margin-left: 2px; }
+  #bar { left: auto; right: 0; width: auto; }
+  #bar .gap { display: none; }
+  #sheet, #sheet.list { left: 8px; right: auto; top: 60px; bottom: 8px; width: 46%; max-width: 420px; max-height: none; }
+}
