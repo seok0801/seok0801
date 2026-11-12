@@ -663,12 +663,13 @@
     });
   }
 
-  /* 바탕 지도를 단순하게: 가게·도로 이름 같은 잔글씨를 숨기고, 땅·바다·도로·녹지만 차분한 색으로 남긴다 */
+  /* 바탕 지도의 땅·바다·도로·녹지를 차분한 색으로 바꾼다. 글자(가게·시설·도로 이름)는 남긴다 */
   function simplifyBaseMap() {
     (map.getStyle().layers || []).forEach(function (l) {
       var id = l.id, set = function (k, v) { try { map.setPaintProperty(id, k, v); } catch (e) { /* 무시 */ } };
       if (l.type === 'symbol') {
-        if (!/^label_(city|town|village|other)/.test(id)) map.setLayoutProperty(id, 'visibility', 'none');
+        // 바탕 지도의 가게·시설·도로·동네 이름은 그대로 둔다. 도로 번호판과 나라·주 이름만 숨긴다
+        if (/shield|country|state|continent/.test(id)) map.setLayoutProperty(id, 'visibility', 'none');
       } else if (l.type === 'background') {
         set('background-color', '#d9d6cc');
       } else if (l.type === 'fill') {
@@ -693,8 +694,8 @@
       (map.getStyle().layers || []).forEach(function (l) {
         var tf = l.type === 'symbol' && l.layout && l.layout['text-field'];
         if (!Array.isArray(tf) || JSON.stringify(tf).indexOf('name') < 0) return;   // 도로 번호 등은 그대로 둔다
-        // 한글 이름이 없는 곳은 글자를 비운다 (필요한 곳은 data.js 의 around 에 한글로 적어 둔다)
-        map.setLayoutProperty(l.id, 'text-field', D.around ? ['coalesce', ['get', 'name:ko'], ''] : ['case', ['has', 'name:ko'], ['get', 'name:ko'], tf]);
+        // 한글 이름이 있으면 한글로, 없으면 바탕 지도에 적힌 이름(한자·포르투갈어·영어) 그대로 보여 준다
+        map.setLayoutProperty(l.id, 'text-field', ['case', ['has', 'name:ko'], ['get', 'name:ko'], tf]);
       });
     } catch (e) { /* 바꾸지 못하면 원래 글자 그대로 쓴다 */ }
   }
