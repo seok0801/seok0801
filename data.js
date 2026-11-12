@@ -243,14 +243,6 @@ window.TRIP_DATA = {
       note: '쉐라톤 그랜드가 런더너 그랜드로 바뀌며 생긴 저녁 뷔페로, 예전 FEAST 대신 이곳을 예약합니다. 공식 요금: 어른 MOP 988, 아이(만 4~12세 미만) 498, 만 4세 미만 무료, 봉사료 10% 별도 → 어른 2명 약 MOP 2,174. ' +
         '저녁 17:30~22:30(금·토·일·공휴일 ~23:00). 저녁 뷔페 예약은 전화만 받는다고 안내되어 있습니다: +853 8118 8822. 복장은 스마트 캐주얼.'
     },
-    funzone: {
-      name: '슈퍼 펀 존', level: '권장', linkVerified: true,
-      kids: '💳 두 아이 모두 유료 · 키 1m 미만 MOP 120씩',
-      icon: '🎈', short: '슈퍼 펀 존', key: '아이 120 · 어른 120 · 🧦 양말',
-      aff: 'https://3ha.in/r/895138', affBy: '클룩',
-      url: 'https://www.studiocity-macau.com/kr/attractions/super-fun-zone',
-      note: '12/21~31 특별일 요금: 키 1m 미만 아이 MOP 120, 어른 MOP 120. 온라인 사전 예약 권장.'
-    },
     wheel: {
       name: '8자 관람차 (골든 릴)', level: '선택', linkVerified: true,
       kids: '💳 두 아이 모두 유료 · 만 2세 미만만 무료, 1인 MOP 100',
@@ -487,9 +479,8 @@ window.TRIP_DATA = {
           '햄튼 코트 저녁 뷔페 전화 예약 확인 (+853 8118 8822), 택시용 현금'
         ],
         '2026-12-29': [
-          '양말 여러 켤레: 키즈시티·슈퍼 펀 존 모두 아이·어른 양말 필수',
+          '양말 여러 켤레: 키즈시티는 아이·어른 모두 양말 필수',
           '체류허가서 + 보증금용 신용카드 (W 체크인)',
-          '슈퍼 펀 존: 긴팔·긴바지 권장',
           '택시용 현금 넉넉히 (이날 택시 3번, 짐 3개는 트렁크 요금 추가)',
           '키즈시티용 작은 가방 (큰 짐은 아침에 W에 맡김)'
         ],
@@ -669,7 +660,7 @@ window.TRIP_DATA = {
           places: ['wmacau', 'cod'], transport: 'taxi', cost: { min: 21, max: 27, type: 'taxi', note: '약 1.6km' }
         },
         {
-          date: '2026-12-29', time: '10:30', end: '12:00', kind: 'activity', title: '키즈시티', places: ['cod'], booking: 'cod',
+          date: '2026-12-29', time: '10:30', end: '12:30', kind: 'activity', title: '키즈시티 (시간 제한 없음, 넉넉히 2시간)', places: ['cod'], booking: 'cod',
           cost: { min: 200, max: 220, type: 'ticket', note: '아이 MOP 180 + 어른 1명당 MOP 20 (12/20~31 요금)' },
           tips: [
             '아이·어른 모두 양말이 필수다 (공식 안내).',
@@ -677,32 +668,24 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-29', time: '12:00', kind: 'meal', title: '점심: 찬키 로스트 구스 (시티 오브 드림즈 SOHO)', places: ['chankee'],
+          date: '2026-12-29', time: '12:30', kind: 'meal', title: '점심: 찬키 로스트 구스 (시티 오브 드림즈 SOHO)', places: ['chankee'],
           memo: '키즈시티와 같은 건물 2층 식당가. 11:00 개점 (옆의 딘타이펑은 12:00). 밥·국수. 아기 의자는 현장 확인.'
         },
         {
-          date: '2026-12-29', time: '12:45', kind: 'move', title: '택시로 W 마카오 (스튜디오 시티)',
+          date: '2026-12-29', time: '13:15', kind: 'move', title: '택시로 W 마카오 (스튜디오 시티)',
           places: ['cod', 'wmacau'], transport: 'taxi', napOk: true, cost: { min: 21, max: 27, type: 'taxi', note: '약 1.6km' },
           tips: ['짐은 맡겨 둔 그대로. 아이가 차에서 잠들면 유모차로 옮긴다.']
         },
         {
-          date: '2026-12-29', time: '13:00', end: '15:00', kind: 'activity', title: '스튜디오 시티 실내 유모차 산책 · 어른은 구경·카페 (방이 준비됐으면 방에서)', places: ['wmacau'], napOk: true,
+          date: '2026-12-29', time: '13:30', end: '15:00', kind: 'activity', title: '스튜디오 시티 실내 유모차 산책 · 어른은 구경·카페 (방이 준비됐으면 방에서)', places: ['wmacau'], napOk: true,
           tips: ['스튜디오 시티는 실내가 넓고 따뜻해 유모차 산책에 좋다. 얼리 체크인이 되면 방에서 재워도 된다.']
         },
         {
-          date: '2026-12-29', time: '15:00', kind: 'hotel', title: 'W 마카오 체크인, 맡긴 짐 찾기', places: ['wmacau'],
+          date: '2026-12-29', time: '15:00', end: '17:15', kind: 'hotel', title: 'W 마카오 체크인 · 짐 풀고 객실에서 쉬기 (덜 잤으면 방에서 더 재우기)', places: ['wmacau'],
           tips: [
             '체류허가서와 보증금용 신용카드(1박당 MOP 1,000으로 안내됨)를 준비한다.',
-            '짐표를 내고 맡긴 짐을 방으로 올려 달라고 한다.'
-          ]
-        },
-        {
-          date: '2026-12-29', time: '15:30', end: '17:15', kind: 'activity', title: '슈퍼 펀 존 (같은 건물)', places: ['funzone'], booking: 'funzone',
-          cost: { min: 240, max: 360, type: 'ticket', note: '키 1m 미만 아이 MOP 120 + 어른 1명당 MOP 120 (어른 1~2명, 12/21~31 요금). 보호자 표가 꼭 필요한지는 현장 확인' },
-          memo: '16시 이후 50% 할인은 12/19~31에는 없습니다.',
-          tips: [
-            '아이·어른 모두 양말이 필수다. 긴팔·긴바지를 권장한다 (공식 안내).',
-            '키 1m 미만은 탈 수 있는 놀이가 적다 (버블 존·스페이스 볼·볼 패널 등). 온라인 사전 예약을 권장한다.'
+            '짐표를 내고 맡긴 짐을 방으로 올려 달라고 한다.',
+            '숙소를 옮긴 날이라 짐 정리와 다음 날 워터파크 준비물(수영복·방수 기저귀)을 미리 챙겨 둔다.'
           ]
         },
         {
