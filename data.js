@@ -76,20 +76,21 @@ window.TRIP_DATA = {
    * open, close: 일정 시간이 영업 전·후이면 카드에 '영업시간 주의'가 뜹니다 (방문하는 요일 기준)
    * closedWeekdays: 정기 휴무 요일 (0 일, 1 월, 2 화, 3 수, 4 목, 5 금, 6 토)
    * closedDates: 쉬는 날짜 → 일정과 겹치면 '휴무 주의'가 뜹니다
+   * zh, zhArea: 택시 기사에게 보여 주는 한자 이름과 지역 (🚕 택시 카드)
    * mapQuery: '📍 구글 지도' 버튼이 구글 지도에서 찾을 이름 (영문 상호 + 지역). 상점·시설 정보 페이지가 바로 열린다 */
   places: {
     // 공항
     icn: { mapQuery: 'Incheon International Airport Terminal 2', name: '인천공항 T2', type: 'airport', lng: 126.43474, lat: 37.46847, verified: true, offMap: true, note: '지도 밖, 출발·도착 표시만' },
-    mfm: { mapQuery: 'Macau International Airport', name: '마카오 국제공항', type: 'airport', lng: 113.57434, lat: 22.15744, verified: true, look: { wall: '#eef0f0', glass: '#7f9bb0', roof: '#d5d9da', radius: 120 } },
+    mfm: { mapQuery: 'Macau International Airport', zh: '澳門國際機場', zhArea: "氹仔 · Aeroporto Internacional de Macau", name: '마카오 국제공항', type: 'airport', lng: 113.57434, lat: 22.15744, verified: true, look: { wall: '#eef0f0', glass: '#7f9bb0', roof: '#d5d9da', radius: 120 } },
 
     // 호텔
-    glp: { mapQuery: 'Grand Lisboa Palace Macau',
+    glp: { mapQuery: 'Grand Lisboa Palace Macau', zh: '上葡京綜合度假村', zhArea: "路氹 · Grand Lisboa Palace",
       name: '그랜드 리스보아 팰리스', type: 'hotel', lng: 113.57420, lat: 22.14409, verified: true,
       height: 75,     // 공개 지도에 건물 높이가 없어 넣은 대략의 높이(m). 실제와 다를 수 있음
       look: { wall: '#efe9da', glass: '#6b7f8c', roof: '#6f9085', radius: 60 },   // 크림색 벽, 청록 지붕
       note: '12/27~29 숙박', url: 'https://www.grandlisboapalace.com/kr', urlLabel: '호텔 공식'
     },
-    wmacau: { mapQuery: 'W Macau Studio City',
+    wmacau: { mapQuery: 'W Macau Studio City', zh: '新濠影滙 W酒店', zhArea: "路氹 · W Macau – Studio City",
       name: 'W 마카오 스튜디오 시티', type: 'hotel', lng: 113.56023, lat: 22.14198, verified: true,
       height: 110,    // 대략의 높이(m)
       look: { wall: '#7d8ca0', glass: '#2f3e52', roof: '#59677a', radius: 140 },  // 청회색 유리 건물
@@ -97,13 +98,13 @@ window.TRIP_DATA = {
     },
 
     // 12/27
-    wynn: { mapQuery: 'Wynn Palace Performance Lake Macau',
+    wynn: { mapQuery: 'Wynn Palace Performance Lake Macau', zh: '永利皇宮 表演湖', zhArea: "路氹 · Wynn Palace",
       name: '윈 팰리스 스카이캡·분수쇼', type: 'sight', lng: 113.56946, lat: 22.14804, verified: true,
       note: '스카이캡 승강장 위치', hours: '스카이캡 일~목 16:00~22:00 (마지막 탑승 21:40) · 분수쇼 18:00 이후 20분 간격',
       open: '16:00', close: '22:00',
       url: 'https://www.wynnresortsmacau.com/ko/wynn-palace/experiences/entertainment/sky-cab', urlLabel: '스카이캡 공식'
     },
-    gourmet: { mapQuery: 'Gourmet Pavilion Wynn Palace Macau',
+    gourmet: { mapQuery: 'Gourmet Pavilion Wynn Palace Macau', zh: '永利皇宮', zhArea: "路氹 · Wynn Palace",
       name: '고메 파빌리온 푸드홀 (윈 팰리스)', type: 'food', lng: 113.57279, lat: 22.14722, verified: true,
       look: { wall: '#9a6a48', glass: '#4a2f22', roof: '#e3d8c4', radius: 190 },  // 윈 팰리스: 구릿빛 유리
       note: '예약 없이 들어가는 캐주얼 푸드홀 (치킨라이스·죽·국수·만두)',
@@ -112,91 +113,91 @@ window.TRIP_DATA = {
     },
 
     // 12/28
-    cod: { mapQuery: "Kids' City City of Dreams Macau",
+    cod: { mapQuery: "Kids' City City of Dreams Macau", zh: '新濠天地 童夢天地', zhArea: "路氹 · City of Dreams",
       name: '시티 오브 드림즈 키즈시티', type: 'kids', lng: 113.56641, lat: 22.14918, verified: true,
       look: { wall: '#5b7088', glass: '#27374b', roof: '#7b8794', radius: 110 },  // 짙은 푸른 유리
       note: '실내 놀이터 (3층)', hours: '10:30~19:00 (마지막 입장 18:00) · 평소 수·목 휴무지만 12/20~31은 매일 운영',
       open: '10:30', close: '19:00'
     },
-    chankee: { mapQuery: 'Chan Kee Roast Goose City of Dreams Macau',
+    chankee: { mapQuery: 'Chan Kee Roast Goose City of Dreams Macau', zh: '新濠天地', zhArea: "路氹 · City of Dreams",
       name: '찬키 로스트 구스 (시티 오브 드림즈 SOHO)', type: 'food', lng: 113.56670, lat: 22.14856, verified: true,
       note: '2층 SOHO 식당가 · 거위구이 덮밥·국수', hours: '월~목 11:00~22:00, 금~일 11:00~23:00', open: '11:00', close: '22:00',
       url: 'https://www.cityofdreamsmacau.com/kr/dining/chan-kee-roasted-goose', urlLabel: '식당 공식'
     },
-    taipa: { mapQuery: 'Rua do Cunha Taipa Macau',
+    taipa: { mapQuery: 'Rua do Cunha Taipa Macau', zh: '氹仔官也街', zhArea: "氹仔 · Rua do Cunha",
       name: '쿤하 거리 (타이파 빌리지)', type: 'snack', lng: 113.55697, lat: 22.15359, verified: true,
       note: '세라두라·아몬드 쿠키 등 먹거리 골목', url: 'https://www.taipavillagemacau.com/', urlLabel: '타이파 빌리지 안내'
     },
-    taileiloikei: { mapQuery: 'Tai Lei Loi Kei Taipa Macau',
+    taileiloikei: { mapQuery: 'Tai Lei Loi Kei Taipa Macau', zh: '大利來記豬扒包', zhArea: "氹仔官也街 · Tai Lei Loi Kei",
       name: '대리라이기 (타이파 빌리지)', type: 'snack', lng: 113.55590, lat: 22.15251, verified: true,
       note: '마카오 명물 돼지갈비빵', hours: '매일 08:00~18:00 (소개 페이지 기준)', open: '08:00', close: '18:00',
       url: 'https://www.taipavillagemacau.com/directory/cafe-dai-lei-loi-kei/', urlLabel: '소개 페이지'
     },
-    londoner: { mapQuery: 'Hampton Court Londoner Grand Macao',
+    londoner: { mapQuery: 'Hampton Court Londoner Grand Macao', zh: '澳門倫敦人名匯', zhArea: "路氹 · Londoner Grand",
       name: '햄튼 코트 뷔페 (런더너 그랜드 2층)', type: 'food', lng: 113.56540, lat: 22.14470, verified: true,
       look: { wall: '#e6dcc3', glass: '#55606b', roof: '#b9b3a3', radius: 110 },  // 크림색 석조풍
       note: '런더너 그랜드(옛 쉐라톤) 2층 Henry\'s Kitchen · 국제식·중식 저녁 뷔페', hours: '저녁 뷔페 17:30~22:30 (금·토·일·공휴일 ~23:00, 공식)', open: '17:30', close: '22:30',
       url: 'https://www.londonermacao.com/macau-restaurants/hampton-court.html', urlLabel: '공식 안내'
     },
-    venetian: { mapQuery: 'The Venetian Macao', name: '베네시안·파리지앵', type: 'shop', lng: 113.56047, lat: 22.14820, verified: true, note: '크리스마스 장식 구경', look: { wall: '#dccaa2', glass: '#6a5f4e', roof: '#e9e6dc', radius: 160 } },
+    venetian: { mapQuery: 'The Venetian Macao', zh: '澳門威尼斯人', zhArea: "路氹 · The Venetian Macao", name: '베네시안·파리지앵', type: 'shop', lng: 113.56047, lat: 22.14820, verified: true, note: '크리스마스 장식 구경', look: { wall: '#dccaa2', glass: '#6a5f4e', roof: '#e9e6dc', radius: 160 } },
 
     // 12/29
-    grandlisboa: { mapQuery: 'Grand Lisboa Macau',
+    grandlisboa: { mapQuery: 'Grand Lisboa Macau', zh: '新葡京酒店', zhArea: "澳門 · Grand Lisboa",
       name: '그랜드 리스보아 (셔틀 타고 내리는 곳)', type: 'transport', lng: 113.54338, lat: 22.19093, verified: true,
       look: { wall: '#b8914e', glass: '#5a4320', roof: '#c9a65f', radius: 50 },    // 금빛 유리 탑
       note: '마카오 반도. 그랜드 리스보아 팰리스 무료 셔틀 승하차', url: 'https://www.grandlisboa.com/kr/getting-here', urlLabel: '셔틀 안내'
     },
-    margaret: { mapQuery: "Margaret's Cafe e Nata Macau",
+    margaret: { mapQuery: "Margaret's Cafe e Nata Macau", zh: '瑪嘉烈蛋撻店', zhArea: "澳門 南灣 · Margaret's Café e Nata",
       name: '마가렛 카페 이 나타', type: 'snack', lng: 113.54179, lat: 22.19180, verified: true,
       note: '에그타르트', hours: '월~금 08:30~16:30, 주말 10:00~18:00 · 수요일 휴무 (2026년 가이드 기준)', open: '08:30', close: '16:30', closedWeekdays: [3],
       url: 'https://citiesinsider.com/country/china/macao/cafes-and-bakeries/en', urlLabel: '소개 페이지(영문)'
     },
-    senado: { mapQuery: 'Senado Square Macau', name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장', look: { wall: '#ecd98f', glass: '#5d6b4f', roof: '#b9b4a8', radius: 110 } },
-    stpaul: { mapQuery: "Ruins of St. Paul's Macau", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 } },
-    koikei: { mapQuery: 'Koi Kei Bakery Senado Square Macau',
+    senado: { mapQuery: 'Senado Square Macau', zh: '議事亭前地', zhArea: "澳門 · Largo do Senado", name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장', look: { wall: '#ecd98f', glass: '#5d6b4f', roof: '#b9b4a8', radius: 110 } },
+    stpaul: { mapQuery: "Ruins of St. Paul's Macau", zh: '大三巴牌坊', zhArea: "澳門 · Ruínas de São Paulo", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 } },
+    koikei: { mapQuery: 'Koi Kei Bakery Senado Square Macau', zh: '鉅記餅家 議事亭前地', zhArea: "澳門 · Koi Kei Bakery",
       name: '쿠이케이 (세나도 광장 지점)', type: 'snack', lng: 113.53965, lat: 22.19371, verified: true,
       note: '아몬드 쿠키·에그타르트, 선물용으로도 좋음', hours: '영업시간 미확인 (근처 성 바울 지점은 10:00부터로 안내)'
     },
-    wongchikei: { mapQuery: 'Wong Chi Kei Senado Square Macau',
+    wongchikei: { mapQuery: 'Wong Chi Kei Senado Square Macau', zh: '黃枝記 議事亭前地', zhArea: "澳門 · Wong Chi Kei",
       name: '웡치케이 (세나도 광장)', type: 'food', lng: 113.54019, lat: 22.19414, verified: true,
       note: '완탕면·죽 노포', hours: '08:00~23:00, 정기 휴무 없음 (여행 사이트 기준)', open: '08:00', close: '23:00'
     },
-    funzone: { mapQuery: 'Super Fun Zone Studio City Macau',
+    funzone: { mapQuery: 'Super Fun Zone Studio City Macau', zh: '新濠影滙', zhArea: "路氹 · Studio City",
       name: '슈퍼 펀 존 (스튜디오 시티)', type: 'kids', lng: 113.55985, lat: 22.14125, verified: false,
       note: '실내 놀이터. W와 같은 건물', hours: '12/21~31은 10:30~19:00', open: '10:30', close: '19:00'
     },
-    dtf: { mapQuery: 'Din Tai Fung Studio City Macau',
+    dtf: { mapQuery: 'Din Tai Fung Studio City Macau', zh: '新濠影滙 鼎泰豐', zhArea: "路氹 · Studio City",
       name: '딘타이펑 (스튜디오 시티)', type: 'food', lng: 113.56120, lat: 22.14140, verified: false,
       note: '1층 1029호 · 딤섬·면', hours: '월~금 12:00~22:00 (주문 마감 21:30), 주말·공휴일 11:00~22:30', open: '12:00', close: '22:00',
       url: 'https://www.studiocity-macau.com/kr/dining/din-tai-fung', urlLabel: '식당 공식'
     },
-    wheel: { mapQuery: 'Golden Reel Studio City Macau',
+    wheel: { mapQuery: 'Golden Reel Studio City Macau', zh: '新濠影滙 影滙之星', zhArea: "路氹 · Studio City Golden Reel",
       name: '스튜디오 시티 8자 관람차 (골든 릴)', type: 'sight', lng: 113.56072, lat: 22.14102, verified: false,
       note: 'W와 같은 건물', hours: '14:00~20:00 (매표 13:30부터)', open: '14:00', close: '20:00'
     },
 
     // 12/30
-    panda: { mapQuery: 'Macao Giant Panda Pavilion',
+    panda: { mapQuery: 'Macao Giant Panda Pavilion', zh: '澳門大熊貓館', zhArea: "路環 石排灣郊野公園 · Giant Panda Pavilion",
       name: '마카오 자이언트 판다관 (석배만 공원)', type: 'kids', lng: 113.55923, lat: 22.12663, verified: true,
       note: '콜로안. 월요일 휴관, 1시간 단위 입장', hours: '10:00~13:00, 14:00~17:00 · 월요일 휴관', open: '10:00', close: '17:00', closedWeekdays: [1]
     },
-    lordstow: { mapQuery: "Lord Stow's Bakery Coloane Macau",
+    lordstow: { mapQuery: "Lord Stow's Bakery Coloane Macau", zh: '安德魯餅店', zhArea: "路環市區 · Lord Stow's Bakery",
       name: '로드 스토우 베이커리 본점 (콜로안)', type: 'snack', lng: 113.55133, lat: 22.11820, verified: true,
       look: { wall: '#eedc94', glass: '#58705a', roof: '#b97a5e', radius: 110 },   // 파스텔 노란 벽, 붉은 기와
       note: '마카오식 에그타르트의 원조', hours: '매일 07:00~21:00 (가이드 기준, 공식 페이지에는 시간 표시 없음)', open: '07:00', close: '21:00',
       url: 'https://www.lordstow.com/contact-us/', urlLabel: '공식'
     },
-    ngatim: { mapQuery: 'Cafe Nga Tim Coloane Macau',
+    ngatim: { mapQuery: 'Cafe Nga Tim Coloane Macau', zh: '雅憩花園餐廳', zhArea: "路環市區 · Café Nga Tim",
       name: '응아팀 카페 (콜로안)', type: 'food', lng: 113.55124, lat: 22.11705, verified: true,
       note: '성당 앞 광장의 중식·포르투갈식 식당, 영어 메뉴 있음', hours: '매일 12:00~자정 (안내 사이트 기준)', open: '12:00', close: '23:59',
       url: 'https://macau.com/listing/nga-tim-cafe/', urlLabel: '소개 페이지'
     },
-    waterpark: { mapQuery: 'Studio City Water Park Macau',
+    waterpark: { mapQuery: 'Studio City Water Park Macau', zh: '新濠影滙水上樂園', zhArea: "路氹 · Studio City Water Park",
       name: '스튜디오 시티 실내 워터파크', type: 'kids', lng: 113.56096, lat: 22.14062, verified: true,
       note: '키 1m 미만 무료', hours: '12월은 실내만 12:00~20:00 (매표 11:45부터) · 12/29(화) 휴장', open: '12:00', close: '20:00',
       closedDates: ['2026-12-29']
     },
-    foodrepublic: { mapQuery: 'Food Republic Studio City Macau',
+    foodrepublic: { mapQuery: 'Food Republic Studio City Macau', zh: '新濠影滙 大食代', zhArea: "路氹 · Studio City",
       name: '푸드 리퍼블릭 (스튜디오 시티)', type: 'food', lng: 113.56072, lat: 22.14206, verified: true,
       note: '1층 1180호 · 국수·딤섬 등 여러 가게가 모인 푸드코트', hours: '10:00~23:00', open: '10:00', close: '23:00',
       url: 'https://www.studiocity-macau.com/kr/dining/food-republic', urlLabel: '식당 공식'
@@ -219,7 +220,7 @@ window.TRIP_DATA = {
     },
     dancingwater: {
       name: '하우스 오브 댄싱 워터 (시티 오브 드림즈 수상 공연)', level: '선택', linkVerified: true,
-      kids: '✅ 25개월 무료 · ⚠️ 35개월은 공연일에 만 3세가 넘으면 유료 (만 3세 미만만 무릎 무료)',
+      kids: '✅ 두 아이 모두 무료 · 만 3세 미만 무릎 (판매처 따라 만 2세 이하로 적은 곳도 있어 예매 때 확인)',
       icon: '🎭', short: '댄싱 워터 공연 (선택)', key: '어른 698~ · 3세 미만 무릎 무료',
       aff: 'https://3ha.in/r/895307', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water',
@@ -310,6 +311,18 @@ window.TRIP_DATA = {
         '공식 안내상 만 2세 미만만 무료라 두 아이(25·35개월)는 요금이 붙을 수 있습니다. 예약 버튼은 마이리얼트립 상품으로, 3시간권과 6시간권 중에서 고릅니다(출발까지 3시간 반이라 3시간권이면 충분). 요금은 예약 화면에서 확인하세요. 카드 라운지 혜택도 먼저 확인하세요.'
     }
   },
+
+  /* 🆘 비상 연락처 (위쪽 🆘 버튼). tel 은 누르면 바로 전화가 걸리는 번호 */
+  sos: [
+    { icon: '🚑', name: '마카오 응급 (경찰·구급·소방)', tel: '999', note: '24시간' },
+    { icon: '🏥', name: '산 자누아리오 병원 (공립, 응급실)', tel: '+85328313731', show: '+853 2831 3731', note: '24시간 · 반도', mapQuery: 'Conde S. Januário Hospital Macau' },
+    { icon: '🏥', name: '킹우 병원 (鏡湖醫院, 사립)', tel: '+85328371333', show: '+853 2837 1333', note: '응급실 24시간 · 반도', mapQuery: 'Kiang Wu Hospital Macau' },
+    { icon: '🇰🇷', name: '주홍콩 대한민국 총영사관 (마카오 담당)', tel: '+85225294141', show: '+852 2529 4141', note: '평일 근무시간' },
+    { icon: '☎️', name: '외교부 영사콜센터 (24시간, 한국어)', tel: '+82232100404', show: '+82 2-3210-0404', note: '여권 분실·사건사고' },
+    { icon: '🏨', name: '그랜드 리스보아 팰리스 (12/27~29)', tel: '+85388818888', show: '+853 8881 8888' },
+    { icon: '🏨', name: 'W 마카오 스튜디오 시티 (12/29~31)', tel: '+85388651188', show: '+853 8865 1188' },
+    { icon: 'ℹ️', name: '마카오 관광청 안내 (한국어 가능 시간 확인)', tel: '+85328333000', show: '+853 2833 3000' }
+  ],
 
   /* 예약 체크리스트 맨 아래에 보이는 할인 코드 (누르면 복사됨) */
   coupons: {

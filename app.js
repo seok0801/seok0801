@@ -453,10 +453,20 @@
   var ROUTE_MODES = [['🚶', '걸어서', 'walking'], ['🚕', '택시·차', 'driving'], ['🚌', '대중교통', 'transit']];
   function routeHtml(p) {
     var dest = encodeURIComponent(p.mapQuery || (p.lat + ',' + p.lng));
-    return '<div class="row-chips route"><span class="row-label">🧭 여기까지 길찾기</span>' + ROUTE_MODES.map(function (m) {
+    return '<div class="row-chips route"><span class="row-label">🧭 여기까지 길찾기</span>' +
+      (p.zh ? '<button type="button" class="chip-sm taxi-chip" data-taxi="' + esc(placeIdOf(p)) + '">🚕 기사에게 보여 주기</button>' : '') + ROUTE_MODES.map(function (m) {
       var url = 'https://www.google.com/maps/dir/?api=1&destination=' + dest + '&travelmode=' + m[2];
       return '<a class="chip-sm" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="지금 위치에서 ' + esc(p.name) + '까지 ' + m[1] + ' 길찾기 (구글 지도)">' + m[0] + ' ' + m[1] + '</a>';
     }).join('') + '</div>';
+  }
+  function placeIdOf(p) { for (var k in D.places) if (D.places[k] === p) return k; return ''; }
+  /* 🚕 택시 카드: 화면 가득 한자 이름 (택시 기사에게 보여 준다) */
+  function showTaxi(id) {
+    var p = place(id); if (!p || !p.zh) return;
+    $('taxi-zh').textContent = p.zh;
+    $('taxi-area').textContent = p.zhArea || '';
+    $('taxi-ko').textContent = p.name;
+    $('taxi').hidden = false;
   }
   function nearbyHtml(p) {
     return '<div class="row-chips"><span class="row-label">주변 찾기</span>' + NEARBY.map(function (n) {
@@ -1464,6 +1474,19 @@
     return '<p class="fine me-dist">🚶 지금 위치에서 약 ' + dist + (d < 3000 ? ' · 아이와 걸어서 ' + Math.max(1, Math.round(d / 50)) + '분' : ' · 택시 권장') + '</p>';
   }
 
+  /* 🆘 비상 연락처 */
+  function sosHtml() {
+    var h = '<p class="fine">번호를 누르면 바로 전화가 걸립니다. 🏥 병원은 📍로 위치를 볼 수 있어요.</p>';
+    (D.sos || []).forEach(function (c) {
+      h += '<div class="sos-row"><div class="sos-main"><p class="sos-name">' + c.icon + ' ' + esc(c.name) + '</p>' +
+        (c.note ? '<p class="fine">' + esc(c.note) + '</p>' : '') + '</div>' +
+        (c.mapQuery ? gmLink('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(c.mapQuery), 'https://maps.google.com/maps?q=' + encodeURIComponent(c.mapQuery) + '&z=16&hl=ko&output=embed', c.name, '📍', 'btn small') : '') +
+        '<a class="btn small sos-tel" href="tel:' + esc(c.tel) + '">📞 ' + esc(c.show || c.tel) + '</a></div>';
+    });
+    h += '<p class="fine">아이 신상(이름·생년월일)과 여권 사본 사진은 휴대폰 사진첩에 따로 저장해 두세요. 이 사이트에는 적지 않습니다.</p>';
+    return h;
+  }
+
   /* 할인 코드 누르면 복사 */
   function copyText(t, done) {
     if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(done, function () { fallback(); }); return; }
@@ -1583,7 +1606,7 @@
   (function () {
     var first = D.days[0] && D.days[0].date, last = D.days[D.days.length - 1] && D.days[D.days.length - 1].date;
     if (!first) return;
-    var today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    var today = nowMacau().slice(0, 10);
     var dd = Math.round((Date.parse(first) - Date.parse(today)) / 86400000);
     var txt = dd > 0 ? 'D-' + dd : dd === 0 ? 'D-DAY ✈️' : today <= last ? (1 - dd) + '일차' : '다녀왔어요';
     var b = document.createElement('span');
@@ -1596,8 +1619,54 @@
   $('modal').addEventListener('click', function (e) { if (e.target === $('modal')) closeModal(); });
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
-    if (!$('modal').hidden) closeModal(); else hideSheet();
+    if (!$('taxi').hidden) $('taxi').hidden = true;
+    else if (!$('gm').hidden) closeGm();
+    else if (!$('modal').hidden) closeModal(); else hideSheet();
   });
+
+  /* ---------- 여행 중 '오늘' 모드 ----------
+   * 12/27~31 에 열면 그날 탭을 자동으로 고르고, 위쪽에 '다음 일정'을 보여 준다 (마카오 시간 기준, 1분마다 갱신).
+   * 점검용: 주소 끝에 ?today=2026-12-29T14:10 을 붙이면 그 시각인 것처럼 보인다 */
+  function nowMacau() {
+    var q = /[?&]today=([0-9T:\-]+)/.exec(location.search);
+    if (q) return q[1].length === 10 ? q[1] + 'T08:00' : q[1];
+    return new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 16);
+  }
+  function tripToday() { var d = nowMacau().slice(0, 10); return dayInfo(d) ? d : null; }
+  function updateNext() {
+    var btn = $('next'), d = tripToday();
+    if (!d) { btn.hidden = true; return; }
+    var t = nowMacau().slice(11, 16), nxt = null;
+    items(d).forEach(function (it) { if (!nxt && !QUIET_KINDS[it.kind] && it.time >= t && (it.places || []).some(onMap)) nxt = it; });
+    if (!nxt) { btn.hidden = true; fitViewPadding(); return; }
+    var id = (it2id(nxt));
+    btn.innerHTML = '<span class="next-tag">다음</span> ' + esc(nxt.time) + ' · ' + esc(nxt.title);
+    btn.setAttribute('data-place', id);
+    btn.hidden = false;
+    fitViewPadding();   // '다음 일정' 줄만큼 지도 가운데를 다시 맞춘다
+  }
+  function it2id(it) { var ps = (it.places || []).filter(onMap); return it.kind === 'move' ? ps[ps.length - 1] : ps[0]; }
+  (function () {
+    var d = tripToday();
+    if (d) state.day = d;
+    updateNext();
+    setInterval(updateNext, 60000);
+  })();
+  $('next').addEventListener('click', function () {
+    var id = this.getAttribute('data-place'); if (!id) return;
+    stopTour(); flyToPlace(id, { sheet: true }); openPopup(id); showPlace(id);
+  });
+  $('btn-sos').addEventListener('click', function () { openModal('🆘 비상 연락처', sosHtml()); });
+  $('taxi').addEventListener('click', function () { $('taxi').hidden = true; });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-taxi]');
+    if (b) showTaxi(b.getAttribute('data-taxi'));
+  });
+
+  /* 한 번 열어 두면 인터넷이 끊겨도 일정·예약·비용 화면이 열리게 (지도 조각은 인터넷 필요) */
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('./sw.js').catch(function () { /* 안 되면 그냥 온라인으로 */ }); });
+  }
 
   /* ---------- 시작 ---------- */
   render(false);          // 일정 목록을 먼저 그린다(지도와 무관)

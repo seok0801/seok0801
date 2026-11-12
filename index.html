@@ -11,6 +11,12 @@
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
   <link rel="stylesheet" href="./style.css">
+  <!-- 홈 화면에 추가하면 앱처럼 열린다. 한 번 열어 두면 인터넷이 끊겨도 일정은 보인다 (sw.js) -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="마카오 여행">
+  <meta name="theme-color" content="#18242c">
 </head>
 <body>
   <div id="app">
@@ -23,9 +29,14 @@
 
     <!-- 위쪽: 제목과 날짜 -->
     <header id="top">
-      <h1 id="title">마카오 가족여행 2026.12.27–31</h1>
+      <div id="title-row">
+        <h1 id="title">마카오 가족여행 2026.12.27–31</h1>
+        <button type="button" id="btn-sos" aria-label="비상 연락처">🆘</button>
+      </div>
       <div id="plan-toggle" role="group" aria-label="일정 안 선택" hidden></div>
       <div id="tabs" role="tablist" aria-label="날짜"></div>
+      <!-- 여행 중에만 보인다: 오늘 다음 일정 (누르면 그 장소로) -->
+      <button type="button" id="next" hidden></button>
     </header>
 
     <!-- 아래쪽: 투어 · 일정 목록 · 예약 · 비용 -->
@@ -43,6 +54,15 @@
     <!-- 내 위치(GPS): 누르면 지도에 파란 점으로 보이고 걸으면 따라온다 -->
     <button type="button" id="btn-locate" class="locate" aria-label="내 위치 보기" aria-pressed="false">📍</button>
     <div id="toast" role="status" aria-live="polite" hidden></div>
+
+    <!-- 🚕 택시 카드: 기사에게 보여 주는 큰 한자 이름 (아무 곳이나 누르면 닫힘) -->
+    <div id="taxi" role="dialog" aria-label="택시 기사에게 보여 주기" hidden>
+      <p class="taxi-ask">請帶我去 · 이곳으로 가 주세요</p>
+      <p id="taxi-zh"></p>
+      <p id="taxi-area"></p>
+      <p id="taxi-ko"></p>
+      <p class="taxi-close">화면을 누르면 닫혀요</p>
+    </div>
 
     <!-- 구글 지도 창: 지금 지도 위에 올라온다 (✕ 로 닫으면 보던 화면 그대로) -->
     <section id="gm" aria-label="구글 지도" hidden>
