@@ -449,6 +449,15 @@
   /* 장소를 눌렀을 때 보여 줄 내용: 그 장소에서 하는 일정(시간·메모·꿀팁·예약 버튼) */
   /* 주변 찾기: 그 장소 둘레의 식당·카페·편의점·약국을 구글 지도(앱)에서 바로 연다. 키가 필요 없다 */
   var NEARBY = [['🍜', '식당', 'restaurants'], ['☕', '카페', 'cafe'], ['🏪', '편의점', 'convenience store'], ['💊', '약국', 'pharmacy']];
+  /* 길찾기: 출발지를 비워 두면 구글 지도가 '내 위치'에서 출발하는 길안내를 연다 (앱이 있으면 앱으로) */
+  var ROUTE_MODES = [['🚶', '걸어서', 'walking'], ['🚕', '택시·차', 'driving'], ['🚌', '대중교통', 'transit']];
+  function routeHtml(p) {
+    var dest = encodeURIComponent(p.mapQuery || (p.lat + ',' + p.lng));
+    return '<div class="row-chips route"><span class="row-label">🧭 여기까지 길찾기</span>' + ROUTE_MODES.map(function (m) {
+      var url = 'https://www.google.com/maps/dir/?api=1&destination=' + dest + '&travelmode=' + m[2];
+      return '<a class="chip-sm" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="지금 위치에서 ' + esc(p.name) + '까지 ' + m[1] + ' 길찾기 (구글 지도)">' + m[0] + ' ' + m[1] + '</a>';
+    }).join('') + '</div>';
+  }
   function nearbyHtml(p) {
     return '<div class="row-chips"><span class="row-label">주변 찾기</span>' + NEARBY.map(function (n) {
       var url = 'https://www.google.com/maps/search/' + encodeURIComponent(n[2]) + '/@' + p.lat + ',' + p.lng + ',17z?hl=ko';
@@ -485,7 +494,8 @@
         return '<button type="button" class="chip-sm" data-place="' + o + '">' + ot.icon + ' ' + esc(shortName(place(o).name)) + '</button>';
       }).join('') + '</div>';
     }
-    // 4) 주변 가게 찾기 (구글 지도 앱)
+    // 4) 지금 위치에서 이 장소까지 길찾기 (구글 지도 앱 길안내) + 주변 가게 찾기
+    html += routeHtml(p);
     html += nearbyHtml(p);
     if (p.verified === false) html += '<p class="fine">지도 위 위치는 건물 기준의 대략적인 표시입니다.</p>';
     return html;
@@ -907,15 +917,37 @@
       map.addLayer({ id: 'tour-mask-0', type: 'fill', source: 'tour-mask', paint: { 'fill-color': MASK_COLOR, 'fill-antialias': false } }, waterId || undefined);
       // 바깥의 도로·글자는 그리지 않는다 (마카오 영역 안에 있는 것만)
       var inside = ['within', { type: 'Polygon', coordinates: [hole] }];
+      // 바탕 지도의 시설 표시 거르기: 안내판(ℹ️ 숲길 번호 등)·자잘한 시설은 숨기고, 버스 정류장은 일정 동선 근처(약 150m)만 남긴다
+      var JUNK = ['information', 'entrance', 'gate', 'lift_gate', 'bollard', 'recycling', 'waste_basket', 'drinking_water', 'bicycle_parking', 'telephone', 'shelter', 'toilets'];
+      var noBus = ['all',
+        ['match', ['get', 'class'], JUNK, false, true],
+        ['any', ['!=', ['get', 'class'], 'bus'], ['within', routeCorridor(150)]]];
       (map.getStyle().layers || []).forEach(function (l) {
         if (l.id.indexOf('tour-') === 0) return;
         var sl = l['source-layer'];
         if (l.type === 'symbol' || (l.type === 'line' && /transportation|aeroway|boundary/.test(sl || ''))) {
-          var f = l.filter;
-          try { map.setFilter(l.id, f ? ['all', f, inside] : inside); } catch (e) { /* 이 층은 그대로 둔다 */ }
+          var f = l.filter, add = sl === 'poi' ? ['all', inside, noBus] : inside;
+          try { map.setFilter(l.id, f ? ['all', f, add] : add); } catch (e) { /* 이 층은 그대로 둔다 */ }
         }
       });
     } catch (e) { /* 덮지 못해도 지도는 그대로 쓴다 */ }
+  }
+
+  /* 일정 동선 둘레 r 미터 안쪽 영역 (선분마다 띠 + 장소마다 원) */
+  function routeCorridor(r) {
+    var polys = [], seen = {};
+    D.days.forEach(function (d) {
+      var c = routeCoords(d.date);
+      c.forEach(function (p) { var k = p.join(','); if (!seen[k]) { seen[k] = 1; polys.push([circleRing(p[0], p[1], r)]); } });
+      for (var i = 1; i < c.length; i++) {
+        var a = c[i - 1], b = c[i], k = 111320 * Math.cos(a[1] * Math.PI / 180);
+        var dx = (b[0] - a[0]) * k, dy = (b[1] - a[1]) * 111320, L = Math.sqrt(dx * dx + dy * dy);
+        if (L < 1) continue;
+        var ox = -dy / L * r / k, oy = dx / L * r / 111320;
+        polys.push([[[a[0] + ox, a[1] + oy], [b[0] + ox, b[1] + oy], [b[0] - ox, b[1] - oy], [a[0] - ox, a[1] - oy], [a[0] + ox, a[1] + oy]]]);
+      }
+    });
+    return { type: 'MultiPolygon', coordinates: polys };
   }
 
   /* 2D ↔ 3D 전환: 입체 건물·빛기둥을 숨기고 평면 건물을 보이며, 지도를 위에서 똑바로(북쪽 위) 내려다본다 */
