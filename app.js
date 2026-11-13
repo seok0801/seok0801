@@ -2088,6 +2088,21 @@
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
   $('btn-eats').addEventListener('click', function () { openModal('🍴 맛집 · 📸 포토', eatsHtml()); });
   $('btn-mode').addEventListener('click', toggleMode);
+  /* 🧭 시점 처음으로: 투어·따라가기를 멈추고, 지금 고른 날짜의 장소가 모두 보이게 북쪽을 위로 돌려 맞춘다 */
+  $('btn-reset').addEventListener('click', function () {
+    if (!mapReady) return;
+    stopTour();
+    if (popup) { popup.remove(); popup = null; }
+    clearFocus();
+    var ids = viewPlaceIds();
+    if (ids.length > 1) {
+      var b = null;
+      ids.forEach(function (id) { var p = [place(id).lng, place(id).lat]; if (!b) b = new maplibregl.LngLatBounds(p, p); else b.extend(p); });
+      map.fitBounds(b, { padding: { top: 40, bottom: 40, left: 70, right: 70 }, pitch: tilt(50), bearing: 0, maxZoom: 16, duration: 1200 });
+    } else {
+      fitTo(ids);
+    }
+  });
   $('gm-close').addEventListener('click', closeGm);
   $('btn-locate').addEventListener('click', function () {
     if (!mapReady) { toast('지도를 불러온 뒤에 눌러 주세요.'); return; }
