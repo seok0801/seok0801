@@ -160,6 +160,7 @@ a { color: var(--accent); }
   #bar { gap: 4px; padding-left: 8px; padding-right: 8px; }
   #bar .btn { padding: 8px 8px; min-width: 36px; }
   #bar .btn.icon { padding: 8px 4px; }
+  #btn-list span { display: none; }   /* 버튼이 9개라 좁은 휴대폰에서는 ☰ 만 */
 }
 
 /* 아래에서 올라오는 창 */
@@ -790,3 +791,6 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .eat-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .mk.eat-mk { width: 30px; height: 30px; border: 2px solid #e2702a; font-size: 15px; line-height: 26px; }
 .mk.eat-mk.on { width: 38px; height: 38px; border-width: 3px; font-size: 19px; line-height: 32px; }
+@media (max-width: 374px) {
+  #bar { gap: 3px; padding-left: 6px; padding-right: 6px; }
+}
