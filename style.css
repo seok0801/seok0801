@@ -778,3 +778,15 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
   #bar .btn.icon { padding: 8px 3px; }
   #btn-list span { display: none; }   /* '☰ 일정' → '☰' */
 }
+
+/* ---------- 🍴 맛집·카페 ---------- */
+.eat-toggle { width: 100%; margin: 4px 0 6px; }
+.eat-area { margin: 16px 0 2px; font-size: 15px; color: var(--muted); border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+.eat { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.eat.sheet { border: 0; padding-top: 0; }
+.eat-title { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+.eat-plan { display: inline-block; padding: 1px 7px; border-radius: 9px; background: #e3f3ea; color: #0f6b49; font-size: 12px; font-weight: 600; vertical-align: 1px; }
+.eat-l { margin: 2px 0; font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
+.eat-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.mk.eat-mk { width: 30px; height: 30px; border: 2px solid #e2702a; font-size: 15px; line-height: 26px; }
+.mk.eat-mk.on { width: 38px; height: 38px; border-width: 3px; font-size: 19px; line-height: 32px; }

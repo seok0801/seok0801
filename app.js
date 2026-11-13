@@ -61,7 +61,8 @@
   function toMin(t) { var p = String(t || '').split(':'); return (+p[0]) * 60 + (+p[1] || 0); }
   function plan() { return D.plans[state.plan] || D.plans[0]; }
   function dayInfo(date) { for (var i = 0; i < D.days.length; i++) if (D.days[i].date === date) return D.days[i]; return null; }
-  function place(id) { return D.places[id]; }
+  var EAT_PLACES = {};   // 🍴 맛집 중 일정에 없는 곳 (아래 맛집 부분에서 채운다)
+  function place(id) { return D.places[id] || EAT_PLACES[id]; }
   function onMap(id) { var p = place(id); return !!(p && !p.offMap && typeof p.lng === 'number' && typeof p.lat === 'number'); }
   function mopShort(c) { return c.min === c.max ? c.min.toLocaleString() : c.min.toLocaleString() + '~' + c.max.toLocaleString(); }
   function mop(c) { return 'MOP ' + mopShort(c); }
@@ -461,7 +462,11 @@
       return '<a class="chip-sm" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer" aria-label="지금 위치에서 ' + esc(p.name) + '까지 ' + m[1] + ' 길찾기 (구글 지도)">' + m[0] + ' ' + m[1] + '</a>';
     }).join('') + '</div>';
   }
-  function placeIdOf(p) { for (var k in D.places) if (D.places[k] === p) return k; return ''; }
+  function placeIdOf(p) {
+    for (var k in D.places) if (D.places[k] === p) return k;
+    for (var e in EAT_PLACES) if (EAT_PLACES[e] === p) return e;
+    return '';
+  }
   /* 🚕 택시 카드: 화면 가득 한자 이름 (택시 기사에게 보여 준다) */
   function showTaxi(id) {
     var p = place(id); if (!p || !p.zh) return;
@@ -653,6 +658,7 @@
       el.setAttribute('aria-label', p.name);
     });
     spreadMarkers();
+    if (eatsOn) setEatPins(true);   // 🍴 맛집 핀: 그날 일정 마커와 겹치는 곳은 다시 뺀다
     if (map.getLayer('tour-tall-roofs')) map.setPaintProperty('tour-tall-roofs', 'fill-extrusion-color', roofColor());
     if (map.getLayer('tour-tall-flat')) map.setPaintProperty('tour-tall-flat', 'fill-color', roofColor());
 
@@ -1470,6 +1476,90 @@
   }
 
   /* ---------- 창: 예약 체크리스트 / 비용 요약 ---------- */
+  /* ---------- 🍴 맛집·카페: 일정 동선 근처의 유명한 곳 모음 (data.js 의 eats) ----------
+   * 일정에 있는 곳(place)은 그 장소를 그대로 쓰고, 나머지는 EAT_PLACES 에 장소처럼 만들어 둔다
+   * (지도 이동·택시 카드·길찾기를 일정 장소와 같은 방식으로 쓰려고). 일정 건물 색칠에는 쓰지 않는다 */
+  var EAT_KIND = { food: '🍜', cafe: '☕', dessert: '🍮', bakery: '🥐' };
+  var eatMarkers = [], eatsOn = false;
+  (D.eats || []).forEach(function (e) {
+    if (e.place && D.places[e.place]) { e.pid = e.place; return; }
+    e.pid = 'eat_' + e.id;
+    EAT_PLACES[e.pid] = { name: e.name, type: e.kind === 'food' ? 'food' : 'snack', lng: e.lng, lat: e.lat, zh: e.zh, zhArea: e.zhArea,
+      mapQuery: e.mapQuery, hours: e.hours, verified: e.verified !== false };
+  });
+  function eatById(id) { return (D.eats || []).filter(function (e) { return e.id === id; })[0]; }
+  /* 이 맛집이 일정에 들어 있으면 그 날짜·시각 */
+  function eatPlanText(e) {
+    if (!e.place) return '';
+    var hit = items('all').filter(function (it) { return (it.places || []).indexOf(e.place) >= 0 && it.kind !== 'move'; })[0];
+    return hit ? hit.date.slice(5).replace('-', '/') + ' ' + hit.time : '';
+  }
+  function eatGm(e) {
+    var p = place(e.pid), q = p.mapQuery || (p.lat + ',' + p.lng);
+    return gmLink('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q), gmEmbed(q, p.lat, p.lng, 17), e.name, '📍 구글 지도', 'btn small');
+  }
+  function eatInfoHtml(e) {
+    return (e.menu ? '<p class="eat-l">😋 <b>대표 메뉴</b> ' + esc(e.menu) + '</p>' : '') +
+      (e.price ? '<p class="eat-l">💰 ' + esc(e.price) + '</p>' : '') +
+      (e.hours ? '<p class="eat-l">🕒 ' + esc(e.hours) + '</p>' : '') +
+      (e.tip ? '<p class="eat-l">💡 ' + esc(e.tip) + '</p>' : '');
+  }
+  function eatsHtml() {
+    var list = D.eats || [];
+    var html = '<p class="bk-sum">일정 동선 근처의 유명한 식당·카페 <strong>' + list.length + '곳</strong>' +
+      '<br><span class="fine">📅 표시는 이미 일정에 들어 있는 곳 · 가격·영업시간은 바뀔 수 있어 구글 지도에서 한 번 더 확인하세요</span></p>' +
+      '<button type="button" class="btn small eat-toggle" data-eat-toggle aria-pressed="' + eatsOn + '">' + (eatsOn ? '🗺️ 지도에서 맛집 핀 숨기기' : '🗺️ 지도에 맛집 핀 모두 보이기') + '</button>';
+    var areas = [];
+    list.forEach(function (e) { if (areas.indexOf(e.area) < 0) areas.push(e.area); });
+    areas.forEach(function (a) {
+      html += '<h3 class="eat-area">' + esc(a) + '</h3>';
+      list.filter(function (e) { return e.area === a; }).forEach(function (e) {
+        var plan = eatPlanText(e);
+        html += '<div class="eat">' +
+          '<p class="eat-title">' + (EAT_KIND[e.kind] || '🍴') + ' ' + esc(e.name) + (plan ? ' <span class="eat-plan">📅 ' + esc(plan) + '</span>' : '') + '</p>' +
+          eatInfoHtml(e) +
+          '<div class="eat-btns"><button type="button" class="btn small primary" data-eat="' + esc(e.id) + '">🗺️ 지도에서 보기</button>' + eatGm(e) + '</div>' +
+          '</div>';
+      });
+    });
+    return html;
+  }
+  /* 맛집을 눌렀을 때 아래 창에 보일 내용 */
+  function eatSheetHtml(e) {
+    var p = place(e.pid), plan = eatPlanText(e);
+    return '<p class="fine place-meta">' + esc(e.area) + (plan ? ' · 📅 일정 ' + esc(plan) : '') + '</p>' +
+      meDistanceHtml(p) + '<div class="eat sheet">' + eatInfoHtml(e) + '</div>' +
+      '<div class="card-actions">' + eatGm(e) + (e.url ? link(e.url, '소개 페이지', 'btn small') : '') + '</div>' +
+      routeHtml(p) + nearbyHtml(p);
+  }
+  function showEat(id) {
+    var e = eatById(id); if (!e) return;
+    stopTour(); closeModal();
+    setEatPins(true);
+    flyToPlace(e.pid, { sheet: true });
+    eatMarkers.forEach(function (m) { m.getElement().classList.toggle('on', m.getElement().getAttribute('data-eat') === id); });
+    $('place').innerHTML = eatSheetHtml(e);
+    openSheet('place', (EAT_KIND[e.kind] || '🍴') + ' ' + e.name);
+  }
+  function setEatPins(on) {
+    eatsOn = on;
+    eatMarkers.forEach(function (m) { m.remove(); });
+    eatMarkers = [];
+    if (!on || !mapReady) return;
+    (D.eats || []).forEach(function (e) {
+      if (markers[e.pid]) return;            // 오늘 일정 마커가 이미 있는 곳은 겹치지 않게 뺀다
+      var p = place(e.pid);
+      var el = document.createElement('div');
+      el.className = 'mk eat-mk';
+      el.textContent = EAT_KIND[e.kind] || '🍴';
+      el.setAttribute('data-eat', e.id);
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-label', '맛집: ' + e.name);
+      el.addEventListener('click', function (ev) { ev.stopPropagation(); showEat(e.id); });
+      eatMarkers.push(new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([p.lng, p.lat]).addTo(map));
+    });
+  }
+
   function openModal(title, html) {
     $('modal-title').textContent = title;
     $('modal-body').innerHTML = html;
@@ -1478,6 +1568,13 @@
   }
   function closeModal() { $('modal').hidden = true; }
   $('modal-body').addEventListener('click', function (e) {
+    var eb = e.target.closest && e.target.closest('[data-eat]');
+    if (eb) { showEat(eb.getAttribute('data-eat')); return; }
+    if (e.target.closest && e.target.closest('[data-eat-toggle]')) {
+      setEatPins(!eatsOn);
+      var top = $('modal-body').scrollTop; $('modal-body').innerHTML = eatsHtml(); $('modal-body').scrollTop = top;
+      return;
+    }
     var btn = e.target.closest && e.target.closest('[data-copy]');
     if (!btn) return;
     copyText(btn.getAttribute('data-copy'), function () {
@@ -1784,6 +1881,7 @@
 
   $('btn-booking').addEventListener('click', function () { openModal('예약 체크리스트', bookingListHtml()); });
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
+  $('btn-eats').addEventListener('click', function () { openModal('🍴 맛집·카페', eatsHtml()); });
   $('btn-mode').addEventListener('click', toggleMode);
   $('gm-close').addEventListener('click', closeGm);
   $('btn-locate').addEventListener('click', function () {
