@@ -849,7 +849,65 @@
       // 남동쪽에서 비추는 햇빛: 건물 면마다 밝기가 달라져 입체감이 생긴다
       map.setLight({ anchor: 'map', color: '#fff4e2', intensity: 0.42, position: [1.3, 210, 45] });
       addRelief();
+      applyWeatherLook();
     } catch (e) { /* 3D 건물을 못 세워도 지도는 계속 쓴다 */ }
+  }
+
+  /* ---------- 지금 날씨에 맞춘 지도 분위기 (맑음·흐림·비·밤). 마카오 현재 날씨를 30분마다 받는다 ---------- */
+  var WXNOW = null, WXNOW_KEY = 'macau-wxnow', WXFX_KEY = 'macau-wxfx';
+  var SKY = {
+    clear:  { sky: '#a9cbe3', hor: '#eef1ee', fog: '#e6ebe8', light: '#fff4e2', li: 0.42, filter: '' },
+    cloudy: { sky: '#b7c0c7', hor: '#dfe2e2', fog: '#d9dcdc', light: '#eef0f2', li: 0.3,  filter: 'saturate(.85) brightness(.97)' },
+    rain:   { sky: '#8e9aa3', hor: '#c3c9cc', fog: '#bfc6c9', light: '#dfe6ec', li: 0.24, filter: 'saturate(.75) brightness(.9)' },
+    night:  { sky: '#0f1d33', hor: '#33415c', fog: '#2a3550', light: '#9fb4ff', li: 0.22, filter: 'brightness(.62) saturate(.85) hue-rotate(8deg)' }
+  };
+  function wxMode(w) {
+    if (!w) return 'clear';
+    var c = w.code;
+    if (!w.day) return 'night';
+    if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82) || c >= 95) return 'rain';
+    if (c === 3 || c === 45 || c === 48 || w.cloud >= 75) return 'cloudy';
+    return 'clear';
+  }
+  function wxFxOn() { try { return localStorage.getItem(WXFX_KEY) !== 'off'; } catch (e) { return true; } }
+  function applyWeatherLook() {
+    var btn = $('wxnow');
+    if (WXNOW) {
+      btn.hidden = false;
+      btn.textContent = (!WXNOW.day && WXNOW.code <= 3 ? '🌙' : wxIcon(WXNOW.code)) + ' ' + WXNOW.temp + '° 지금 마카오' + (wxFxOn() ? '' : ' · 효과 끔');
+      btn.setAttribute('aria-pressed', String(wxFxOn()));
+      btn.setAttribute('aria-label', '지금 마카오 날씨 ' + WXNOW.temp + '도. 누르면 지도 날씨 효과 ' + (wxFxOn() ? '끄기' : '켜기'));
+    }
+    if (!mapReady) return;
+    var mode = wxFxOn() ? wxMode(WXNOW) : 'clear', s = SKY[mode];
+    try {
+      if (map.setSky) map.setSky({ 'sky-color': s.sky, 'horizon-color': s.hor, 'fog-color': s.fog,
+        'sky-horizon-blend': 0.6, 'horizon-fog-blend': mode === 'rain' ? 0.95 : 0.7, 'fog-ground-blend': mode === 'rain' ? 0.6 : 0.85, 'atmosphere-blend': 0.6 });
+      map.setLight({ anchor: 'map', color: s.light, intensity: s.li, position: [1.3, 210, 45] });
+    } catch (e) { /* 무시 */ }
+    map.getCanvas().style.filter = s.filter;
+    // 빗줄기: 지도 그림 바로 위, 마커 아래
+    var rain = document.getElementById('wx-rain');
+    if (mode === 'rain' && !reducedMotion()) {
+      if (!rain) {
+        rain = document.createElement('div'); rain.id = 'wx-rain';
+        var cv = map.getCanvas(); cv.parentNode.insertBefore(rain, cv.nextSibling);
+      }
+    } else if (rain) rain.remove();
+  }
+  function loadNowWeather() {
+    var W = D.weather; if (!W || !window.fetch) return;
+    try {
+      var c = JSON.parse(localStorage.getItem(WXNOW_KEY) || 'null');
+      if (c && Date.now() - c.at < 30 * 60 * 1000) { WXNOW = c.w; applyWeatherLook(); return; }
+    } catch (e) { /* 새로 받는다 */ }
+    fetch(W.url + '?latitude=' + W.lat + '&longitude=' + W.lng + '&current=weather_code,is_day,temperature_2m,cloud_cover&timezone=Asia%2FMacau')
+      .then(function (r) { return r.json(); }).then(function (j) {
+        var k = j && j.current; if (!k) return;
+        WXNOW = { code: k.weather_code, day: k.is_day === 1, temp: Math.round(k.temperature_2m), cloud: k.cloud_cover };
+        try { localStorage.setItem(WXNOW_KEY, JSON.stringify({ at: Date.now(), w: WXNOW })); } catch (e) { /* 무시 */ }
+        applyWeatherLook();
+      }).catch(function () { /* 날씨를 못 받으면 맑은 하늘 그대로 */ });
   }
 
   /* 실사 느낌: 지형 음영(언덕·산의 굴곡)과 하늘·안개. 지형 자료는 키가 필요 없는 공개 고도 타일(AWS Terrain Tiles) */
@@ -2123,6 +2181,14 @@
   })();
   loadRate();
   loadWeather();
+  loadNowWeather();
+  setInterval(loadNowWeather, 30 * 60 * 1000);
+  $('wxnow').addEventListener('click', function () {
+    var on = !wxFxOn();
+    try { localStorage.setItem(WXFX_KEY, on ? 'on' : 'off'); } catch (e) { /* 무시 */ }
+    applyWeatherLook();
+    toast(on ? '지도에 지금 날씨를 보여 줍니다' : '날씨 효과를 껐어요 (맑은 하늘)');
+  });
   applyMode(false);
   $('modal-close').addEventListener('click', closeModal);
   $('modal').addEventListener('click', function (e) { if (e.target === $('modal')) closeModal(); });
