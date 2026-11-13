@@ -185,14 +185,21 @@
     var app = gmAppUrl(a.href);
     if (!app) return;
     e.preventDefault();
+    // 앱이 열리거나 '여시겠습니까?' 확인 창이 뜨면 이 페이지가 가려진다(blur·hidden). 그런 일이 전혀 없을 때만
+    // (앱이 없고 아무 반응도 없을 때) 웹 구글 지도로 연다. 예전엔 앱과 웹이 함께 열리는 문제가 있었다
     var web = a.href, left = false;
-    var onHide = function () { if (document.hidden) left = true; };
-    document.addEventListener('visibilitychange', onHide);
+    var mark = function () { left = true; };
+    var onVis = function () { if (document.hidden) left = true; };
+    window.addEventListener('blur', mark);
+    window.addEventListener('pagehide', mark);
+    document.addEventListener('visibilitychange', onVis);
     window.location.href = app;
     setTimeout(function () {
-      document.removeEventListener('visibilitychange', onHide);
-      if (!left && !document.hidden) window.open(web, '_blank', 'noopener');   // 앱이 없으면 웹으로
-    }, 1500);
+      window.removeEventListener('blur', mark);
+      window.removeEventListener('pagehide', mark);
+      document.removeEventListener('visibilitychange', onVis);
+      if (!left && !document.hidden && document.hasFocus()) window.open(web, '_blank', 'noopener');
+    }, 2500);
   });
 
   function reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
