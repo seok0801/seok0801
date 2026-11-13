@@ -163,12 +163,7 @@
     $('gm').hidden = false;
   }
   function closeGm() { $('gm').hidden = true; $('gm-frame').src = 'about:blank'; }
-  document.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('a[data-gm]');
-    if (!a) return;
-    e.preventDefault();
-    openGm(a);
-  });
+  /* 구글 지도 버튼은 지도 위 창(openGm)을 쓰지 않고 바로 구글 지도 앱(없으면 새 탭)으로 연다 — 창이 화면을 덮어 불편하다는 의견 */
 
   function reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   /* 두 지점 [경도, 위도] 사이의 방향(북쪽 0도, 시계 방향)과 거리(m) */
