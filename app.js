@@ -738,6 +738,8 @@
     if (eatsOn) setEatPins(true);   // 🍴 맛집 핀: 그날 일정 마커와 겹치는 곳은 다시 뺀다
     if (map.getLayer('tour-tall-roofs')) map.setPaintProperty('tour-tall-roofs', 'fill-extrusion-color', roofColor());
     if (map.getLayer('tour-tall-flat')) map.setPaintProperty('tour-tall-flat', 'fill-color', roofColor());
+    if (map.getLayer('tour-tall-glow')) map.setPaintProperty('tour-tall-glow', 'line-color', roofColor(true));
+    refreshTallColors();
 
     // 동선 선: 고른 날짜는 진하게, 나머지는 흐리게
     var feats = D.days.map(function (d) {
@@ -807,13 +809,15 @@
       if (bLayer) {
         // 주변 건물은 옅은 회색 벽에 흐린 창문 무늬만 입혀, 일정에 있는 건물이 눈에 띄게 한다
         // 주변 건물은 옅은 색으로 물러나게: 낮은 건물은 민무늬, 높은 건물은 옅은 가로 띠창 (일정 건물의 격자 창과 구별된다)
+        // 실제 마카오처럼: 낮은 건물은 따뜻한 미색 벽에 작은 창, 중간 높이는 연한 회색 벽에 창, 고층은 푸른 유리 띠
         map.setPaintProperty(bLayer, 'fill-extrusion-pattern',
-          ['step', H, windowPattern('#efeeea', '#efeeea', 'plain'), 20, windowPattern('#eeede9', '#dfe3e5', 'bands')]);
+          ['step', H, windowPattern('#ece4d6', '#d6cfc2', 'small'), 15, windowPattern('#e6e3dc', '#c7ccd0', 'bands'), 45, windowPattern('#dfe4e7', '#a9b9c4', 'glass')]);
+        map.setPaintProperty(bLayer, 'fill-extrusion-vertical-gradient', true);
         // 주변 건물 지붕도 회색 계열로만
         map.addLayer({
           id: 'tour-roofs', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
           paint: {
-            'fill-extrusion-color': ['step', H, '#e4e2dc', 28, '#dadddc'],
+            'fill-extrusion-color': ['step', H, '#ddd5c8', 15, '#d6d6d2', 45, '#c9d1d6'],
             'fill-extrusion-base': H,
             'fill-extrusion-height': ['+', H, 1.2],
             'fill-extrusion-opacity': 1
@@ -825,6 +829,9 @@
       if (srcId) map.addLayer({ id: 'tour-flat', type: 'fill', source: srcId, 'source-layer': 'building', minzoom: 13,
         layout: { visibility: 'none' }, paint: { 'fill-color': '#e4e2dc', 'fill-outline-color': '#cfccc4' } });
       map.addSource('tour-tall', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      // 일정 건물 바닥 둘레에 그날 색으로 은은하게 빛나는 테두리
+      map.addLayer({ id: 'tour-tall-glow', type: 'line', source: 'tour-tall',
+        paint: { 'line-color': roofColor(true), 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2, 18, 9], 'line-blur': 4, 'line-opacity': .85 } });
       map.addLayer({ id: 'tour-tall-walls', type: 'fill-extrusion', source: 'tour-tall',
         paint: { 'fill-extrusion-pattern': ['get', 'pat'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-opacity': 1 } });
       map.addLayer({ id: 'tour-tall-flat', type: 'fill', source: 'tour-tall', layout: { visibility: 'none' },
@@ -833,13 +840,36 @@
         paint: { 'fill-extrusion-color': roofColor(), 'fill-extrusion-base': ['get', 'h'], 'fill-extrusion-height': ['+', ['get', 'h'], 1.2], 'fill-extrusion-opacity': 1 } });
       // 카메라가 멈춘 뒤와 지도 조각이 도착한 뒤에 확인한다
       var tallTimer = null;
-      var later = function () { clearTimeout(tallTimer); tallTimer = setTimeout(raiseFlatBuildings, 700); };
+      var later = function () { clearTimeout(tallTimer); tallTimer = setTimeout(function () { try { raiseFlatBuildings(); } catch (e) { if (window.__map) console.error('raiseFlatBuildings', e && e.stack); } }, 700); };
       map.on('moveend', later);
-      map.on('sourcedata', later);
+      // 건물 지도 조각이 도착했을 때만 다시 본다. (배·비행기 애니메이션이 초당 수십 번 'sourcedata' 를 보내서,
+      // 예전엔 기다리기만 하고 색칠이 영영 실행되지 않았다)
+      map.on('sourcedata', function (e) { if (e.sourceId === srcId && e.tile) later(); });
       simplifyBaseMap();
       // 남동쪽에서 비추는 햇빛: 건물 면마다 밝기가 달라져 입체감이 생긴다
-      map.setLight({ anchor: 'map', color: '#fffaf2', intensity: 0.32, position: [1.4, 135, 50] });
+      map.setLight({ anchor: 'map', color: '#fff4e2', intensity: 0.42, position: [1.3, 210, 45] });
+      addRelief();
     } catch (e) { /* 3D 건물을 못 세워도 지도는 계속 쓴다 */ }
+  }
+
+  /* 실사 느낌: 지형 음영(언덕·산의 굴곡)과 하늘·안개. 지형 자료는 키가 필요 없는 공개 고도 타일(AWS Terrain Tiles) */
+  function addRelief() {
+    try {
+      if (map.setSky) map.setSky({ 'sky-color': '#a9cbe3', 'horizon-color': '#eef1ee', 'fog-color': '#e6ebe8',
+        'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.7, 'fog-ground-blend': 0.85, 'atmosphere-blend': 0.6 });
+    } catch (e) { /* 하늘 없이 */ }
+    if (D.map.noDem) return;
+    try {
+      map.addSource('relief-dem', { type: 'raster-dem', encoding: 'terrarium', tileSize: 256, maxzoom: 14,
+        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        attribution: 'Terrain: Mapzen/AWS Terrain Tiles' });
+      // 땅·녹지 위, 바다 아래에 깐다 → 마카오 바깥을 덮는 회색(바다 바로 아래)이 그 위를 덮어 헝친 쪽 굴곡은 안 보인다
+      var before = null;
+      (map.getStyle().layers || []).some(function (l) { if (l.type === 'fill' && /water/.test(l.id)) { before = l.id; return true; } return false; });
+      map.addLayer({ id: 'relief-shade', type: 'hillshade', source: 'relief-dem', maxzoom: 17,
+        paint: { 'hillshade-exaggeration': 0.55, 'hillshade-shadow-color': '#5c6b55', 'hillshade-highlight-color': '#fbf6e8',
+          'hillshade-accent-color': '#7a8a6a', 'hillshade-illumination-direction': 315 } }, before || undefined);
+    } catch (e) { /* 지형 음영 없이 */ }
   }
 
   /* 벽 색(wall)과 유리 색(glass)으로 창문 무늬 그림을 만들어 지도에 등록하고 그 이름을 돌려준다 */
@@ -853,9 +883,16 @@
     g.fillStyle = glass;
     if (kind === 'grid') {          // 일정 건물: 또렷한 격자 창
       [2, 10, 18, 26].forEach(function (x) { [2, 10, 18, 26].forEach(function (y) { g.fillRect(x, y, 4, 5); }); });
-    } else if (kind === 'bands') {  // 주변 고층: 옅은 가로 띠창
+    } else if (kind === 'bands') {  // 중간 높이: 옅은 가로 띠창
       [5, 21].forEach(function (y) { g.fillRect(0, y, 32, 4); });
-    }                               // plain: 낮은 건물은 창 없이 벽만
+    } else if (kind === 'small') {  // 낮은 건물: 작은 창 두 줄
+      [4, 20].forEach(function (x) { [6, 22].forEach(function (y) { g.fillRect(x, y, 6, 5); }); });
+    } else if (kind === 'glass') {  // 고층: 푸른 유리 커튼월 (가는 세로 기둥만 벽색)
+      g.fillRect(0, 0, 32, 32);
+      g.fillStyle = wall;
+      [0, 16].forEach(function (x) { g.fillRect(x, 0, 2, 32); });
+      [0, 16].forEach(function (y) { g.fillRect(0, y, 32, 1); });
+    }                               // plain: 창 없이 벽만
     var img = g.getImageData(0, 0, 32, 32);
     map.addImage(name, { width: 32, height: 32, data: new Uint8Array(img.data.buffer) });
     return name;
@@ -875,7 +912,29 @@
   }
   /* 일정 건물 지붕 색: 그 장소를 가는 날의 색(날짜 탭·동선과 같은 색)을 옅게.
    * 날짜를 고르면 그날 건물만 그날 색으로, 다른 날 건물은 차분한 베이지로 */
-  function roofColor() {
+  /* 지금 보는 날짜에서 그 장소의 날짜 색 (없으면 null) */
+  function dayColorOf(pid) {
+    var col = null;
+    D.days.some(function (d) {
+      if (state.day !== 'all' && state.day !== d.date) return false;
+      var hit = items(d.date).some(function (it) { return (it.places || []).indexOf(pid) >= 0; });
+      if (hit) col = d.color;
+      return hit;
+    });
+    return col;
+  }
+  /* 일정 건물 벽: 실제 색(look)에 그날 색을 섞어 칠한다 (날짜를 바꾸면 다시 칠함) */
+  function refreshTallColors() {
+    if (!mapReady || !tallFeatures.length || !map.getSource('tour-tall')) return;
+    tallFeatures.forEach(function (f) {
+      var pr = f.properties, c = dayColorOf(pr.pid);
+      var wall = c ? mix(pr.wall, c, state.day === 'all' ? .3 : .42) : pr.wall;
+      var glass = c ? mix(pr.glass, c, .35) : pr.glass;
+      pr.pat = windowPattern(wall, glass);
+    });
+    map.getSource('tour-tall').setData({ type: 'FeatureCollection', features: tallFeatures });
+  }
+  function roofColor(strong) {
     var expr = ['match', ['get', 'pid']], seen = {};
     D.days.forEach(function (d) {
       items(d.date).forEach(function (it) {
@@ -884,12 +943,12 @@
           var today = state.day === 'all' || state.day === d.date;
           if (state.day !== 'all' && !today) return;
           seen[id] = true;
-          expr.push(id, mix(d.color, '#ffffff', state.day === 'all' ? .62 : .48));
+          expr.push(id, strong ? d.color : mix(d.color, '#ffffff', state.day === 'all' ? .45 : .22));
         });
       });
     });
-    expr.push('#e4ded4');
-    return expr.length > 3 ? expr : '#e4ded4';
+    expr.push(strong ? 'rgba(0,0,0,0)' : '#e4ded4');
+    return expr.length > 3 ? expr : (strong ? 'rgba(0,0,0,0)' : '#e4ded4');
   }
   var ACCENT = { wall: '#f1e6d6', glass: '#a08a72' }, NEAR_M = 18;
   var tallKeys = {}, tallFeatures = [];   // 지도 조각이 나중에 도착해도 빠진 건물을 이어서 칠한다
@@ -920,14 +979,15 @@
         var key = first[0].toFixed(6) + ',' + first[1].toFixed(6);
         if (tallKeys[key]) return;                   // 이미 다른 장소의 색으로 칠한 건물은 건드리지 않는다
         tallKeys[key] = true; changed = true;
-        pat = pat || windowPattern(look.wall || ACCENT.wall, mix(look.glass || ACCENT.glass, look.wall || ACCENT.wall, .35));
+        var wall0 = look.wall || ACCENT.wall, glass0 = mix(look.glass || ACCENT.glass, wall0, .35);
+        pat = pat || windowPattern(wall0, glass0);
         var h = Math.max(o.props.render_height || 5, own && p.height ? p.height : 0);
         // 원래 건물과 벽·지붕이 정확히 겹치면 카메라가 돌 때 깜빡이므로, 바깥으로 0.8m 넓히고 조금 높인다
         tallFeatures.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: o.rings.map(growRing) },
-          properties: { h: h + 1.4, b: o.props.render_min_height || 0, pat: pat, pid: id } });
+          properties: { h: h + 1.4, b: o.props.render_min_height || 0, pat: pat, pid: id, wall: wall0, glass: glass0 } });
       });
     });
-    if (changed) map.getSource('tour-tall').setData({ type: 'FeatureCollection', features: tallFeatures });
+    if (changed) refreshTallColors();
   }
   /* 건물 바깥선을 중심에서 바깥쪽으로 0.8m 넓힌다 */
   function growRing(ring) {
@@ -1390,6 +1450,7 @@
       var extra = D.map.mapOptions || {};      // (선택) data.js 의 map.mapOptions 로 지도 옵션을 더할 수 있다
       Object.keys(extra).forEach(function (k) { opts[k] = extra[k]; });
       map = new maplibregl.Map(opts);
+      if (/[?&]debug/.test(location.search)) { window.__map = map; window.__dbg = { rfb: function () { raiseFlatBuildings(); return tallFeatures.length; }, keys: function () { return Object.keys(tallKeys).length; } }; }   // 점검용 (주소 끝에 ?debug)
     } catch (e) { mapFailed(); return; }
     if (!isNarrow()) map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
     map.on('load', function () {
