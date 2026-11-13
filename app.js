@@ -874,7 +874,9 @@
     var btn = $('wxnow');
     if (WXNOW) {
       btn.hidden = false;
-      btn.textContent = (!WXNOW.day && WXNOW.code <= 3 ? '🌙' : wxIcon(WXNOW.code)) + ' ' + WXNOW.temp + '° 지금 마카오' + (wxFxOn() ? '' : ' · 효과 끔');
+      // 둥근 버튼 안에 날씨 아이콘과 온도만 (효과를 끄면 흐리게)
+      btn.innerHTML = '<span class="wx-i">' + (!WXNOW.day && WXNOW.code <= 3 ? '🌙' : wxIcon(WXNOW.code)) + '</span><span class="wx-t">' + WXNOW.temp + '°</span>';
+      btn.classList.toggle('off', !wxFxOn());
       btn.setAttribute('aria-pressed', String(wxFxOn()));
       btn.setAttribute('aria-label', '지금 마카오 날씨 ' + WXNOW.temp + '도. 누르면 지도 날씨 효과 ' + (wxFxOn() ? '끄기' : '켜기'));
     }

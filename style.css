@@ -821,12 +821,17 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 }
 
 /* ---------- 지금 날씨 표시와 빗줄기 ---------- */
-#wxnow {
-  position: absolute; left: 12px; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); z-index: 3;
-  padding: 6px 11px; border: 0; border-radius: 16px; background: rgba(24, 36, 44, .78); color: #fff;
-  font: inherit; font-size: 13px; font-weight: 600; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); cursor: pointer;
+#wxnow {   /* 오른쪽 둥근 버튼 줄: 🧭 위 */
+  position: absolute; right: 12px; bottom: calc(258px + env(safe-area-inset-bottom, 0px)); z-index: 3;
+  width: 46px; height: 46px; padding: 0; border: 0; border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  background: rgba(24, 36, 44, .9); color: #fff; font: inherit; box-shadow: 0 2px 8px rgba(0, 0, 0, .3); cursor: pointer;
 }
-@media (min-width: 900px) { #wxnow { bottom: 82px; left: 452px; } }
+#wxnow[hidden] { display: none; }
+#wxnow .wx-i { font-size: 17px; line-height: 1; }
+#wxnow .wx-t { font-size: 11px; font-weight: 700; line-height: 1.2; }
+#wxnow.off { opacity: .55; }
+@media (min-width: 900px) { #wxnow { right: 10px; bottom: calc(330px + env(safe-area-inset-bottom, 0px)); } }
 .nomap #wxnow { display: none; }
 #map canvas { transition: filter 1.2s ease; }
 #wx-rain {
