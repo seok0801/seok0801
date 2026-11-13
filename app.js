@@ -515,7 +515,8 @@
   }
   function nearbyHtml(p) {
     return '<div class="row-chips"><span class="row-label">주변 찾기</span>' + NEARBY.map(function (n) {
-      var url = 'https://www.google.com/maps/search/' + encodeURIComponent(n[2]) + '/@' + p.lat + ',' + p.lng + ',17z?hl=ko';
+      // 아이폰에서도 구글 지도 앱으로 바로 열리는 공식 주소 형식(api=1). 예전 '/search/식당/@좌표' 형식은 앱스토어로 넘어가는 일이 있었다
+      var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(n[2] + ' near ' + (p.mapQuery || (p.lat + ',' + p.lng)));
       return gmLink(url, gmEmbed(n[2] + ' near ' + p.lat + ',' + p.lng, p.lat, p.lng, 16), shortName(p.name) + ' 주변 ' + n[1], n[0] + ' ' + n[1], 'chip-sm');
     }).join('') + '</div>';
   }
