@@ -81,17 +81,19 @@ window.TRIP_DATA = {
    * mapQuery: '📍 구글 지도' 버튼이 구글 지도에서 찾을 이름 (영문 상호 + 지역). 상점·시설 정보 페이지가 바로 열린다 */
   places: {
     // 공항
-    icn: { mapQuery: 'Incheon International Airport Terminal 2', name: '인천공항 T2', type: 'airport', lng: 126.43474, lat: 37.46847, verified: true, offMap: true, note: '지도 밖, 출발·도착 표시만' },
-    mfm: { mapQuery: 'Macau International Airport', zh: '澳門國際機場', zhArea: "氹仔 · Aeroporto Internacional de Macau", name: '마카오 국제공항', type: 'airport', lng: 113.57434, lat: 22.15744, verified: true, look: { wall: '#eef0f0', glass: '#7f9bb0', roof: '#d5d9da', radius: 120 } },
+    icn: { mapQuery: 'Incheon International Airport Terminal 2', name: '인천공항 T2', type: 'airport', lng: 126.43474, lat: 37.46847, verified: true, offMap: true, note: '지도 밖, 출발·도착 표시만', baby: 'T2 3층 면세구역 유아휴게실(수유실·기저귀 교환대·젖병 소독기): 221·231·243·257·268·278번 게이트 부근. 키즈존 242·246·254·257번 게이트 부근. 유모차 무료 대여: 안내데스크 (공항 공식)' },
+    mfm: { mapQuery: 'Macau International Airport', zh: '澳門國際機場', zhArea: "氹仔 · Aeroporto Internacional de Macau", name: '마카오 국제공항', type: 'airport', lng: 113.57434, lat: 22.15744, verified: true, look: { wall: '#eef0f0', glass: '#7f9bb0', roof: '#d5d9da', radius: 120 }, baby: '수유실·기저귀 교환대·유모차 대여 모두 공식 안내에서 확인 못 함. 도착하면 안내데스크에 문의 (☎ +853 2886 1111)' },
 
     // 호텔
     glp: { mapQuery: 'Grand Lisboa Palace Macau', zh: '上葡京綜合度假村', zhArea: "路氹 · Grand Lisboa Palace",
+      baby: '수유실 위치 미확인 (컨시어지 문의). 2층에 아이 놀이 공간이 있음 (호텔 공식)',
       name: '그랜드 리스보아 팰리스', type: 'hotel', lng: 113.57420, lat: 22.14409, verified: true,
       height: 75,     // 공개 지도에 건물 높이가 없어 넣은 대략의 높이(m). 실제와 다를 수 있음
       look: { wall: '#efe9da', glass: '#6b7f8c', roof: '#6f9085', radius: 60 },   // 크림색 벽, 청록 지붕
       note: '12/27~29 숙박', url: 'https://www.grandlisboapalace.com/kr', urlLabel: '호텔 공식'
     },
     wmacau: { mapQuery: 'W Macau Studio City', zh: '新濠影滙 W酒店', zhArea: "路氹 · W Macau – Studio City",
+      baby: 'W·스튜디오 시티 수유실은 미확인 (프런트 문의). 객실용 유모차는 호텔에 요청 (예약 사이트 기준)',
       name: 'W 마카오 스튜디오 시티', type: 'hotel', lng: 113.56023, lat: 22.14198, verified: true,
       height: 110,    // 대략의 높이(m)
       look: { wall: '#7d8ca0', glass: '#2f3e52', roof: '#59677a', radius: 140 },  // 청회색 유리 건물
@@ -100,6 +102,7 @@ window.TRIP_DATA = {
 
     // 12/27
     wynn: { mapQuery: 'Wynn Palace Performance Lake Macau', zh: '永利皇宮 表演湖', zhArea: "路氹 · Wynn Palace",
+      baby: '관광청 무장애 가이드에 윈 팰리스 육아실 \'없음\'. 스카이캡은 유모차 탄 채 탈 수 있다는 후기 (2018년, 미확인)',
       name: '윈 팰리스 스카이캡·분수쇼', type: 'sight', lng: 113.56946, lat: 22.14804, verified: true,
       note: '스카이캡 승강장 위치', hours: '스카이캡 일~목 16:00~22:00 (마지막 탑승 21:40) · 분수쇼 18:00 이후 20분 간격',
       open: '16:00', close: '22:00',
@@ -115,12 +118,14 @@ window.TRIP_DATA = {
 
     // 12/28
     cod: { mapQuery: "Kids' City City of Dreams Macau", zh: '新濠天地 童夢天地', zhArea: "路氹 · City of Dreams",
+      baby: '키즈시티 안 수유실·교환대는 미확인. 유료 베이비시팅 있음 (MOP 200/시간, 최소 2시간, 하루 전 예약, 공식)',
       name: '시티 오브 드림즈 키즈시티', type: 'kids', lng: 113.56641, lat: 22.14918, verified: true,
       look: { wall: '#5b7088', glass: '#27374b', roof: '#7b8794', radius: 110 },  // 짙은 푸른 유리
       note: '실내 놀이터 (3층)', hours: '10:30~19:00 (마지막 입장 18:00) · 평소 수·목 휴무지만 12/20~31은 매일 운영',
       open: '10:30', close: '19:00'
     },
     dancingwater: { mapQuery: 'House of Dancing Water Theatre City of Dreams Macau', zh: '新濠天地 水舞間劇場', zhArea: "路氹 · City of Dreams",
+      baby: '극장 안에 유모차 반입 불가 → 로비 클로크룸에 맡김. 장애인 화장실은 극장 로비 여자화장실 옆 (공식 FAQ)',
       name: '하우스 오브 댄싱 워터 극장 (시티 오브 드림즈)', type: 'show', lng: 113.56795, lat: 22.14990, verified: true,
       note: '수상 공연 전용 극장', hours: '30일 16:30 공연 (약 90분)', url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water', urlLabel: '공식 안내'
     },
@@ -130,6 +135,7 @@ window.TRIP_DATA = {
       url: 'https://www.cityofdreamsmacau.com/kr/dining/chan-kee-roasted-goose', urlLabel: '식당 공식'
     },
     taipa: { mapQuery: 'Rua do Cunha Taipa Macau', zh: '氹仔官也街', zhArea: "氹仔 · Rua do Cunha",
+      baby: '시정서 수유실: 에보라 거리(Rua de Évora) 공중화장실, 쿤하 거리에서 약 330m, 08:30~23:30. 쿤하 거리 안 공중화장실 24시간 (정부 자료)',
       name: '쿤하 거리 (타이파 빌리지)', type: 'snack', lng: 113.55697, lat: 22.15359, verified: true,
       note: '세라두라·아몬드 쿠키 등 먹거리 골목', url: 'https://www.taipavillagemacau.com/', urlLabel: '타이파 빌리지 안내'
     },
@@ -144,12 +150,13 @@ window.TRIP_DATA = {
       url: 'https://www.taipavillagemacau.com/directory/sei-kee-cafe/', urlLabel: '소개 페이지'
     },
     londoner: { mapQuery: 'Hampton Court Londoner Grand Macao', zh: '澳門倫敦人名匯', zhArea: "路氹 · Londoner Grand",
+      baby: '런더너 그랜드에 육아실 있음 (관광청 무장애 가이드, 위치 미확인)',
       name: '햄튼 코트 뷔페 (런더너 그랜드 2층)', type: 'food', lng: 113.56540, lat: 22.14470, verified: true,
       look: { wall: '#e6dcc3', glass: '#55606b', roof: '#b9b3a3', radius: 110 },  // 크림색 석조풍
       note: '런더너 그랜드(옛 쉐라톤) 2층 Henry\'s Kitchen · 국제식·중식 저녁 뷔페', hours: '저녁 뷔페 17:30~22:30 (금·토·일·공휴일 ~23:00, 공식)', open: '17:30', close: '22:30',
       url: 'https://www.londonermacao.com/macau-restaurants/hampton-court.html', urlLabel: '공식 안내'
     },
-    venetian: { mapQuery: 'The Venetian Macao', zh: '澳門威尼斯人', zhArea: "路氹 · The Venetian Macao", name: '베네시안·파리지앵', type: 'shop', lng: 113.56047, lat: 22.14820, verified: true, note: '크리스마스 장식 구경', look: { wall: '#dccaa2', glass: '#6a5f4e', roof: '#e9e6dc', radius: 160 } },
+    venetian: { mapQuery: 'The Venetian Macao', zh: '澳門威尼斯人', zhArea: "路氹 · The Venetian Macao", name: '베네시안·파리지앵', type: 'shop', lng: 113.56047, lat: 22.14820, verified: true, note: '크리스마스 장식 구경', look: { wall: '#dccaa2', glass: '#6a5f4e', roof: '#e9e6dc', radius: 160 }, baby: '패밀리 화장실이 있다는 후기, 위치 미확인. 파리지앵에는 육아실이 있음(관광청 가이드, 위치 미확인). 컨시어지 ☎ +853 2882 8888 에 수유실 위치를 물어보세요' },
 
     // 12/29
     grandlisboa: { mapQuery: 'Grand Lisboa Macau', zh: '新葡京酒店', zhArea: "澳門 · Grand Lisboa",
@@ -162,8 +169,8 @@ window.TRIP_DATA = {
       note: '에그타르트', hours: '월~금 08:30~16:30, 주말 10:00~18:00 · 수요일 휴무 (2026년 가이드 기준)', open: '08:30', close: '16:30', closedWeekdays: [3],
       url: 'https://citiesinsider.com/country/china/macao/cafes-and-bakeries/en', urlLabel: '소개 페이지(영문)'
     },
-    senado: { mapQuery: 'Senado Square Macau', zh: '議事亭前地', zhArea: "澳門 · Largo do Senado", name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장', look: { wall: '#ecd98f', glass: '#5d6b4f', roof: '#b9b4a8', radius: 110 } },
-    stpaul: { mapQuery: "Ruins of St. Paul's Macau", zh: '大三巴牌坊', zhArea: "澳門 · Ruínas de São Paulo", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 } },
+    senado: { mapQuery: 'Senado Square Macau', zh: '議事亭前地', zhArea: "澳門 · Largo do Senado", name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장', look: { wall: '#ecd98f', glass: '#5d6b4f', roof: '#b9b4a8', radius: 110 }, baby: '가까운 공공 수유실: 로우카우 맨션(광장에서 약 150m, 월요일 휴관, 입구 계단 2단)·소아레스 빌딩(광장 옆, 평일만). 공중화장실: 대당가(약 100m, 24시간). 교환대 여부 미확인 (마카오 정부 자료)' },
+    stpaul: { mapQuery: "Ruins of St. Paul's Macau", zh: '大三巴牌坊', zhArea: "澳門 · Ruínas de São Paulo", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 }, baby: '바로 옆 마카오 박물관(몬테 요새)에 간이 수유실 (매표소·보안요원에게 요청). 유적 아래 공중화장실(약 55m, 24시간). 앞 계단이 많아 유모차는 들어서 이동 (정부 자료)' },
     koikei: { mapQuery: 'Koi Kei Bakery Senado Square Macau', zh: '鉅記餅家 議事亭前地', zhArea: "澳門 · Koi Kei Bakery",
       name: '쿠이케이 (세나도 광장 지점)', type: 'snack', lng: 113.53965, lat: 22.19371, verified: true,
       note: '아몬드 쿠키·에그타르트, 선물용으로도 좋음', hours: '영업시간 미확인 (근처 성 바울 지점은 10:00부터로 안내)'
@@ -188,21 +195,25 @@ window.TRIP_DATA = {
 
     // 12/30
     panda: { mapQuery: 'Macao Giant Panda Pavilion', zh: '澳門大熊貓館', zhArea: "路環 石排灣郊野公園 · Giant Panda Pavilion",
+      baby: '석배만 공원 안 시정서 수유실(공원 공중화장실, 06:00~22:00). 판다관 통로는 휠체어용이라 유모차 이동 쉬움 (정부 자료)',
       name: '마카오 자이언트 판다관 (석배만 공원)', type: 'kids', lng: 113.55923, lat: 22.12663, verified: true,
       note: '콜로안. 월요일 휴관, 1시간 단위 입장', hours: '10:00~13:00, 14:00~17:00 · 월요일 휴관', open: '10:00', close: '17:00', closedWeekdays: [1]
     },
     lordstow: { mapQuery: "Lord Stow's Bakery Coloane Macau", zh: '安德魯餅店', zhArea: "路環市區 · Lord Stow's Bakery",
+      baby: '가까운 수유실: 콜로안 도서관 간이 수유실 (화~일 08:00~20:00). 공중화장실: 로드 스토우 거리(타람 거리) 화~일 10:00~17:30 (정부 자료)',
       name: '로드 스토우 베이커리 본점 (콜로안)', type: 'snack', lng: 113.55133, lat: 22.11820, verified: true,
       look: { wall: '#eedc94', glass: '#58705a', roof: '#b97a5e', radius: 110 },   // 파스텔 노란 벽, 붉은 기와
       note: '마카오식 에그타르트의 원조', hours: '매일 07:00~21:00 (가이드 기준, 공식 페이지에는 시간 표시 없음)', open: '07:00', close: '21:00',
       url: 'https://www.lordstow.com/contact-us/', urlLabel: '공식'
     },
     ngatim: { mapQuery: 'Cafe Nga Tim Coloane Macau', zh: '雅憩花園餐廳', zhArea: "路環市區 · Café Nga Tim",
+      baby: '가까운 수유실: 콜로안 도서관 간이 수유실 (화~일 08:00~20:00). 마을 공중화장실 여러 곳 24시간, 교환대 여부 미확인 (정부 자료)',
       name: '응아팀 카페 (콜로안)', type: 'food', lng: 113.55124, lat: 22.11705, verified: true,
       note: '성당 앞 광장의 중식·포르투갈식 식당, 영어 메뉴 있음', hours: '매일 12:00~자정 (안내 사이트 기준)', open: '12:00', close: '23:59',
       url: 'https://macau.com/listing/nga-tim-cafe/', urlLabel: '소개 페이지'
     },
     waterpark: { mapQuery: 'Studio City Water Park Macau', zh: '新濠影滙水上樂園', zhArea: "路氹 · Studio City Water Park",
+      baby: '수유실은 없고 직원에게 요청. 패밀리 탈의실 4곳, 수영 기저귀는 안에서 판매, 아기 구명조끼(선착순), 무료 사물함, 유모차 반입 가능. 키 1m 미만 무료 아이는 어른 1명당 1명만 (공식 FAQ)',
       name: '스튜디오 시티 실내 워터파크', type: 'kids', lng: 113.56096, lat: 22.14062, verified: true,
       note: '키 1m 미만 무료', hours: '12월은 실내만 12:00~20:00 (매표 11:45부터) · 12/29(화) 휴장', open: '12:00', close: '20:00',
       closedDates: ['2026-12-29']
@@ -229,15 +240,16 @@ window.TRIP_DATA = {
       note: '12/20~31 특별일 요금: 아이(1~17세) MOP 180, 어른 MOP 20. 페이지 안의 예매 버튼으로 온라인 구매.'
     },
     dancingwater: {
-      name: '하우스 오브 댄싱 워터 (시티 오브 드림즈 수상 공연)', level: '선택', linkVerified: true,
-      kids: '✅ 두 아이 모두 무료 · 만 3세 미만 무릎 (판매처 따라 만 2세 이하로 적은 곳도 있어 예매 때 확인)',
-      icon: '🎭', short: '댄싱 워터 공연', key: '30일 16:30 · 어른 698~ · 3세 미만 무릎 무료',
+      name: '하우스 오브 댄싱 워터 (시티 오브 드림즈 수상 공연)', level: '권장', linkVerified: true,
+      kids: '⚠️ 두 아이 모두 유료일 수 있음 · 무료 무릎 기준이 "만 2세 미만"이면 25·35개월 모두 표 필요 (예매 전 ☎ +853 8868 6767 확인)',
+      icon: '🎭', short: '댄싱 워터 공연', key: '30일 16:30 · 1인 698~ · 아이 표 확인 필요',
+      affNote: '아이 무료 나이 기준이 판매처마다 다릅니다(만 2세 미만 / 만 2세 이하 / 만 3세 미만). 예매 전에 공연장에 아이 나이(25·35개월)를 말하고 표가 필요한지 확인하세요.',
       aff: 'https://3ha.in/r/895307', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water',
       note: '좌석 요금(공식): 갤러리 MOP 698 · 시그니처 898 · 그랜드 1,098 · 프리미엄 1,298. 어른 2명 가장 싼 좌석이면 MOP 1,396. ' +
-        '만 3세 미만은 좌석 없이 어른 무릎에 앉으면 무료(어른 1명당 아이 1명, 신분증 필요)로 판매처들이 안내합니다. 기준 나이를 "만 2세 이하"로 적은 곳도 있어 예매 때 확인하세요. ' +
+        '좌석 없이 어른 무릎에 앉는 아이는 무료(어른 1명당 1명, 신분증 필요)인데, 기준 나이가 판매처마다 "만 2세 미만"·"만 2세 이하"·"만 3세 미만"으로 다릅니다. 공식 FAQ는 2세 미만으로 안내한다는 조사 결과가 있어, 25·35개월 두 아이 모두 표가 필요할 수 있습니다. 극장 안에는 유모차를 가지고 들어갈 수 없고 로비 근처 클로크룸에 맡깁니다. ' +
         '공연 시각은 16:30·19:30으로 안내되지만 요일마다 달라 예매 달력에서 확인하세요. 19:30 공연은 아이 취침(21:00)과 겹치니 16:30 공연이 낫습니다. ' +
-        '큰 소리·불꽃·안개·물 튀김 효과가 있고 6세 미만에게는 권장하지 않는다는 안내가 있습니다. 앞줄은 물이 튈 수 있습니다. 지금 일정에는 넣지 않았습니다.'
+        '큰 소리·불꽃·안개·물 튀김 효과가 있고 6세 미만에게는 권장하지 않는다는 안내가 있습니다. 앞줄은 물이 튈 수 있습니다.'
     },
     hampton: {
       name: '햄튼 코트 저녁 뷔페 (런더너 그랜드 2층)', level: '권장', linkVerified: true,
@@ -512,6 +524,22 @@ window.TRIP_DATA = {
     {"id": "ngatim", "area": "콜로안", "kind": "food", "name": "응아팀 카페", "place": "ngatim", "menu": "소금후추 새우, 커리 크랩, 생선구이, 파인애플 해산물 볶음밥", "price": "합리적이라는 후기 (금액 미확인)", "hours": "매일 12:00~새벽 1:00 무렵 (안내 사이트 기준, 최신 확인 안 됨)", "tip": "성당 옆 야외 테이블이라 유모차 대기 편해요. 영어가 잘 안 통할 수 있어요 (+853 2888 2086)", "url": "https://macaulifestyle.com/dining/local-eats/nga-tim-coloanes-open-air-joint-with-wholesome-local-delicacies"}
   ],
 
+  /* 📸 포토 스팟: 일정 동선의 사진 명소 (place = 일정 장소 id). 🍴 메뉴의 '📸 포토 스팟' 탭 */
+  photos: [
+    {"id": "ph_senado", "area": "반도 세나도", "name": "세나도 광장", "place": "senado", "what": "물결무늬 돌바닥과 파스텔색 옛 건물, 연말 크리스마스 장식", "best": "오전 10시 전 (사람이 적음) · 장식 조명은 해 진 뒤", "tip": "광장 끝 성 도밍고 성당 쪽에서 분수를 앞에 두고 찍으면 물결무늬가 길게 담겨요. 아이는 분수 옆 낮은 턱에 앉히면 안전해요"},
+    {"id": "ph_stpaul", "area": "반도 세나도", "name": "성 바울 성당 유적 계단", "place": "stpaul", "what": "성 바울 성당 유적 정면과 긴 돌계단", "best": "오전 일찍 (해가 정면을 비추고 사람이 적음)", "tip": "계단 맨 아래에서 휴대폰을 낮게 들고 올려 찍으면 정면 전체가 들어가요. 계단 중간에 아이를 세우고 뒤로 몇 걸음 물러나 찍으세요"},
+    {"id": "ph_grandlisboa", "area": "반도 세나도", "name": "그랜드 리스보아 연꽃 빌딩", "place": "grandlisboa", "what": "연꽃 모양의 그랜드 리스보아 빌딩", "best": "셔틀에서 내린 직후 · 밤 조명은 더 화려함", "tip": "건물이 높아 바로 아래에선 다 안 나와요. 길 건너편에서 휴대폰 0.5배(광각)로 찍으세요"},
+    {"id": "ph_wynn", "area": "코타이 (윈 팰리스)", "name": "윈 팰리스 분수·스카이캡", "place": "wynn", "what": "윈 팰리스 호수 분수쇼와 스카이캡 케이블카", "best": "분수쇼는 18:00 이후 20분 간격 · 해 진 뒤가 예뻐요", "tip": "스카이캡 안에서 호수와 분수를 내려다보는 사진이 좋아요. 분수쇼는 동영상으로 찍으세요"},
+    {"id": "ph_taipahouses", "area": "타이파 빌리지", "name": "타이파 주택박물관", "lat": 22.15394, "lng": 113.55973, "zh": "龍環葡韻住宅式博物館", "zhArea": "氹仔 海邊馬路", "mapQuery": "Taipa Houses-Museum Macau", "what": "타이파 주택박물관 민트색 옛 집 다섯 채와 연못 산책로", "best": "오후 (해가 집 정면 쪽) · 28일 타이파 산책 때", "tip": "집 앞 산책로 끝에서 비스듬히 찍으면 다섯 채가 나란히 담겨요. 유모차로 가기 쉬운 평지예요"},
+    {"id": "ph_carmo", "area": "타이파 빌리지", "name": "카르멜 성모 성당 (타이파)", "lat": 22.1535, "lng": 113.55878, "zh": "嘉模聖母堂", "zhArea": "氹仔 嘉路士米耶馬路", "mapQuery": "Our Lady of Carmo Church Taipa", "what": "언덕 위 노란 카르멜 성모 성당과 정원", "best": "타이파 주택박물관과 같이 (걸어서 1~2분)", "tip": "성당 앞 정원 계단 아래에서 올려 찍으면 노란 성당이 하늘과 잘 어울려요"},
+    {"id": "ph_venetian", "area": "코타이 (베네시안·런더너)", "name": "베네시안 실내 운하", "place": "venetian", "what": "베네시안 실내 운하와 하늘 그림 천장, 곤돌라", "best": "28일 곤돌라 탈 때", "tip": "곤돌라 위에서 앞쪽 운하를 길게 찍거나, 다리 위에서 곤돌라 탄 가족을 찍어 달라고 부탁하세요"},
+    {"id": "ph_eiffel", "area": "코타이 (베네시안·런더너)", "name": "파리지앵 에펠탑", "lat": 22.14357, "lng": 113.56283, "zh": "澳門巴黎人 巴黎鐵塔", "zhArea": "路氹 · 巴黎人", "mapQuery": "Eiffel Tower The Parisian Macao", "what": "파리지앵 앞 절반 크기 에펠탑", "best": "해 질 무렵 · 18:15부터 15분마다 조명쇼 (안내 사이트 기준)", "tip": "탑 바로 아래보다 길 건너(런더너·베네시안 쪽) 인도에서 찍어야 탑 전체가 나와요. 전망대 위에서는 코타이 전체가 보여요"},
+    {"id": "ph_londoner", "area": "코타이 (베네시안·런더너)", "name": "런더너 빅벤 시계탑", "place": "londoner", "what": "런더너의 빅벤 시계탑과 영국풍 건물 외관", "best": "28일 햄튼 코트 저녁 전후 · 밤 조명", "tip": "빅벤이 높아서 건물 앞 광장 끝까지 물러나 세로로 찍으세요"},
+    {"id": "ph_wheel", "area": "코타이 (스튜디오 시티·COD)", "name": "8자 관람차 야경", "place": "wheel", "what": "스튜디오 시티 8자 관람차와 코타이 야경", "best": "29일 해 진 뒤 (18:30 일정)", "tip": "관람차 안에서는 유리 반사가 생기니 휴대폰을 유리에 바짝 대고 찍으세요"},
+    {"id": "ph_panda", "area": "콜로안", "name": "자이언트 판다관", "place": "panda", "what": "자이언트 판다와 레서판다", "best": "오전 첫 회차 (판다가 활발한 편)", "tip": "유리 너머로 찍을 땐 플래시를 끄고 휴대폰을 유리에 붙이면 반사가 줄어요"},
+    {"id": "ph_chapel", "area": "콜로안", "name": "콜로안 성 프란시스코 사비에르 성당", "lat": 22.11712, "lng": 113.5511, "zh": "路環 聖方濟各聖堂", "zhArea": "路環 · 路環村", "mapQuery": "Chapel of St Francis Xavier Coloane", "what": "노란 성 프란시스코 사비에르 성당과 모자이크 광장", "best": "30일 점심 (응아팀 카페 바로 옆)", "tip": "광장 가운데 기념비 뒤에서 성당을 정면으로 찍으면 바닥 무늬까지 담겨요. 위치는 대략"}
+  ],
+
   costExtras: [
     '택시 요금 계산식(마카오 교통국): 처음 1.6km MOP 21 + 이후 220m마다 MOP 2 + 정차 55초마다 MOP 2 + 트렁크 짐 1개당 MOP 3 + 공항·페리터미널에서 탈 때 MOP 8 + 타이파→콜로안 MOP 2. 범위의 높은 값은 신호 대기·정체를 25% 더한 값입니다.',
     '한 가족(어른 2·아이 1)이 택시 1대를 타는 것으로 계산했습니다. (선택)으로 표시한 택시는 셔틀이 없거나 아이가 지쳤을 때만 드는 비용이라 합계에서 뺐습니다.',
@@ -562,7 +590,7 @@ window.TRIP_DATA = {
         ],
         '2026-12-30': [
           '현금 (로드 스토우는 현금만 받는다는 안내가 있음, 택시 5번)',
-          '아이 여권 (공연 무릎 무료 나이 확인용)',
+          '아이 여권 (공연 무릎 나이 확인용)',
           '댄싱 워터 표(예매 확인 화면), 아이 여벌옷 (앞줄은 물이 튈 수 있음)',
           '워터파크: 수영복, 아이 방수 기저귀, 수건, 비닐봉지 (젖은 옷)',
           '겉옷 (콜로안 야외석은 쌀쌀함)'
@@ -839,12 +867,13 @@ window.TRIP_DATA = {
         },
         {
           date: '2026-12-30', time: '16:30', end: '18:00', kind: 'activity', title: '하우스 오브 댄싱 워터 공연 (16:30)', places: ['dancingwater'], booking: 'dancingwater',
-          cost: { min: 1396, max: 1796, type: 'ticket', note: '어른 2명 · 갤러리 698 ~ 시그니처 898 좌석, 두 아이는 만 3세 미만 무릎 무료' },
+          cost: { min: 1396, max: 2694, type: 'ticket', note: '아이가 무릎 무료면 어른 2명 1,396~1,796 · 아이도 표가 필요하면 3명 2,094~2,694 (갤러리 698 ~ 시그니처 898)' },
           memo: '공연은 약 90분입니다. 시티 오브 드림즈 안 전용 극장.',
           tips: [
             '큰 소리·불꽃·물 튀김 효과가 있다. 아이가 놀라면 잠깐 나갔다 들어올 수 있게 통로 쪽 좌석이 편하다.',
             '앞쪽 몇 줄은 물이 튈 수 있다. 아이 여벌옷이나 얇은 겉옷을 챙긴다.',
-            '무릎에 앉는 아이는 신분증(여권)으로 나이를 확인할 수 있다.'
+            '무릎에 앉는 아이는 신분증(여권)으로 나이를 확인한다. 무료 기준이 만 2세 미만이면 두 아이 모두 표가 필요하니 예매 때 꼭 확인한다.',
+            '유모차는 극장 안에 못 들고 들어간다. 로비 근처 클로크룸에 맡긴다.'
           ]
         },
         {

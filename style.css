@@ -803,3 +803,11 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 .pk { display: flex; align-items: flex-start; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 15px; cursor: pointer; }
 .pk input { width: 22px; height: 22px; margin: 0; flex: 0 0 auto; accent-color: #0f8a5f; }
 .pk.done span { text-decoration: line-through; opacity: .55; }
+
+/* 📸 포토 스팟 탭·핀 */
+.spot-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.spot-tabs .btn { flex: 1 1 0; }
+.mk.eat-mk.photo { border-color: #c2418a; }
+
+/* 🍼 아기 편의 (수유실·교환대·유모차) */
+.baby { margin: 6px 0 10px; padding: 8px 10px; border-radius: 10px; background: #fdf1f6; color: #6b2346; font-size: 14px; line-height: 1.45; }

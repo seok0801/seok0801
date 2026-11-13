@@ -527,6 +527,7 @@
     var meta = [t.label, p.note].filter(Boolean).join(' · ');
     var html = (meta || p.hours) ? '<p class="fine place-meta">' + esc(meta) + (p.hours ? (meta ? '<br>' : '') + '🕒 ' + esc(p.hours) : '') + '</p>' : '';
     html += meDistanceHtml(p);
+    if (p.baby) html += '<p class="baby">🍼 <b>아기 편의</b> ' + esc(p.baby) + '</p>';
     // 2) 이 장소에서 하는 일정 (가장 중요한 내용이라 먼저 보인다)
     var linked = {}, n = 0;
     viewDates().forEach(function (date) {
@@ -1517,15 +1518,19 @@
   /* ---------- 🍴 맛집·카페: 일정 동선 근처의 유명한 곳 모음 (data.js 의 eats) ----------
    * 일정에 있는 곳(place)은 그 장소를 그대로 쓰고, 나머지는 EAT_PLACES 에 장소처럼 만들어 둔다
    * (지도 이동·택시 카드·길찾기를 일정 장소와 같은 방식으로 쓰려고). 일정 건물 색칠에는 쓰지 않는다 */
-  var EAT_KIND = { food: '🍜', cafe: '☕', dessert: '🍮', bakery: '🥐' };
+  var EAT_KIND = { food: '🍜', cafe: '☕', dessert: '🍮', bakery: '🥐', photo: '📸' };
+  /* 📸 포토 스팟도 같은 방식(목록·지도 핀·아래 창)으로 보여 준다. kind: 'photo' */
+  var SPOTS = (D.eats || []).concat((D.photos || []).map(function (p) { var o = {}; for (var k in p) o[k] = p[k]; o.kind = 'photo'; return o; }));
+  var spotTab = 'eat';   // 'eat' 맛집·카페 / 'photo' 포토 스팟
+  function tabOf(e) { return e.kind === 'photo' ? 'photo' : 'eat'; }
   var eatMarkers = [], eatsOn = false;
-  (D.eats || []).forEach(function (e) {
+  SPOTS.forEach(function (e) {
     if (e.place && D.places[e.place]) { e.pid = e.place; return; }
     e.pid = 'eat_' + e.id;
     EAT_PLACES[e.pid] = { name: e.name, type: e.kind === 'food' ? 'food' : 'snack', lng: e.lng, lat: e.lat, zh: e.zh, zhArea: e.zhArea,
       mapQuery: e.mapQuery, hours: e.hours, verified: e.verified !== false };
   });
-  function eatById(id) { return (D.eats || []).filter(function (e) { return e.id === id; })[0]; }
+  function eatById(id) { return SPOTS.filter(function (e) { return e.id === id; })[0]; }
   /* 이 맛집이 일정에 들어 있으면 그 날짜·시각 */
   function eatPlanText(e) {
     if (!e.place) return '';
@@ -1537,21 +1542,30 @@
     return gmLink('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q), gmEmbed(q, p.lat, p.lng, 17), e.name, '📍 구글 지도', 'btn small');
   }
   function eatInfoHtml(e) {
-    return (e.menu ? '<p class="eat-l">😋 <b>대표 메뉴</b> ' + esc(e.menu) + '</p>' : '') +
+    return (e.what ? '<p class="eat-l">📷 ' + esc(e.what) + '</p>' : '') +
+      (e.best ? '<p class="eat-l">⏰ <b>찍기 좋은 때</b> ' + esc(e.best) + '</p>' : '') +
+      (e.menu ? '<p class="eat-l">😋 <b>대표 메뉴</b> ' + esc(e.menu) + '</p>' : '') +
       (e.price ? '<p class="eat-l">💰 ' + esc(e.price) + '</p>' : '') +
       (e.hours ? '<p class="eat-l">🕒 ' + esc(e.hours) + '</p>' : '') +
       (e.tip ? '<p class="eat-l">💡 ' + esc(e.tip) + '</p>' : '');
   }
   function eatsHtml() {
-    var list = D.eats || [];
-    var html = '<p class="bk-sum">일정 동선 근처의 유명한 식당·카페 <strong>' + list.length + '곳</strong>' +
-      '<br><span class="fine">📅 표시는 이미 일정에 들어 있는 곳 · 가격·영업시간은 바뀔 수 있어 구글 지도에서 한 번 더 확인하세요</span></p>' +
-      '<button type="button" class="btn small eat-toggle" data-eat-toggle aria-pressed="' + eatsOn + '">' + (eatsOn ? '🗺️ 지도에서 맛집 핀 숨기기' : '🗺️ 지도에 맛집 핀 모두 보이기') + '</button>';
+    var photo = spotTab === 'photo';
+    var list = SPOTS.filter(function (e) { return tabOf(e) === spotTab; });
+    var html = '<div class="spot-tabs" role="tablist">' +
+      '<button type="button" role="tab" class="btn small' + (!photo ? ' primary' : '') + '" data-spot-tab="eat" aria-selected="' + !photo + '">🍴 맛집·카페</button>' +
+      '<button type="button" role="tab" class="btn small' + (photo ? ' primary' : '') + '" data-spot-tab="photo" aria-selected="' + photo + '">📸 포토 스팟</button></div>' +
+      '<p class="bk-sum">' + (photo ? '일정 동선의 사진 명소 <strong>' + list.length + '곳</strong>' +
+        '<br><span class="fine">📅 표시는 그 장소에 가는 일정 · 찍기 좋은 시간과 구도 꿀팁</span>'
+        : '일정 동선 근처의 유명한 식당·카페 <strong>' + list.length + '곳</strong>' +
+        '<br><span class="fine">📅 표시는 이미 일정에 들어 있는 곳 · 가격·영업시간은 바뀔 수 있어 구글 지도에서 한 번 더 확인하세요</span>') + '</p>' +
+      '<button type="button" class="btn small eat-toggle" data-eat-toggle aria-pressed="' + eatsOn + '">' +
+        (eatsOn ? '🗺️ 지도에서 핀 숨기기' : '🗺️ 지도에 ' + (photo ? '포토 스팟' : '맛집') + ' 핀 모두 보이기') + '</button>';
     var areas = [];
     list.forEach(function (e) { if (areas.indexOf(e.area) < 0) areas.push(e.area); });
     areas.forEach(function (a) {
       html += '<h3 class="eat-area">' + esc(a) + '</h3>';
-      list.filter(function (e) { return e.area === a; }).forEach(function (e) {
+      list.filter(function (e) { return e.area === a; }).forEach(function (e) {   // 같은 지역끼리
         var plan = eatPlanText(e);
         html += '<div class="eat">' +
           '<p class="eat-title">' + (EAT_KIND[e.kind] || '🍴') + ' ' + esc(e.name) + (plan ? ' <span class="eat-plan">📅 ' + esc(plan) + '</span>' : '') + '</p>' +
@@ -1573,6 +1587,7 @@
   function showEat(id) {
     var e = eatById(id); if (!e) return;
     stopTour(); closeModal();
+    spotTab = tabOf(e);
     setEatPins(true);
     flyToPlace(e.pid, { sheet: true });
     eatMarkers.forEach(function (m) { m.getElement().classList.toggle('on', m.getElement().getAttribute('data-eat') === id); });
@@ -1584,15 +1599,16 @@
     eatMarkers.forEach(function (m) { m.remove(); });
     eatMarkers = [];
     if (!on || !mapReady) return;
-    (D.eats || []).forEach(function (e) {
+    SPOTS.forEach(function (e) {
+      if (tabOf(e) !== spotTab) return;      // 지금 고른 탭(맛집 / 포토)의 핀만
       if (markers[e.pid]) return;            // 오늘 일정 마커가 이미 있는 곳은 겹치지 않게 뺀다
       var p = place(e.pid);
       var el = document.createElement('div');
-      el.className = 'mk eat-mk';
+      el.className = 'mk eat-mk' + (e.kind === 'photo' ? ' photo' : '');
       el.textContent = EAT_KIND[e.kind] || '🍴';
       el.setAttribute('data-eat', e.id);
       el.setAttribute('role', 'button');
-      el.setAttribute('aria-label', '맛집: ' + e.name);
+      el.setAttribute('aria-label', (e.kind === 'photo' ? '포토 스팟: ' : '맛집: ') + e.name);
       el.addEventListener('click', function (ev) { ev.stopPropagation(); showEat(e.id); });
       eatMarkers.push(new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([p.lng, p.lat]).addTo(map));
     });
@@ -1610,6 +1626,13 @@
     if (e.target.closest && e.target.closest('[data-open-booking]')) { openModal('예약 체크리스트', bookingListHtml()); return; }
     var eb = e.target.closest && e.target.closest('[data-eat]');
     if (eb) { showEat(eb.getAttribute('data-eat')); return; }
+    var tb = e.target.closest && e.target.closest('[data-spot-tab]');
+    if (tb) {
+      spotTab = tb.getAttribute('data-spot-tab');
+      if (eatsOn) setEatPins(true);
+      $('modal-body').innerHTML = eatsHtml(); $('modal-body').scrollTop = 0;
+      return;
+    }
     if (e.target.closest && e.target.closest('[data-eat-toggle]')) {
       setEatPins(!eatsOn);
       var top = $('modal-body').scrollTop; $('modal-body').innerHTML = eatsHtml(); $('modal-body').scrollTop = top;
@@ -1959,7 +1982,7 @@
 
   $('btn-booking').addEventListener('click', function () { openModal('예약 체크리스트', bookingListHtml()); });
   $('btn-cost').addEventListener('click', function () { openModal('비용 요약', costHtml()); });
-  $('btn-eats').addEventListener('click', function () { openModal('🍴 맛집·카페', eatsHtml()); });
+  $('btn-eats').addEventListener('click', function () { openModal('🍴 맛집 · 📸 포토', eatsHtml()); });
   $('btn-mode').addEventListener('click', toggleMode);
   $('gm-close').addEventListener('click', closeGm);
   $('btn-locate').addEventListener('click', function () {
