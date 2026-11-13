@@ -241,7 +241,7 @@ window.TRIP_DATA = {
     },
     dancingwater: {
       name: '하우스 오브 댄싱 워터 (시티 오브 드림즈 수상 공연)', level: '권장', linkVerified: true,
-      kids: '💳 두 아이 모두 유료 · 만 24개월 미만만 무료 → 25·35개월 모두 좌석 표 필요',
+      kids: '💳 두 아이 모두 유료 · 만 24개월 미만만 무료 (공식 확인) → 가족 모두 표 구매',
       icon: '🎭', short: '댄싱 워터 공연', key: '30일 16:30 · 1인 698~ · 아이도 표 필요',
       aff: 'https://3ha.in/r/895307', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water',
