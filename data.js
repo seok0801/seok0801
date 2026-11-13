@@ -138,6 +138,11 @@ window.TRIP_DATA = {
       note: '마카오 명물 돼지갈비빵', hours: '매일 08:00~18:00 (소개 페이지 기준)', open: '08:00', close: '18:00',
       url: 'https://www.taipavillagemacau.com/directory/cafe-dai-lei-loi-kei/', urlLabel: '소개 페이지'
     },
+    seikee: { mapQuery: 'Sei Kee Cafe Taipa Largo dos Bombeiros Macau', zh: '世記咖啡', zhArea: "氹仔消防局前地 · Sei Kee Cafe",
+      name: '세이키 카페 (타이파 빌리지)', type: 'snack', lng: 113.55666, lat: 22.15421, verified: true,
+      note: '항아리 밀크티·커피와 돼지갈비빵으로 유명한 옛날식 카페 (소방서 앞 광장)', hours: '11:00~19:00 · 화요일 휴무라는 안내도 있음 (사이트마다 다름)', open: '11:00', close: '19:00',
+      url: 'https://www.taipavillagemacau.com/directory/sei-kee-cafe/', urlLabel: '소개 페이지'
+    },
     londoner: { mapQuery: 'Hampton Court Londoner Grand Macao', zh: '澳門倫敦人名匯', zhArea: "路氹 · Londoner Grand",
       name: '햄튼 코트 뷔페 (런더너 그랜드 2층)', type: 'food', lng: 113.56540, lat: 22.14470, verified: true,
       look: { wall: '#e6dcc3', glass: '#55606b', roof: '#b9b3a3', radius: 110 },  // 크림색 석조풍
@@ -592,9 +597,10 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-28', time: '13:00', end: '14:30', kind: 'snack', title: '타이파 빌리지 유모차 낮잠 산책 · 쿤하 거리 간식 (돼지갈비빵, 세라두라, 아몬드 쿠키)',
-          places: ['taipa', 'taileiloikei'], napOk: true,
+          date: '2026-12-28', time: '13:00', end: '14:30', kind: 'snack', title: '타이파 빌리지 유모차 낮잠 산책 · 쿤하 거리 간식 · 세이키 카페 밀크티',
+          places: ['taipa', 'taileiloikei', 'seikee'], napOk: true,
           tips: [
+            '세이키 카페는 쿤하 거리 끝 소방서 앞 광장에 있다. 항아리 밀크티·커피가 유명하고, 아이가 자는 동안 어른이 쉬어 가기 좋다.',
             '아이가 유모차에서 자는 동안 어른은 골목 구경과 간식. 깨면 근처 광장(타이파 주택박물관 쪽 산책로)에서 뛰어놀게 한다.',
             '골목이 좁고 사람이 많아 접이식 유모차가 편하다.',
             '돼지갈비빵은 아이에게 줄 때 고기를 잘게 잘라 준다.'
