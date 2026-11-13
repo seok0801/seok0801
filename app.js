@@ -164,6 +164,36 @@
   }
   function closeGm() { $('gm').hidden = true; $('gm-frame').src = 'about:blank'; }
   /* 구글 지도 버튼은 지도 위 창(openGm)을 쓰지 않고 바로 구글 지도 앱(없으면 새 탭)으로 연다 — 창이 화면을 덮어 불편하다는 의견 */
+  /* 아이폰: 구글 지도 웹 주소는 (특히 카카오톡 등 앱 안 브라우저에서) 앱스토어로 넘어가고, 거기서 '열기'를 누르면
+   * 검색어가 사라진 채 지도만 열린다. 그래서 아이폰에서는 구글 지도 앱 전용 주소(comgooglemaps://)로 검색어·목적지를 그대로 넘긴다.
+   * 앱이 열리지 않으면(설치 안 됨) 1.5초 뒤 원래 웹 주소로 연다 */
+  var IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  function gmAppUrl(href) {
+    var u; try { u = new URL(href); } catch (e) { return ''; }
+    if (!/(^|\.)google\.[a-z.]+$/.test(u.hostname) || u.pathname.indexOf('/maps') !== 0) return '';
+    var q = u.searchParams;
+    if (u.pathname.indexOf('/maps/dir') === 0 && q.get('destination')) {
+      return 'comgooglemaps://?daddr=' + encodeURIComponent(q.get('destination')) + '&directionsmode=' + encodeURIComponent(q.get('travelmode') || 'driving');
+    }
+    if (q.get('query')) return 'comgooglemaps://?q=' + encodeURIComponent(q.get('query'));
+    return '';
+  }
+  document.addEventListener('click', function (e) {
+    if (!IS_IOS) return;
+    var a = e.target.closest && e.target.closest('a[href*="google."]');
+    if (!a) return;
+    var app = gmAppUrl(a.href);
+    if (!app) return;
+    e.preventDefault();
+    var web = a.href, left = false;
+    var onHide = function () { if (document.hidden) left = true; };
+    document.addEventListener('visibilitychange', onHide);
+    window.location.href = app;
+    setTimeout(function () {
+      document.removeEventListener('visibilitychange', onHide);
+      if (!left && !document.hidden) window.open(web, '_blank', 'noopener');   // 앱이 없으면 웹으로
+    }, 1500);
+  });
 
   function reducedMotion() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   /* 두 지점 [경도, 위도] 사이의 방향(북쪽 0도, 시계 방향)과 거리(m) */
