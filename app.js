@@ -93,6 +93,49 @@
       renderCards();   // 금액 옆 원화만 다시 그린다 (지도는 그대로)
     }).catch(function () { /* 인터넷이 없거나 막히면 data.js 의 환율 */ });
   }
+  /* ---------- 🌤️ 날씨: 여행 16일 전부터 무료 예보(Open-Meteo)를 받는다. 3시간 동안 이 휴대폰에 기억 ---------- */
+  var WX = {}, WX_KEY = 'macau-wx';
+  function wxIcon(c) {
+    return c === 0 ? '☀️' : c <= 2 ? '🌤️' : c === 3 ? '☁️' : c <= 48 ? '🌫️' : c <= 67 ? '🌧️' : c <= 77 ? '🌨️' : c <= 82 ? '🌦️' : '⛈️';
+  }
+  function loadWeather() {
+    var W = D.weather; if (!W || !window.fetch) return;
+    try {
+      var c = JSON.parse(localStorage.getItem(WX_KEY) || 'null');
+      if (c && Date.now() - c.at < 3 * 3600 * 1000) { WX = c.days || {}; return; }
+    } catch (e) { /* 새로 받는다 */ }
+    var dates = D.days.map(function (d) { return d.date; });
+    var today = nowMacau().slice(0, 10);
+    var last = new Date(Date.parse(today + 'T00:00:00Z') + 15 * 86400000).toISOString().slice(0, 10);
+    var want = dates.filter(function (d) { return d >= today && d <= last; });
+    if (!want.length) return;            // 아직 예보가 나오지 않은 때 (평년값만 보인다)
+    var url = W.url + '?latitude=' + W.lat + '&longitude=' + W.lng +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Asia%2FMacau' +
+      '&start_date=' + want[0] + '&end_date=' + want[want.length - 1];
+    fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+      var d = j && j.daily; if (!d || !d.time) return;
+      WX = {};
+      d.time.forEach(function (t, i) {
+        WX[t] = { code: d.weather_code[i], max: Math.round(d.temperature_2m_max[i]), min: Math.round(d.temperature_2m_min[i]), pop: d.precipitation_probability_max[i] };
+      });
+      try { localStorage.setItem(WX_KEY, JSON.stringify({ at: Date.now(), days: WX })); } catch (e) { /* 무시 */ }
+      renderCards();
+    }).catch(function () { /* 인터넷이 없거나 막히면 평년값 */ });
+  }
+  /* 날짜 제목 아래: 날씨 한 줄 + ☔ 비 오면 대안 (비 예보가 있으면 펼쳐 둔다) */
+  function weatherHtml(date) {
+    var W = D.weather || {}, w = WX[date], rain = (D.rainPlans || {})[date];
+    var wet = w && w.pop != null && w.pop >= (W.rainPop || 50);
+    var line = w ? wxIcon(w.code) + ' ' + w.min + '~' + w.max + '°' + (w.pop != null ? ' · ☔ ' + w.pop + '%' : '') + ' <span class="fine">예보</span>'
+      : W.normal ? '🌡️ ' + esc(W.normal) : '';
+    var html = line ? '<p class="wx' + (wet ? ' wet' : '') + '">' + line + '</p>' : '';
+    if (rain && rain.length) {
+      html += '<details class="prep rain' + (wet ? ' wet' : '') + '"' + (wet ? ' open' : '') + '><summary>☔ 비 오면 이렇게' + (wet ? ' (비 예보!)' : '') + '</summary><ul>' +
+        rain.map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul></details>';
+    }
+    return html;
+  }
+
   function isNarrow() { return window.innerWidth < 900; }      // 휴대폰처럼 좁은 화면인지
   function link(url, text, cls) {
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
@@ -376,7 +419,7 @@
       html += '<div class="day-head" style="--day-color:' + d.color + '"><h2>' + esc(d.label) +
         (d.summary ? ' <small>' + esc(d.summary) + '</small>' : '') + '</h2>' +
         (c.max > 0 ? '<button type="button" class="day-cost" aria-label="이날 1가족 예상 비용 ' + mop(c) + ' ' + won(c) + ' · 비용 요약 열기">💰 ' + mop(c) + (KRW.rate ? ' · ' + won(c) : '') + '</button>' : '') +
-        '</div>';
+        '</div>' + weatherHtml(date);
       var prep = (plan().prep || {})[date];
       if (prep && prep.length) {
         html += '<details class="prep"><summary>🎒 오늘의 준비물 ' + prep.length + '가지</summary><ul>' +
@@ -1568,6 +1611,8 @@
   }
   function closeModal() { $('modal').hidden = true; }
   $('modal-body').addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-open-packing]')) { openPacking(); return; }
+    if (e.target.closest && e.target.closest('[data-open-booking]')) { openModal('예약 체크리스트', bookingListHtml()); return; }
     var eb = e.target.closest && e.target.closest('[data-eat]');
     if (eb) { showEat(eb.getAttribute('data-eat')); return; }
     if (e.target.closest && e.target.closest('[data-eat-toggle]')) {
@@ -1584,6 +1629,18 @@
   });
   /* 예약 체크: 누르면 이 휴대폰에 기억하고 목록을 다시 그린다 */
   $('modal-body').addEventListener('change', function (e) {
+    var pk = e.target.getAttribute && e.target.getAttribute('data-pack');
+    if (pk) {
+      var ps = packSet();
+      if (e.target.checked) ps[pk] = 1; else delete ps[pk];
+      try { localStorage.setItem(PACK_KEY, JSON.stringify(ps)); } catch (err) { /* 무시 */ }
+      var st = $('modal-body').scrollTop;
+      $('modal-body').innerHTML = packingHtml();
+      $('modal-body').scrollTop = st;
+      var c = packCount();
+      if (e.target.checked && c.done === c.n) celebrate();
+      return;
+    }
     var k = e.target.getAttribute && e.target.getAttribute('data-done');
     if (!k) return;
     var d = doneSet();
@@ -1594,6 +1651,30 @@
     $('modal-body').scrollTop = top;
     if (e.target.checked && !$('modal-body').querySelector('.bk-sum strong')) celebrate();   // 미리 할 예약이 모두 끝났다
   });
+
+  /* ---------- 🧳 짐 싸기 체크리스트 (예약 체크리스트 창 맨 위 버튼으로 연다). 체크는 이 휴대폰에 기억 ---------- */
+  var PACK_KEY = 'macau-packed';
+  function packSet() { try { return JSON.parse(localStorage.getItem(PACK_KEY) || '{}'); } catch (e) { return {}; } }
+  function packCount() {
+    var s = packSet(), n = 0, done = 0;
+    (D.packing || []).forEach(function (g, gi) { g.items.forEach(function (t, i) { n++; if (s[gi + '-' + i]) done++; }); });
+    return { n: n, done: done };
+  }
+  function packingHtml() {
+    var s = packSet(), c = packCount();
+    var html = '<button type="button" class="btn small" data-open-booking>‹ 예약 체크리스트</button>' +
+      '<p class="bk-sum">' + (c.done < c.n ? '🧳 <strong>' + (c.n - c.done) + '개</strong> 남음 (' + c.done + '/' + c.n + ')' : '✅ 짐 싸기 끝!') +
+      '<br><span class="fine">체크는 이 휴대폰에만 기억됩니다. 가족마다 각자 체크하세요.</span></p>';
+    (D.packing || []).forEach(function (g, gi) {
+      html += '<h3 class="eat-area">' + esc(g.group) + '</h3>';
+      g.items.forEach(function (t, i) {
+        var k = gi + '-' + i;
+        html += '<label class="pk' + (s[k] ? ' done' : '') + '"><input type="checkbox" data-pack="' + k + '"' + (s[k] ? ' checked' : '') + '> <span>' + esc(t) + '</span></label>';
+      });
+    });
+    return html;
+  }
+  function openPacking() { openModal('🧳 짐 싸기 체크리스트', packingHtml()); }
 
   /* 예약 체크리스트: 한 줄에 아이콘·이름·날짜·핵심 금액·예약 버튼. 체크한 항목은 이 휴대폰에 기억한다 */
   var DONE_KEY = 'macau-booked';
@@ -1612,7 +1693,9 @@
     var keyOf = function (k) { return first[k] || D.bookings[k].sort || '9'; };
     var keys = Object.keys(D.bookings).sort(function (a, b) { return keyOf(a) < keyOf(b) ? -1 : keyOf(a) > keyOf(b) ? 1 : 0; });
     var done = doneSet(), left = keys.filter(function (k) { return !done[k] && D.bookings[k].level !== '선택' && D.bookings[k].level !== '현장 구매'; }).length;
-    var html = '<p class="bk-sum">' + (left ? '⏳ 미리 할 예약 <strong>' + left + '개</strong> 남음' : '✅ 미리 할 예약 끝!') +
+    var pc = packCount();
+    var html = (pc.n ? '<button type="button" class="btn small pk-open" data-open-packing>🧳 짐 싸기 체크리스트 ' + pc.done + '/' + pc.n + ' ›</button>' : '') +
+      '<p class="bk-sum">' + (left ? '⏳ 미리 할 예약 <strong>' + left + '개</strong> 남음' : '✅ 미리 할 예약 끝!') +
       '<br><span class="fine">⭐ 권장 · ➕ 선택 · 🏷️ 현장 구매 · 🔒 예약번호는 여기 적지 마세요</span>' +
       '<br><span class="fine">👶 아이 요금은 25개월·35개월 두 아이 기준 (✅ 무료 · 💳 유료 · ⚠️ 확인 필요)</span>' +
       '<br><span class="fine">🔗 판매처(클룩·마이리얼트립·더라운지)가 표시된 버튼은 제휴 링크입니다. 이 링크로 예약하면 사이트를 만든 사람이 수수료를 받을 수 있습니다.</span></p>';
@@ -1902,6 +1985,7 @@
     $('title').insertBefore(b, $('title').firstChild);
   })();
   loadRate();
+  loadWeather();
   applyMode(false);
   $('modal-close').addEventListener('click', closeModal);
   $('modal').addEventListener('click', function (e) { if (e.target === $('modal')) closeModal(); });

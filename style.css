@@ -794,3 +794,12 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 @media (max-width: 374px) {
   #bar { gap: 3px; padding-left: 6px; padding-right: 6px; }
 }
+
+/* ---------- 🌤️ 날씨 · ☔ 비 오면 · 🧳 짐 싸기 ---------- */
+.wx { margin: 2px 2px 8px; font-size: 14px; color: var(--muted); }
+.wx.wet { color: #1d5fa8; font-weight: 600; }
+.prep.rain.wet { border-color: #8db6e6; background: #eef5fd; }
+.pk-open { width: 100%; margin: 0 0 8px; }
+.pk { display: flex; align-items: flex-start; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 15px; cursor: pointer; }
+.pk input { width: 22px; height: 22px; margin: 0; flex: 0 0 auto; accent-color: #0f8a5f; }
+.pk.done span { text-decoration: line-through; opacity: .55; }
