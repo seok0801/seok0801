@@ -1843,7 +1843,11 @@
   function askHeading() {   // 휴대폰이 향한 방향 (아이폰은 처음 한 번 허용을 묻는다)
     var DO = window.DeviceOrientationEvent;
     if (!DO) return;
-    var add = function () { window.addEventListener('deviceorientation', onOrient, true); };
+    // 안드로이드 크롬은 나침반 기준 방향을 'deviceorientationabsolute' 로만 준다 (보통 'deviceorientation' 은 기준이 없다)
+    var add = function () {
+      window.addEventListener('deviceorientation', onOrient, true);
+      if ('ondeviceorientationabsolute' in window) window.addEventListener('deviceorientationabsolute', onOrient, true);
+    };
     if (typeof DO.requestPermission === 'function') DO.requestPermission().then(function (r) { if (r === 'granted') add(); }).catch(function () { /* 방향 없이 점만 */ });
     else add();
   }
@@ -1876,6 +1880,7 @@
   function stopLocate() {
     if (me.watch != null) navigator.geolocation.clearWatch(me.watch);
     window.removeEventListener('deviceorientation', onOrient, true);
+    window.removeEventListener('deviceorientationabsolute', onOrient, true);
     if (me.marker) me.marker.remove();
     var src = mapReady && map.getSource('me-acc');
     if (src) src.setData({ type: 'FeatureCollection', features: [] });

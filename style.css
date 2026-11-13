@@ -811,3 +811,8 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 
 /* 🍼 아기 편의 (수유실·교환대·유모차) */
 .baby { margin: 6px 0 10px; padding: 8px 10px; border-radius: 10px; background: #fdf1f6; color: #6b2346; font-size: 14px; line-height: 1.45; }
+@media (max-width: 340px) {   /* 아주 좁은 안드로이드 폰 */
+  #bar { gap: 2px; padding-left: 4px; padding-right: 4px; }
+  #bar .btn { min-width: 32px; padding: 7px 5px; font-size: 14px; }
+  #bar .btn.icon { padding: 7px 3px; }
+}
