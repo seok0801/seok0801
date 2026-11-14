@@ -831,14 +831,16 @@
         // 주변 건물은 옅은 회색 벽에 흐린 창문 무늬만 입혀, 일정에 있는 건물이 눈에 띄게 한다
         // 주변 건물은 옅은 색으로 물러나게: 낮은 건물은 민무늬, 높은 건물은 옅은 가로 띠창 (일정 건물의 격자 창과 구별된다)
         // 실제 마카오처럼: 낮은 건물은 따뜻한 미색 벽에 작은 창, 중간 높이는 연한 회색 벽에 창, 고층은 푸른 유리 띠
+        // 윈 팰리스(탑·낮은 건물)는 실제처럼 금빛 외벽으로 한 덩어리로 칠한다 (건물 번호로 지정)
         map.setPaintProperty(bLayer, 'fill-extrusion-pattern',
-          ['step', H, windowPattern('#ece4d6', '#d6cfc2', 'small'), 15, windowPattern('#e6e3dc', '#c7ccd0', 'bands'), 45, windowPattern('#dfe4e7', '#a9b9c4', 'glass')]);
+          ['match', ['id'], WYNN_IDS, windowPattern('#d9b872', '#9b6a3c'),
+            ['step', H, windowPattern('#ece4d6', '#d6cfc2', 'small'), 15, windowPattern('#e6e3dc', '#c7ccd0', 'bands'), 45, windowPattern('#dfe4e7', '#a9b9c4', 'glass')]]);
         map.setPaintProperty(bLayer, 'fill-extrusion-vertical-gradient', true);
         // 주변 건물 지붕도 회색 계열로만
         map.addLayer({
           id: 'tour-roofs', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
           paint: {
-            'fill-extrusion-color': ['step', H, '#ddd5c8', 15, '#d6d6d2', 45, '#c9d1d6'],
+            'fill-extrusion-color': ['match', ['id'], WYNN_IDS, '#c9a25e', ['step', H, '#ddd5c8', 15, '#d6d6d2', 45, '#c9d1d6']],
             'fill-extrusion-base': H,
             'fill-extrusion-height': ['+', H, 1.2],
             'fill-extrusion-opacity': 1
@@ -1036,7 +1038,7 @@
   var tallKeys = {}, tallFeatures = [];   // 지도 조각이 나중에 도착해도 빠진 건물을 이어서 칠한다
   function raiseFlatBuildings() {
     if (!mapReady || map.getZoom() < 14.5) return;
-    var changed = false, all = null;
+    var changed = false, all = null, idsChanged = false;
     Object.keys(D.places).forEach(function (id) {
       var p = D.places[id];
       if (!onMap(id) || p.model) return;      // 직접 만든 모형(에펠탑)은 건물 색칠에서 뺀다
@@ -1048,8 +1050,8 @@
         all = [];
         map.querySourceFeatures(map.getLayer('tour-roofs').source, { sourceLayer: 'building' }).forEach(function (f) {
           var polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
-          if (HIDE_BUILDING_IDS.indexOf(f.id) >= 0) return;   // 모형으로 바꾼 건물(그랜드 리스보아 등)은 색칠하지 않는다
-          polys.forEach(function (rings) { all.push({ rings: rings, props: f.properties }); });
+          if (HIDE_BUILDING_IDS.indexOf(f.id) >= 0 || WYNN_IDS.indexOf(f.id) >= 0) return;   // 모형·윈 팰리스는 따로 칠한다   // 모형으로 바꾼 건물(그랜드 리스보아 등)은 색칠하지 않는다
+          polys.forEach(function (rings) { all.push({ rings: rings, props: f.properties, id: f.id }); });
         });
       }
       var look = p.look || {}, here = [p.lng, p.lat];
@@ -1059,9 +1061,13 @@
         var own = insidePolygon(here, geom);
         if (!own && !nearPolygon(here, geom, look.radius || NEAR_M)) return;
         var first = o.rings[0][0];
-        var key = first[0].toFixed(6) + ',' + first[1].toFixed(6);
-        if (tallKeys[key]) return;                   // 이미 다른 장소의 색으로 칠한 건물은 건드리지 않는다
+        var key = first[0].toFixed(6) + ',' + first[1].toFixed(6) + ',' + (o.props.render_min_height || 0) + ',' + (o.props.render_height || 0);   // 같은 바닥에 층별로 쌓인 덩어리(윈 팰리스 탑 등)도 따로 칠한다
+        if (tallKeys[key]) {                         // 이미 칠한 건물 (지도 조각마다 같은 건물이 다른 번호로 올 수 있어 그 번호도 숨긴다)
+          if (o.id != null && !tallIds[o.id]) { tallIds[o.id] = true; idsChanged = true; }
+          return;
+        }
         tallKeys[key] = true; changed = true;
+        if (o.id != null) tallIds[o.id] = true;
         var wall0 = look.wall || ACCENT.wall, glass0 = mix(look.glass || ACCENT.glass, wall0, .35);
         pat = pat || windowPattern(wall0, glass0);
         var h = Math.max(o.props.render_height || 5, own && p.height ? p.height : 0);
@@ -1071,6 +1077,7 @@
       });
     });
     if (changed) refreshTallColors();
+    if (changed || idsChanged) applyBuildingHide();
   }
   /* 건물 바깥선을 중심에서 바깥쪽으로 0.8m 넓힌다 */
   function growRing(ring) {
@@ -1247,6 +1254,7 @@
     return feats;
   }
   /* 직접 만든 모형과 겹치는 바탕 지도(OpenStreetMap) 건물 번호: 에펠탑 층별 덩어리, 마카오 타워, 그랜드 리스보아 */
+  var WYNN_IDS = [2955070430, 4419172492, 2416023910, 4983462152, 13185718850];   // 윈 팰리스 건물 번호 (금빛으로 칠함)
   var HIDE_BUILDING_IDS = [14699807400, 14699807440, 14699807560, 14699807480, 14699807500, 14699807592, 14699807552, 4424626772,
     8489778690, 8481990182, 8481990192, 649339742, 8481990200, 2310745612, 8481990232, 8481990222,
     1921824052, 27801710,
@@ -1375,17 +1383,26 @@
     } catch (e) { /* 모형 없이 */ }
   }
 
+  /* 바탕 지도 건물 중 숨길 것: 모형으로 바꾼 건물 + 일정 색으로 다시 그린 건물(원래 건물이 위로 비쳐 색이 따로 놀지 않게) */
+  var baseFilters = null, tallIds = {};
+  function applyBuildingHide() {
+    if (!mapReady) return;
+    var layers = (map.getStyle().layers || []).filter(function (l) { return l['source-layer'] === 'building' && (l.type === 'fill-extrusion' || l.type === 'fill') && l.source !== 'tour-tall'; });
+    if (!baseFilters) { baseFilters = {}; layers.forEach(function (l) { baseFilters[l.id] = map.getFilter(l.id) || null; }); }
+    var ids = HIDE_BUILDING_IDS;
+    var not = ['!', ['in', ['id'], ['literal', ids]]];
+    layers.forEach(function (l) {
+      if (l.id === 'tour-flat') return;          // 2D 평면 건물은 그대로
+      var old = baseFilters[l.id];
+      map.setFilter(l.id, old ? ['all', old, not] : not);
+    });
+  }
+
   function addEiffelLayer() {
     try {
       var f = eiffelFeatures(); if (!f.length) return;
       // 바탕 지도에 있던 에펠탑 자리의 덩어리 건물은 숨긴다 (모형만 보이게)
-      (map.getStyle().layers || []).forEach(function (l) {
-        if (l['source-layer'] !== 'building' || (l.type !== 'fill-extrusion' && l.type !== 'fill')) return;
-        var old = map.getFilter(l.id);
-        // 바탕 지도(OpenStreetMap)의 에펠탑 층별 덩어리들 (건물 번호). 모형과 겹치지 않게 숨긴다
-        var not = ['!', ['in', ['id'], ['literal', HIDE_BUILDING_IDS]]];
-        map.setFilter(l.id, old ? ['all', old, not] : not);
-      });
+      applyBuildingHide();
       map.addSource('eiffel3d', { type: 'geojson', data: { type: 'FeatureCollection', features: f } });
       map.addLayer({ id: 'eiffel3d', type: 'fill-extrusion', source: 'eiffel3d', minzoom: 12,
         paint: {
