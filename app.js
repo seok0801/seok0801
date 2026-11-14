@@ -514,13 +514,8 @@
   /* 지금 보는 장소 표시: 마커를 강조하고 그 자리에 3D 빛기둥을 세운다 */
   function setFocus(id, color) {
     Object.keys(markers).forEach(function (k) { markers[k].getElement().classList.toggle('on', k === id); });
-    var src = map.getSource('beacon');
-    if (!src) return;
-    var p = place(id);
-    src.setData({ type: 'FeatureCollection', features: [{
-      type: 'Feature', properties: { color: color || '#0b6e99' },
-      geometry: { type: 'Polygon', coordinates: [circleRing(p.lng, p.lat, BEACON_RADIUS_M)] }
-    }] });
+    // 예전의 3D 빛기둥은 주변 건물을 뚫고 보여서 없앴다. 대신 마커 위에 통통 튀는 ▼ 화살표(.mk.on::before, 화면 위 표시)
+    Object.keys(markers).forEach(function (k) { markers[k].getElement().style.setProperty('--focus-color', color || '#0b6e99'); });
   }
   function clearFocus() {
     Object.keys(markers).forEach(function (k) { markers[k].getElement().classList.remove('on'); });

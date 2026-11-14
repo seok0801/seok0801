@@ -843,3 +843,17 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
   animation: wxrain .6s linear infinite;
 }
 @keyframes wxrain { to { background-position: -40px 200px, -50px 260px; } }
+
+/* 지금 보는 장소: 마커 위에 아래를 가리키는 화살표 (건물에 가리지 않는 화면 위 표시) */
+.mk.on::before {
+  content: "";
+  position: absolute; left: 50%; bottom: calc(100% + 8px);
+  width: 0; height: 0; margin-left: -11px;
+  border-left: 11px solid transparent; border-right: 11px solid transparent;
+  border-top: 15px solid var(--focus-color, var(--mk-color, #0b6e99));
+  filter: drop-shadow(0 0 0 #fff) drop-shadow(0 2px 3px rgba(0, 0, 0, .45));
+  pointer-events: none;
+  animation: mk-arrow 1s ease-in-out infinite;
+}
+@keyframes mk-arrow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+@media (prefers-reduced-motion: reduce) { .mk.on::before { animation: none; } }
