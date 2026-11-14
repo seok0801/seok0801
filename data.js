@@ -89,7 +89,7 @@ window.TRIP_DATA = {
     // 호텔
     glp: { mapQuery: 'Grand Lisboa Palace Macau', zh: '上葡京綜合度假村', zhArea: "路氹 · Grand Lisboa Palace",
       baby: '수유실 위치 미확인 (컨시어지 문의). 2층에 아이 놀이 공간이 있음 (호텔 공식)',
-      name: '그랜드 리스보아 팰리스', type: 'hotel', lng: 113.57420, lat: 22.14409, verified: true,
+      name: '그랜드 리스보아 팰리스', type: 'hotel', lng: 113.57420, lat: 22.14409, verified: true, model: true,   // 탑 모형(app.js glptower)으로 그리므로 일정 색칠은 하지 않는다
       look: { wall: '#efe9da', glass: '#6b7f8c', roof: '#6f9085', radius: 60 },   // 크림색 벽, 청록 지붕
       note: '12/27~29 숙박', url: 'https://www.grandlisboapalace.com/kr', urlLabel: '호텔 공식'
     },
