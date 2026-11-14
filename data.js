@@ -34,7 +34,9 @@ window.TRIP_DATA = {
     center: [113.5640, 22.1500],   // 처음 보이는 위치 [경도, 위도]
     zoom: 12.4,
     // 지도를 움직일 수 있는 범위 [[서쪽, 남쪽], [동쪽, 북쪽]]. 화면이 이 밖(빈 바탕)으로 밀려나지 않습니다
-    bounds: [[113.45, 22.04], [113.69, 22.28]],   // 마카오 둘레에 여유를 두어 손가락으로 더 축소할 수 있게
+    bounds: [[113.45, 22.04], [113.69, 22.28]],
+    localTiles: './tiles/',                      // 손질한 마카오 지도 조각 (tools/build_tiles.py 로 만듦)
+    localBounds: [113.45, 22.04, 113.69, 22.28],   // 마카오 둘레에 여유를 두어 손가락으로 더 축소할 수 있게
     minZoom: 10.5,
     // 지도에 그릴 영역(마카오). 이 선 바깥(헝친·주하이)은 바다색으로 덮어, 마카오만 바다 위의 섬처럼 보입니다.
     // [경도, 위도] 를 차례로 이은 선. 서쪽은 마카오와 헝친·주하이 사이 물길 한가운데를 지납니다.
@@ -528,9 +530,6 @@ window.TRIP_DATA = {
   decor: [
     { id: 'stdominic', name: '성 도밍고 성당', lng: 113.540364, lat: 22.194841, look: { wall: '#ecc95e', glass: '#fbf3d2', roof: '#c9b48a', radius: 12, maxH: 22 } },
     { id: 'lealsenado', name: '레알 세나도', lng: 113.539583, lat: 22.193267, look: { wall: '#f3f1ea', glass: '#cfcac0', roof: '#a9a49a', radius: 12, maxH: 20 } },
-    { id: 'taipahouses', name: '타이파 주택박물관', lng: 113.559733, lat: 22.153940, look: { wall: '#9fd6bf', glass: '#ffffff', roof: '#c7c2b5', radius: 45, maxH: 10 } },
-    { id: 'carmo', name: '카르멜 성모 성당', lng: 113.558777, lat: 22.153502, look: { wall: '#f1dd8a', glass: '#ffffff', roof: '#c9b48a', radius: 12, maxH: 18 } },
-    { id: 'coloanechapel', name: '콜로안 성 프란시스코 사비에르 성당', lng: 113.551461, lat: 22.116917, look: { wall: '#f0d36a', glass: '#ffffff', roof: '#b9a067', radius: 10, maxH: 12 } },
     { id: 'morpheus', name: '모피어스 호텔', lng: 113.566588, lat: 22.149834, look: { wall: '#f2f3f1', glass: '#8fa3b3', roof: '#e1e4e3', radius: 20 } }
   ],
 

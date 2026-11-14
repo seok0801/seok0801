@@ -1283,9 +1283,7 @@
     return feats;
   }
   /* 직접 만든 모형과 겹치는 바탕 지도(OpenStreetMap) 건물 번호: 에펠탑 층별 덩어리, 마카오 타워, 그랜드 리스보아 */
-  var HIDE_BUILDING_IDS = [14699807400, 14699807440, 14699807560, 14699807480, 14699807500, 14699807592, 14699807552, 4424626772,
-    8489778690, 8481990182, 8481990192, 649339742, 8481990200, 2310745612, 8481990232, 8481990222,
-    1921824052];   // … 그랜드 리스보아
+  var HIDE_BUILDING_IDS = [];   // 손질한 지도 조각(tiles/)에서 모형 자리 건물을 미리 지우므로 비워 둔다 (tools/build_tiles.py 의 ZONES)
   // 주의: 지도 자료는 같은 높이의 건물 여러 채를 한 번호로 묶기도 한다 (예: 반도 건물 148채가 한 번호).
   // 그런 번호를 숨기면 먼 건물까지 사라지므로, 여기에는 한 곳에만 있는 번호만 넣는다
 
@@ -1313,7 +1311,7 @@
       for (var k = 0; k < 8; k++) { var a = k * 0.785; m.box(Math.cos(a) * 26, Math.sin(a) * 18, 6, 6, 205, 228 - (k % 2) * 8, '#f6dc86'); }   // 꽃잎 끝
       m.cyl(0, 0, 4, 205, 238, '#fff1b8');
     } },
-    { id: 'stpaul', lng: 113.540861, lat: 22.197440, build: function (m) {   // 지도 자료의 얇은 정면 벽(높이 27m) 바로 앞에 세운다
+    { id: 'stpaul', lng: 113.5408605, lat: 22.197458, build: function (m) {   // 지도 자료의 정면 벽 자리 (그 덩어리는 손질한 지도 조각에서 지웠다)
       var S = '#d8c39b', D = '#c9b083';
       // 1층: 문 3개 (기둥 사이를 비워 문처럼)
       [[-11, 3], [-5.5, 2], [0, 1.2], [5.5, 2], [11, 3]].forEach(function (c) { if (c[0] === 0) return; m.box(c[0], 0, c[1] * 1.6, 2.2, 0, 8, S); });
@@ -1343,6 +1341,35 @@
       m.box(0, 0, 9, 9, 82, 86, G);
       for (var y = 86, s2 = 8; s2 > 0.6; y += 2.4, s2 -= 1.1) m.box(0, 0, s2, s2, y, y + 2.5, G);   // 뾰족 지붕
       m.box(0, 0, 0.5, 0.5, y, y + 5, '#c9a64a');
+    } },
+    { id: 'taipahouses', lng: 113.559733, lat: 22.153940, rot: -20, build: function (m) {   // 타이파 주택박물관: 바닷가 산책로의 민트색 집 다섯 채
+      for (var k = -2; k <= 2; k++) {
+        var x = k * 16;
+        m.box(x, 0, 11, 13, 0, 8.5, '#a7dcc4');                    // 민트색 벽
+        m.box(x, 0, 11.6, 13.6, 8.5, 9.3, '#ffffff');               // 흰 처마
+        m.box(x, -6.9, 9.4, 0.5, 0, 3.4, '#ffffff');                // 1층 흰 베란다 기둥줄
+        m.box(x, -6.9, 9.4, 0.5, 4.6, 5.2, '#ffffff');              // 2층 난간
+        [-3, 0, 3].forEach(function (wx) { m.box(x + wx, -6.6, 1.4, 0.3, 5.6, 7.6, '#5f8f7c'); });   // 창
+        m.box(x, 0, 10, 12, 9.3, 10.4, '#b9b3a6'); m.box(x, 0, 7, 9, 10.4, 11.3, '#b9b3a6'); m.box(x, 0, 3.5, 6, 11.3, 11.9, '#b9b3a6');   // 지붕
+      }
+      m.box(0, -14, 86, 6, 0, 0.4, '#d9d2c2');                     // 앞 산책로
+    } },
+    { id: 'carmo', lng: 113.558778, lat: 22.153502, rot: 90, build: function (m) {   // 카르멜 성모 성당: 노란 벽·흰 테두리·정면 종탑
+      var Y = '#f2dc86', W = '#ffffff';
+      m.box(0, 5, 11, 22, 0, 10, Y); m.box(0, 5, 11.6, 22.6, 10, 10.8, W);
+      m.box(0, 5, 9, 20, 10.8, 12.2, '#c8b07c'); m.box(0, 5, 5, 18, 12.2, 13.2, '#c8b07c');   // 지붕
+      m.box(0, -8.5, 6.4, 6, 0, 17, Y); m.box(0, -8.5, 7, 6.6, 17, 17.8, W);                   // 종탑
+      m.box(0, -8.5, 4.6, 4.4, 17.8, 21, Y); m.box(0, -8.5, 5.2, 5, 21, 21.6, W);
+      m.box(0, -8.5, 2.6, 2.6, 21.6, 24, '#c8b07c'); m.box(0, -8.5, 0.4, 0.4, 24, 26.5, W); m.box(0, -8.5, 1.6, 0.4, 25.4, 25.8, W);
+      m.box(0, -11.6, 2.4, 0.4, 0, 4, '#6b4b2e');                                              // 문
+      [-3, 3].forEach(function (x) { m.box(x, -11.6, 0.6, 0.3, 0, 17, W); });                   // 흰 기둥선
+    } },
+    { id: 'coloanechapel', lng: 113.551461, lat: 22.116917, rot: 90, build: function (m) {   // 콜로안 성 프란시스코 사비에르 성당
+      var Y = '#f2d46c', W = '#ffffff';
+      m.box(0, 3, 8.5, 17, 0, 8, Y); m.box(0, 3, 9, 17.5, 8, 8.8, W); m.box(0, 3, 6, 15, 8.8, 10, '#b9a067');
+      m.box(0, -6.5, 5, 4, 0, 12.5, Y); m.box(0, -6.5, 5.5, 4.5, 12.5, 13.2, W);
+      m.box(0, -6.5, 3.6, 3, 13.2, 15.6, Y); m.box(0, -6.5, 0.4, 0.4, 15.6, 18, W); m.box(0, -6.5, 1.4, 0.4, 16.8, 17.2, W);
+      m.box(0, -8.6, 2, 0.4, 0, 3.5, '#6b4b2e');
     } },
     { id: 'studiocity', lng: 113.56200, lat: 22.14095, build: function (m) {   // 스튜디오 시티: 쌍둥이 탑 사이에 8자 관람차, 꼭대기를 잇는 다리
       var C = '#efe5cf', G = '#c9a548', B = '#3d4c63';
@@ -1874,7 +1901,18 @@
     fetch(list[i]).then(function (r) {
       if (done) return;
       done = true; clearTimeout(timer);
-      if (r.ok) createMap(list[i]); else tryStyles(i + 1);
+      if (!r.ok) { tryStyles(i + 1); return; }
+      // 마카오 지도 조각은 이 사이트에 함께 올린 손질본(tiles/: 건물 한 채씩 분리·모형 자리 정리)을 쓴다
+      if (!D.map.localTiles) { createMap(list[i]); return; }
+      r.json().then(function (st) {
+        var src = st.sources && st.sources.openmaptiles;
+        if (src) {
+          var base = new URL(D.map.localTiles, location.href).href;
+          st.sources.openmaptiles = { type: 'vector', tiles: [base + '{z}/{x}/{y}.pbf'], minzoom: 10, maxzoom: 14,
+            bounds: D.map.localBounds, attribution: '<a href="https://openmaptiles.org/" target="_blank">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap contributors</a>' };
+        }
+        createMap(st);
+      }).catch(function () { createMap(list[i]); });
     }).catch(function () {
       if (done) return;
       done = true; clearTimeout(timer);
