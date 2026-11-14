@@ -788,7 +788,7 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-29', time: '10:15', kind: 'move', title: '택시로 시티 오브 드림즈 (바로 옆 리조트)',
+          date: '2026-12-29', time: '10:15', kind: 'move', title: '택시로 시티 오브 드림즈 (약 1.6km, 5분)',
           places: ['wmacau', 'cod'], transport: 'taxi', cost: { min: 21, max: 27, type: 'taxi', note: '약 1.6km' }
         },
         {
