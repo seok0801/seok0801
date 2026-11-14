@@ -174,7 +174,7 @@ window.TRIP_DATA = {
       url: 'https://citiesinsider.com/country/china/macao/cafes-and-bakeries/en', urlLabel: '소개 페이지(영문)'
     },
     senado: { mapQuery: 'Senado Square Macau', zh: '議事亭前地', zhArea: "澳門 · Largo do Senado", name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장', look: { wall: '#ecd98f', glass: '#5d6b4f', roof: '#b9b4a8', radius: 110 }, baby: '가까운 공공 수유실: 로우카우 맨션(광장에서 약 150m, 월요일 휴관, 입구 계단 2단)·소아레스 빌딩(광장 옆, 평일만). 공중화장실: 대당가(약 100m, 24시간). 교환대 여부 미확인 (마카오 정부 자료)' },
-    stpaul: { mapQuery: "Ruins of St. Paul's Macau", zh: '大三巴牌坊', zhArea: "澳門 · Ruínas de São Paulo", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 }, baby: '바로 옆 마카오 박물관(몬테 요새)에 간이 수유실 (매표소·보안요원에게 요청). 유적 아래 공중화장실(약 55m, 24시간). 앞 계단이 많아 유모차는 들어서 이동 (정부 자료)' },
+    stpaul: { mapQuery: "Ruins of St. Paul's Macau", zh: '大三巴牌坊', zhArea: "澳門 · Ruínas de São Paulo", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, model: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 }, baby: '바로 옆 마카오 박물관(몬테 요새)에 간이 수유실 (매표소·보안요원에게 요청). 유적 아래 공중화장실(약 55m, 24시간). 앞 계단이 많아 유모차는 들어서 이동 (정부 자료)' },
     koikei: { mapQuery: 'Pastelaria Koi Kei 7 Largo do Senado Macau', zh: '鉅記餅家 議事亭前地', zhArea: "澳門 · Koi Kei Bakery",
       name: '쿠이케이 (세나도 광장 지점)', type: 'snack', lng: 113.53965, lat: 22.19371, verified: true,
       note: '아몬드 쿠키·에그타르트, 선물용으로도 좋음', hours: '영업시간 미확인 (근처 성 바울 지점은 10:00부터로 안내)'

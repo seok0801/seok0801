@@ -1048,6 +1048,7 @@
         all = [];
         map.querySourceFeatures(map.getLayer('tour-roofs').source, { sourceLayer: 'building' }).forEach(function (f) {
           var polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
+          if (HIDE_BUILDING_IDS.indexOf(f.id) >= 0) return;   // 모형으로 바꾼 건물(그랜드 리스보아 등)은 색칠하지 않는다
           polys.forEach(function (rings) { all.push({ rings: rings, props: f.properties }); });
         });
       }
@@ -1245,6 +1246,99 @@
     box(0, 0, 1.4, 1.4, 146, 162, 'spire');   // 첨탑
     return feats;
   }
+  /* 직접 만든 모형과 겹치는 바탕 지도(OpenStreetMap) 건물 번호: 에펠탑 층별 덩어리, 마카오 타워, 그랜드 리스보아 */
+  var HIDE_BUILDING_IDS = [14699807400, 14699807440, 14699807560, 14699807480, 14699807500, 14699807592, 14699807552, 4424626772,
+    8489778690, 8481990182, 8481990192, 649339742, 8481990200, 2310745612, 8481990232, 8481990222,
+    1921824052, 27801710];   // … 그랜드 리스보아, 성 바울 성당 유적(통짜 덩어리)
+
+  /* ---------- 🏛️ 랜드마크 입체 모형: 마카오 타워 · 그랜드 리스보아 · 성 바울 성당 유적 · 런더너 빅벤 · 스튜디오 시티 8자 관람차 ----------
+   * 모양은 사진을 참고해 단순화한 것. 크기(m)는 실제에 가깝게 */
+  var LANDMARKS = [
+    { id: 'macautower', lng: 113.53680, lat: 22.17981, build: function (m) {
+      m.cyl(0, 0, 26, 0, 18, '#d9d6cf');                 // 아래 건물
+      for (var k = 0; k < 3; k++) { var a = k * 2.094; m.box(Math.cos(a) * 7, Math.sin(a) * 7, 5, 5, 18, 185, '#eceae4'); }   // 세 기둥
+      m.cyl(0, 0, 6.5, 18, 190, '#f4f2ec');              // 가운데 몸통
+      m.cyl(0, 0, 17, 185, 190, '#cfd3d6');
+      m.cyl(0, 0, 23, 190, 205, '#5f7f99');              // 유리 전망대
+      m.cyl(0, 0, 24, 205, 209, '#e7e5df');
+      m.cyl(0, 0, 19, 209, 223, '#6d8aa3');
+      m.cyl(0, 0, 12, 223, 232, '#e7e5df');
+      m.cyl(0, 0, 2.2, 232, 300, '#f1f1ee');             // 안테나
+      m.cyl(0, 0, 1, 300, 338, '#d33b2c');
+    } },
+    { id: 'grandlisboa', lng: 113.54337, lat: 22.19100, build: function (m) {
+      for (var z = 0; z < 40; z += 4) m.cyl(0, 0, 42 * Math.sqrt(1 - Math.pow(z / 44, 2)), z, z + 4.2, '#d8b14a');   // 금빛 알 모양 아래층
+      for (var y = 40; y < 205; y += 6) {                // 연꽃: 위로 갈수록 넓어지는 탑
+        var t = (y - 40) / 165, w = 22 + 30 * Math.pow(t, 2.2);
+        m.box(0, 0, w, w * 0.62, y, y + 6.2, t > 0.85 ? '#f0cf6a' : (Math.round(y / 6) % 2 ? '#c99a3a' : '#b98a2e'));
+      }
+      for (var k = 0; k < 8; k++) { var a = k * 0.785; m.box(Math.cos(a) * 26, Math.sin(a) * 18, 6, 6, 205, 228 - (k % 2) * 8, '#f6dc86'); }   // 꽃잎 끝
+      m.cyl(0, 0, 4, 205, 238, '#fff1b8');
+    } },
+    { id: 'stpaul', lng: 113.54086, lat: 22.19758, build: function (m) {
+      var S = '#d8c39b', D = '#c9b083';
+      // 1층: 문 3개 (기둥 사이를 비워 문처럼)
+      [[-11, 3], [-5.5, 2], [0, 1.2], [5.5, 2], [11, 3]].forEach(function (c) { if (c[0] === 0) return; m.box(c[0], 0, c[1] * 1.6, 2.2, 0, 8, S); });
+      m.box(0, 0, 25, 2.2, 6, 8.6, D);
+      m.box(-8.25, 0, 2.6, 2.2, 0, 6, S); m.box(8.25, 0, 2.6, 2.2, 0, 6, S);
+      // 2층: 창 3개
+      [-10, -4.5, 4.5, 10].forEach(function (x) { m.box(x, 0, 3.4, 2, 8.6, 14.6, S); });
+      m.box(-7.25, 0, 2.1, 2, 8.6, 10.5, S); m.box(7.25, 0, 2.1, 2, 8.6, 10.5, S); m.box(0, 0, 5.6, 2, 8.6, 10, S);
+      m.box(0, 0, 23, 2, 13.2, 15.4, D);
+      // 3층: 가운데 둥근 창
+      m.box(0, 0, 16, 1.8, 15.4, 20.6, S); m.box(0, -0.6, 4, 1, 17, 19.4, '#7a6447');
+      m.box(0, 0, 17, 1.8, 20.2, 21, D);
+      // 4층 + 박공 + 십자가
+      m.box(0, 0, 9, 1.6, 21, 24, S);
+      m.box(0, 0, 7, 1.6, 24, 25.5, S); m.box(0, 0, 4.5, 1.6, 25.5, 26.8, S); m.box(0, 0, 2, 1.6, 26.8, 27.8, S);
+      m.box(0, 0, 0.5, 0.5, 27.8, 30, '#bfa77a'); m.box(0, 0, 1.6, 0.5, 29, 29.5, '#bfa77a');
+      // 앞 돌계단
+      for (var s = 0; s < 6; s++) m.box(0, -3 - s * 2.4, 30 + s * 2, 2.4, 0, 3 - s * 0.5, '#cdbd9f');
+    } },
+    { id: 'bigben', lng: 113.56510, lat: 22.14600, build: function (m) {
+      var W = '#cdb88c', G = '#2f4a3f';
+      m.box(0, 0, 11, 11, 0, 62, W);
+      for (var z = 6; z < 60; z += 6) m.box(0, 0, 11.6, 11.6, z, z + 0.6, '#b7a272');   // 가로 띠
+      m.box(0, 0, 13, 13, 62, 74, '#e9dcae');            // 시계 칸
+      [[0, -6.6], [0, 6.6], [-6.6, 0], [6.6, 0]].forEach(function (c) { m.box(c[0], c[1], c[0] ? 0.4 : 7, c[1] ? 0.4 : 7, 64.5, 71.5, '#fbf6e2'); });   // 시계판
+      m.box(0, 0, 11, 11, 74, 82, W);
+      m.box(0, 0, 9, 9, 82, 86, G);
+      for (var y = 86, s2 = 8; s2 > 0.6; y += 2.4, s2 -= 1.1) m.box(0, 0, s2, s2, y, y + 2.5, G);   // 뾰족 지붕
+      m.box(0, 0, 0.5, 0.5, y, y + 5, '#c9a64a');
+    } },
+    { id: 'goldenreel', lng: 113.56072, lat: 22.14102, build: function (m) {
+      // 8자 관람차: 두 원을 위아래로 (세로로 선 바퀴, 동서 방향을 바라봄)
+      [[100, 15], [130, 15]].forEach(function (r) {
+        for (var k = 0; k < 28; k++) {
+          var a = k / 28 * Math.PI * 2, y = Math.cos(a) * r[1], z = r[0] + Math.sin(a) * r[1];
+          m.box(0, y, 2.2, 3.6, z - 1.4, z + 1.4, k % 4 ? '#e8c35a' : '#d84a3a');
+        }
+      });
+      m.box(0, 0, 3, 3, 84, 146, '#c9a54a');
+    } }
+  ];
+  function landmarkFeatures() {
+    var feats = [];
+    LANDMARKS.forEach(function (L) {
+      var kx = 111320 * Math.cos(L.lat * Math.PI / 180), ky = 111320;
+      var pt = function (x, y) { return [L.lng + x / kx, L.lat + y / ky]; };
+      var add = function (ring, b, h, c) { feats.push({ type: 'Feature', properties: { b: b, h: h, c: c, lm: L.id }, geometry: { type: 'Polygon', coordinates: [ring] } }); };
+      L.build({
+        box: function (cx, cy, w, d, b, h, c) { add([[cx - w / 2, cy - d / 2], [cx + w / 2, cy - d / 2], [cx + w / 2, cy + d / 2], [cx - w / 2, cy + d / 2], [cx - w / 2, cy - d / 2]].map(function (v) { return pt(v[0], v[1]); }), b, h, c); },
+        cyl: function (cx, cy, r, b, h, c) { var ring = []; for (var i = 0; i <= 20; i++) { var a = i / 20 * Math.PI * 2; ring.push(pt(cx + Math.cos(a) * r, cy + Math.sin(a) * r)); } add(ring, b, h, c); }
+      });
+    });
+    return feats;
+  }
+  function addLandmarkLayer() {
+    try {
+      map.addSource('landmarks3d', { type: 'geojson', data: { type: 'FeatureCollection', features: landmarkFeatures() } });
+      map.addLayer({ id: 'landmarks3d', type: 'fill-extrusion', source: 'landmarks3d', minzoom: 11,
+        paint: { 'fill-extrusion-color': ['get', 'c'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-height': ['get', 'h'],
+          'fill-extrusion-opacity': 1, 'fill-extrusion-vertical-gradient': true } });
+    } catch (e) { /* 모형 없이 */ }
+  }
+
   function addEiffelLayer() {
     try {
       var f = eiffelFeatures(); if (!f.length) return;
@@ -1253,7 +1347,7 @@
         if (l['source-layer'] !== 'building' || (l.type !== 'fill-extrusion' && l.type !== 'fill')) return;
         var old = map.getFilter(l.id);
         // 바탕 지도(OpenStreetMap)의 에펠탑 층별 덩어리들 (건물 번호). 모형과 겹치지 않게 숨긴다
-        var not = ['!', ['in', ['id'], ['literal', [14699807400, 14699807440, 14699807560, 14699807480, 14699807500, 14699807592, 14699807552, 4424626772]]]];
+        var not = ['!', ['in', ['id'], ['literal', HIDE_BUILDING_IDS]]];
         map.setFilter(l.id, old ? ['all', old, not] : not);
       });
       map.addSource('eiffel3d', { type: 'geojson', data: { type: 'FeatureCollection', features: f } });
@@ -1613,6 +1707,7 @@
       addPlane3dLayer();
       startPlaneLoop();
       addEiffelLayer();
+      addLandmarkLayer();
       addShipLayer();
       startShips();
       addMeLayer();
