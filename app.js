@@ -759,7 +759,6 @@
     if (eatsOn) setEatPins(true);   // 🍴 맛집 핀: 그날 일정 마커와 겹치는 곳은 다시 뺀다
     if (map.getLayer('tour-tall-roofs')) map.setPaintProperty('tour-tall-roofs', 'fill-extrusion-color', roofColor());
     if (map.getLayer('tour-tall-flat')) map.setPaintProperty('tour-tall-flat', 'fill-color', roofColor());
-    if (map.getLayer('tour-tall-glow')) map.setPaintProperty('tour-tall-glow', 'line-color', roofColor(true));
     refreshTallColors();
 
     // 동선 선: 고른 날짜는 진하게, 나머지는 흐리게
@@ -852,13 +851,14 @@
       if (srcId) map.addLayer({ id: 'tour-flat', type: 'fill', source: srcId, 'source-layer': 'building', minzoom: 13,
         layout: { visibility: 'none' }, paint: { 'fill-color': '#e4e2dc', 'fill-outline-color': '#cfccc4' } });
       map.addSource('tour-tall', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
-      // 일정 건물 바닥 둘레에 그날 색으로 은은하게 빛나는 테두리
-      map.addLayer({ id: 'tour-tall-glow', type: 'line', source: 'tour-tall',
-        paint: { 'line-color': roofColor(true), 'line-width': ['interpolate', ['linear'], ['zoom'], 14, 2, 18, 9], 'line-blur': 4, 'line-opacity': .85 } });
       map.addLayer({ id: 'tour-tall-walls', type: 'fill-extrusion', source: 'tour-tall',
         paint: { 'fill-extrusion-pattern': ['get', 'pat'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-opacity': 1 } });
       map.addLayer({ id: 'tour-tall-flat', type: 'fill', source: 'tour-tall', layout: { visibility: 'none' },
         paint: { 'fill-color': roofColor(), 'fill-opacity': .7, 'fill-outline-color': '#a89f92' } });
+      // 지붕 가장자리 난간: 벽보다 진한 색 띠를 지붕 둘레에 세워 벽과 지붕의 경계가 또렷하게 보이게
+      map.addSource('tour-tall-rim', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({ id: 'tour-tall-rim', type: 'fill-extrusion', source: 'tour-tall-rim',
+        paint: { 'fill-extrusion-color': ['get', 'c'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-opacity': 1 } });
       map.addLayer({ id: 'tour-tall-roofs', type: 'fill-extrusion', source: 'tour-tall',
         paint: { 'fill-extrusion-color': roofColor(), 'fill-extrusion-base': ['get', 'h'], 'fill-extrusion-height': ['+', ['get', 'h'], 1.2], 'fill-extrusion-opacity': 1 } });
       // 카메라가 멈춘 뒤와 지도 조각이 도착한 뒤에 확인한다
@@ -1017,6 +1017,14 @@
       pr.pat = windowPattern(wall, glass);
     });
     map.getSource('tour-tall').setData({ type: 'FeatureCollection', features: tallFeatures });
+    // 난간: 바깥선(덮개) 안쪽 1.6m 를 비운 고리 모양을 지붕 위로 1.6m 세운다
+    var rims = tallFeatures.map(function (f) {
+      var outer = f.geometry.coordinates[0], inner = growRing(outer, -1.6).slice().reverse();
+      var c = dayColorOf(f.properties.pid);
+      return { type: 'Feature', properties: { b: f.properties.h - 0.4, h: f.properties.h + 1.6, c: mix(f.properties.wall, c || '#5b6168', c ? .45 : .5) },
+        geometry: { type: 'Polygon', coordinates: [outer, inner] } };
+    });
+    if (map.getSource('tour-tall-rim')) map.getSource('tour-tall-rim').setData({ type: 'FeatureCollection', features: rims });
   }
   function roofColor(strong) {
     var expr = ['match', ['get', 'pid']], seen = {};
@@ -1027,7 +1035,7 @@
           var today = state.day === 'all' || state.day === d.date;
           if (state.day !== 'all' && !today) return;
           seen[id] = true;
-          expr.push(id, strong ? d.color : mix(d.color, '#ffffff', state.day === 'all' ? .45 : .22));
+          expr.push(id, strong ? d.color : mix(d.color, '#efebe3', state.day === 'all' ? .82 : .7));   // 지붕은 실제처럼 밝은 회색에 날짜 색을 살짝
         });
       });
     });
