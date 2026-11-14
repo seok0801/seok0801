@@ -179,10 +179,6 @@ window.TRIP_DATA = {
       name: '웡치케이 (세나도 광장)', type: 'food', lng: 113.54019, lat: 22.19414, verified: true,
       note: '완탕면·죽 노포', hours: '08:00~23:00, 정기 휴무 없음 (여행 사이트 기준)', open: '08:00', close: '23:00'
     },
-    funzone: { mapQuery: 'Super Fun Zone Studio City Macau', zh: '新濠影滙', zhArea: "路氹 · Studio City",
-      name: '슈퍼 펀 존 (스튜디오 시티)', type: 'kids', lng: 113.55985, lat: 22.14125, verified: false,
-      note: '실내 놀이터. W와 같은 건물', hours: '12/21~31은 10:30~19:00', open: '10:30', close: '19:00'
-    },
     dtf: { mapQuery: 'Din Tai Fung Studio City Macau', zh: '新濠影滙 鼎泰豐', zhArea: "路氹 · Studio City",
       name: '딘타이펑 (스튜디오 시티)', type: 'food', lng: 113.56120, lat: 22.14140, verified: false,
       note: '1층 1029호 · 딤섬·면', hours: '월~금 12:00~22:00 (주문 마감 21:30), 주말·공휴일 11:00~22:30', open: '12:00', close: '22:00',
@@ -245,7 +241,7 @@ window.TRIP_DATA = {
       icon: '🎭', short: '댄싱 워터 공연', key: '30일 16:30 · 1인 698~ · 아이도 표 필요',
       aff: 'https://3ha.in/r/895307', affBy: '클룩',
       url: 'https://www.cityofdreamsmacau.com/en/house-of-dancing-water',
-      note: '좌석 요금(공식): 갤러리 MOP 698 · 시그니처 898 · 그랜드 1,098 · 프리미엄 1,298. 어른 2명 가장 싼 좌석이면 MOP 1,396. ' +
+      note: '좌석 요금(공식): 갤러리 MOP 698 · 시그니처 898 · 그랜드 1,098 · 프리미엄 1,298. 가족 3명(어른 2·아이 1) 가장 싼 좌석이면 MOP 2,094. ' +
         '무료는 만 24개월 미만(좌석 없이 무릎)뿐이라 25·35개월 두 아이 모두 좌석 표를 사야 합니다. 극장 안에는 유모차를 가지고 들어갈 수 없고 로비 근처 클로크룸에 맡깁니다. ' +
         '공연 시각은 16:30·19:30으로 안내되지만 요일마다 달라 예매 달력에서 확인하세요. 19:30 공연은 아이 취침(21:00)과 겹치니 16:30 공연이 낫습니다. ' +
         '큰 소리·불꽃·안개·물 튀김 효과가 있고 6세 미만에게는 권장하지 않는다는 안내가 있습니다. 앞줄은 물이 튈 수 있습니다.'
@@ -519,8 +515,8 @@ window.TRIP_DATA = {
     {"id": "foodrepublic", "area": "코타이 (스튜디오 시티·COD)", "kind": "food", "name": "푸드 리퍼블릭 (스튜디오 시티 푸드코트)", "place": "foodrepublic", "menu": "광둥 바비큐·딤섬, 국수, 일식·한식, 태국·베트남식, 디저트", "price": "가격 미확인", "hours": "10:00~23:00 (공식)", "tip": "메뉴가 다양해 아이 입맛 맞추기 쉬워요. 저녁 피크엔 자리부터 잡으세요", "url": "https://studiocity-macau.com/en/dining/food-republic"},
     {"id": "chankee", "area": "코타이 (스튜디오 시티·COD)", "kind": "food", "name": "찬키 로스트 구스 (시티 오브 드림즈)", "place": "chankee", "menu": "거위구이, 거위구이 덮밥, 거위 볶음밥", "price": "가격 미확인", "hours": "월~목 11:00~22:00, 금~일 11:00~23:00 (공식)", "tip": "스튜디오 시티 1층에도 지점이 있어요. 덮밥이 나눠 먹기 편해요", "url": "https://cityofdreamsmacau.com/en/dining/chan-kee-roasted-goose"},
     {"id": "lordstow", "area": "콜로안", "kind": "bakery", "name": "로드 스토우 베이커리 본점", "place": "lordstow", "menu": "원조 포르투갈식 에그타르트", "price": "1개 약 MOP 13, 6개 상자 MOP 70~75 (가이드 기준, 미확인)", "hours": "출처마다 다름 (09:00~18:00 또는 07:00~21:00)", "tip": "포장 전용이에요. 앉아서 먹으려면 근처 가든 카페로. 갓 구운 건 뜨거우니 식혀서 주세요", "url": "https://guide.michelin.com/hk/en/macau-region/macau/restaurant/lord-stow-s-bakery-rua-do-tassara"},
-    {"id": "lordstowgarden", "area": "콜로안", "kind": "cafe", "name": "로드 스토우 가든 카페", "lat": 22.11873, "lng": 113.55103, "zh": "安德魯花園咖啡店", "zhArea": "路環 屠場前地21號C", "mapQuery": "Lord Stow's Garden Cafe Coloane", "menu": "에그타르트, 클럽 샌드위치, 아포가토, 커피", "price": "가격 미확인", "hours": "월 09:00~17:00, 화~일 09:00~20:00 (예약 사이트 기준, 미확인)", "tip": "본점에서 걸어서 1~2분. 아이와 앉아서 먹기 편해요", "url": "https://opentable.sg/r/lord-stows-garden-cafe-coloane-village"},
-    {"id": "ngatim", "area": "콜로안", "kind": "food", "name": "응아팀 카페", "place": "ngatim", "menu": "소금후추 새우, 커리 크랩, 생선구이, 파인애플 해산물 볶음밥", "price": "합리적이라는 후기 (금액 미확인)", "hours": "매일 12:00~새벽 1:00 무렵 (안내 사이트 기준, 최신 확인 안 됨)", "tip": "성당 옆 야외 테이블이라 유모차 대기 편해요. 영어가 잘 안 통할 수 있어요 (+853 2888 2086)", "url": "https://macaulifestyle.com/dining/local-eats/nga-tim-coloanes-open-air-joint-with-wholesome-local-delicacies"}
+    {"id": "lordstowgarden", "area": "콜로안", "kind": "cafe", "name": "로드 스토우 가든 카페", "lat": 22.11873, "lng": 113.55103, "zh": "安德魯花園咖啡店", "zhArea": "路環 屠場前地21號C", "mapQuery": "Lord Stow's Garden Cafe Coloane", "menu": "에그타르트, 클럽 샌드위치, 아포가토, 커피", "price": "가격 미확인", "hours": "월 09:00~17:00, 화~일 09:00~20:00 (예약 사이트 기준, 미확인)", "tip": "본점에서 걸어서 1~2분. 아이와 앉아서 먹기 편해요", "url": "https://www.ipacktravel.com/post/macau-buy-lord-stows-bakery-portuguese-egg-tart-coloane-village"},
+    {"id": "ngatim", "area": "콜로안", "kind": "food", "name": "응아팀 카페", "place": "ngatim", "menu": "소금후추 새우, 커리 크랩, 생선구이, 파인애플 해산물 볶음밥", "price": "합리적이라는 후기 (금액 미확인)", "hours": "매일 12:00~새벽 1:00 무렵 (안내 사이트 기준, 최신 확인 안 됨)", "tip": "성당 옆 야외 테이블이라 유모차 대기 편해요. 영어가 잘 안 통할 수 있어요 (+853 2888 2086)", "url": "https://www.frommers.com/destinations/macau/restaurants/nga-tim-cafe"}
   ],
 
   /* 📸 포토 스팟: 일정 동선의 사진 명소 (place = 일정 장소 id). 🍴 메뉴의 '📸 포토 스팟' 탭 */
@@ -542,7 +538,7 @@ window.TRIP_DATA = {
   costExtras: [
     '택시 요금 계산식(마카오 교통국): 처음 1.6km MOP 21 + 이후 220m마다 MOP 2 + 정차 55초마다 MOP 2 + 트렁크 짐 1개당 MOP 3 + 공항·페리터미널에서 탈 때 MOP 8 + 타이파→콜로안 MOP 2. 범위의 높은 값은 신호 대기·정체를 25% 더한 값입니다.',
     '한 가족(어른 2·아이 1)이 택시 1대를 타는 것으로 계산했습니다. (선택)으로 표시한 택시는 셔틀이 없거나 아이가 지쳤을 때만 드는 비용이라 합계에서 뺐습니다.',
-    '셔틀 구간(12/28 구시가지 왕복, 12/31 공항)은 무료입니다. 택시는 현금(MOP, 홍콩달러 1:1 통용)이 가장 확실하고 카드는 잘 받지 않습니다.'
+    '셔틀 구간(12/28 구시가지 가는 길, 12/31 공항)은 무료입니다. 택시는 현금(MOP, 홍콩달러 1:1 통용)이 가장 확실하고 카드는 잘 받지 않습니다.'
   ],
 
   /* ============================================================
