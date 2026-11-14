@@ -136,6 +136,23 @@
     return html;
   }
 
+  /* 링크 버튼 이름: '소개 페이지'처럼 막연한 이름 대신 어느 사이트인지 보이게 */
+  var SITE_NAMES = {
+    'taipavillagemacau.com': '타이파 빌리지 공식 안내', 'macaotourism.gov.mo': '마카오 관광청 안내', 'guide.michelin.com': '미쉐린 가이드',
+    'timeout.com': 'Time Out 소개(영문)', 'frommers.com': 'Frommer\'s 소개(영문)', 'ipacktravel.com': '여행 블로그 소개(영문)',
+    'openrice.com': 'OpenRice 리뷰(영문)', 'i-discoverasia.com': 'i-Discover 소개(영문)', 'citiesinsider.com': '여행 가이드 소개(영문)',
+    'macau.com': 'Macau.com 소개(영문)', 'macaulifestyle.com': 'Macau Lifestyle 소개(영문)', 'macau-airport.com': '마카오 공항 공식',
+    'venetianmacao.com': '베네시안 공식', 'londonermacao.com': '런더너 공식', 'studiocity-macau.com': '스튜디오 시티 공식',
+    'cityofdreamsmacau.com': '시티 오브 드림즈 공식', 'wynnresortsmacau.com': '윈 팰리스 공식', 'grandlisboapalace.com': '그랜드 리스보아 팰리스 공식',
+    'grandlisboa.com': '그랜드 리스보아 공식', 'lordstow.com': '로드 스토우 공식'
+  };
+  function siteLabel(url, label) {
+    var host = ''; try { host = new URL(url).hostname.replace(/^www\./, '').replace(/^hk\./, ''); } catch (e) { /* 무시 */ }
+    var name = SITE_NAMES[host];
+    if (!label || /소개 페이지/.test(label)) return '🌐 ' + (name || host || '소개 페이지');
+    return '🌐 ' + label;
+  }
+
   function isNarrow() { return window.innerWidth < 900; }      // 휴대폰처럼 좁은 화면인지
   function link(url, text, cls) {
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
@@ -168,21 +185,22 @@
    * 검색어가 사라진 채 지도만 열린다. 그래서 아이폰에서는 구글 지도 앱 전용 주소(comgooglemaps://)로 검색어·목적지를 그대로 넘긴다.
    * 앱이 열리지 않으면(설치 안 됨) 1.5초 뒤 원래 웹 주소로 연다 */
   var IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  function gmAppUrl(href) {
+  function gmAppUrl(href, ll) {   // ll = '위도,경도' (있으면 그 자리 주변에서 찾아 가게가 먼저 잡힌다)
     var u; try { u = new URL(href); } catch (e) { return ''; }
     if (!/(^|\.)google\.[a-z.]+$/.test(u.hostname) || u.pathname.indexOf('/maps') !== 0) return '';
     var q = u.searchParams;
     if (u.pathname.indexOf('/maps/dir') === 0 && q.get('destination')) {
       return 'comgooglemaps://?daddr=' + encodeURIComponent(q.get('destination')) + '&directionsmode=' + encodeURIComponent(q.get('travelmode') || 'driving');
     }
-    if (q.get('query')) return 'comgooglemaps://?q=' + encodeURIComponent(q.get('query'));
+    if (q.get('query')) return 'comgooglemaps://?q=' + encodeURIComponent(q.get('query')) + (ll ? '&center=' + ll + '&zoom=18' : '');
     return '';
   }
   document.addEventListener('click', function (e) {
     if (!IS_IOS) return;
     var a = e.target.closest && e.target.closest('a[href*="google."]');
     if (!a) return;
-    var app = gmAppUrl(a.href);
+    var llm = /[?&]ll=([-0-9.]+,[-0-9.]+)/.exec(a.getAttribute('data-gm') || '');
+    var app = gmAppUrl(a.href, llm ? llm[1] : '');
     if (!app) return;
     e.preventDefault();
     // 앱이 열리거나 '여시겠습니까?' 확인 창이 뜨면 이 페이지가 가려진다(blur·hidden). 그런 일이 전혀 없을 때만
@@ -408,7 +426,7 @@
         var p = place(id);
         if (!p || !p.url || linked[id] || (bk && bk.b.url === p.url)) return;
         linked[id] = true;
-        actions.push(link(p.url, p.urlLabel || '소개 페이지', 'btn'));
+        actions.push(link(p.url, siteLabel(p.url, p.urlLabel), 'btn'));
       });
     }
     if (!isMove && !quiet) {
@@ -579,7 +597,7 @@
         n++;
       });
     });
-    if (!n) html += '<div class="card-actions">' + (p.url ? link(p.url, p.urlLabel || '소개 페이지', 'btn') : '') + mapsLink(id) + '</div>';
+    if (!n) html += '<div class="card-actions">' + (p.url ? link(p.url, siteLabel(p.url, p.urlLabel), 'btn') : '') + mapsLink(id) + '</div>';
     // 3) 같은 건물·바로 옆의 다른 일정 장소 (마커가 겹쳐 누르기 어려울 때)
     var near = viewPlaceIds().filter(function (o) { return o !== id && distanceM([p.lng, p.lat], [place(o).lng, place(o).lat]) < 150; });
     if (near.length) {
@@ -1740,7 +1758,7 @@
     var p = place(e.pid), plan = eatPlanText(e);
     return '<p class="fine place-meta">' + esc(e.area) + (plan ? ' · 📅 일정 ' + esc(plan) : '') + '</p>' +
       meDistanceHtml(p) + '<div class="eat sheet">' + eatInfoHtml(e) + '</div>' +
-      '<div class="card-actions">' + eatGm(e) + (e.url ? link(e.url, '소개 페이지', 'btn small') : '') + '</div>' +
+      '<div class="card-actions">' + eatGm(e) + (e.url ? link(e.url, siteLabel(e.url), 'btn small') : '') + '</div>' +
       routeHtml(p) + nearbyHtml(p);
   }
   function showEat(id) {
