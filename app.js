@@ -746,7 +746,7 @@
       var c = routeCoords(d.date);
       return {
         type: 'Feature',
-        properties: { color: d.color, active: state.day === 'all' || state.day === d.date ? 1 : 0 },
+        properties: { color: d.color, active: state.day === d.date ? 1 : 0 },   // '전체'에서는 동선 선을 그리지 않는다 (장소 마커만)
         geometry: { type: 'LineString', coordinates: c.length > 1 ? c : [] }
       };
     }).filter(function (f) { return f.geometry.coordinates.length > 1; });
