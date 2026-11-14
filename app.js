@@ -2214,7 +2214,7 @@
     var btn = $('next'), d = tripToday();
     if (!d) { btn.hidden = true; return; }
     var t = nowMacau().slice(11, 16), nxt = null;
-    items(d).forEach(function (it) { if (!nxt && !QUIET_KINDS[it.kind] && it.time >= t && (it.places || []).some(onMap)) nxt = it; });
+    items(d).forEach(function (it) { if (!nxt && !QUIET_KINDS[it.kind] && it.time >= t && (it.places || []).length) nxt = it; });   // 지도 밖(인천공항) 일정도 보여 준다
     if (!nxt) { btn.hidden = true; fitViewPadding(); return; }
     var id = (it2id(nxt));
     btn.innerHTML = '<span class="next-tag">다음</span> ' + esc(nxt.time) + ' · ' + esc(nxt.title);
@@ -2222,7 +2222,7 @@
     btn.hidden = false;
     fitViewPadding();   // '다음 일정' 줄만큼 지도 가운데를 다시 맞춘다
   }
-  function it2id(it) { var ps = (it.places || []).filter(onMap); return it.kind === 'move' ? ps[ps.length - 1] : ps[0]; }
+  function it2id(it) { var ps = (it.places || []).filter(onMap); if (!ps.length) return (it.places || [])[0]; return it.kind === 'move' ? ps[ps.length - 1] : ps[0]; }
   (function () {
     var d = tripToday();
     if (d) state.day = d;
@@ -2231,7 +2231,7 @@
   })();
   $('next').addEventListener('click', function () {
     var id = this.getAttribute('data-place'); if (!id) return;
-    stopTour(); flyToPlace(id, { sheet: true }); openPopup(id); showPlace(id);
+    stopTour(); if (onMap(id)) { flyToPlace(id, { sheet: true }); openPopup(id); } showPlace(id);
   });
   $('btn-sos').addEventListener('click', function () { openModal('🆘 비상 연락처', sosHtml()); });
   $('taxi').addEventListener('click', function () { $('taxi').hidden = true; });

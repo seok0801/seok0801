@@ -209,7 +209,7 @@ a { color: var(--accent); }
 @media (min-width: 900px) {
   #top { right: auto; width: 440px; }
   #title { font-size: 18px; padding: 6px 12px; }
-  #bar { right: auto; width: 440px; }
+  #bar { right: auto; width: auto; }   /* 버튼 수에 맞춰 늘어난다 */
   #sheet, #sheet.list { left: 12px; right: auto; bottom: 72px; width: 420px; max-height: calc(100% - 200px); border-radius: 16px; }
 }
 
