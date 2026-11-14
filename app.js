@@ -833,7 +833,8 @@
         // 실제 마카오처럼: 낮은 건물은 따뜻한 미색 벽에 작은 창, 중간 높이는 연한 회색 벽에 창, 고층은 푸른 유리 띠
         // 윈 팰리스(탑·낮은 건물)는 실제처럼 금빛 외벽으로 한 덩어리로 칠한다 (건물 번호로 지정)
         map.setPaintProperty(bLayer, 'fill-extrusion-pattern',
-          ['match', ['id'], WYNN_IDS, windowPattern('#d9b872', '#9b6a3c'),
+          ['match', ['id'], WYNN_IDS, windowPattern('#d6b46e', '#d6b46e', 'plain'),   // 창문 무늬 없이 매끈하게 (멀리서 비스듬히 보면 무늬가 지저분한 줄로 겹쳐 보여서)
+           
             ['step', H, windowPattern('#ece4d6', '#d6cfc2', 'small'), 15, windowPattern('#e6e3dc', '#c7ccd0', 'bands'), 45, windowPattern('#dfe4e7', '#a9b9c4', 'glass')]]);
         map.setPaintProperty(bLayer, 'fill-extrusion-vertical-gradient', true);
         // 주변 건물 지붕도 회색 계열로만
