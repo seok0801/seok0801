@@ -426,7 +426,8 @@
         var p = place(id);
         if (!p || !p.url || linked[id] || (bk && bk.b.url === p.url)) return;
         linked[id] = true;
-        actions.push(link(p.url, siteLabel(p.url, p.urlLabel), 'btn'));
+        // 장소가 여러 곳인 일정은 '🌐 대리라이기 소개'처럼 장소 이름을 붙여 어느 곳 링크인지 보이게
+        actions.push(link(p.url, (it.places || []).length > 1 ? '🌐 ' + shortName(p.name) + ' 소개' : siteLabel(p.url, p.urlLabel), 'btn'));
       });
     }
     if (!isMove && !quiet) {
