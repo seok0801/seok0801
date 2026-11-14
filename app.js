@@ -1735,7 +1735,7 @@
       addAreaMask();
       liftBaseLabels();
       limitPitch();
-      map.on('zoom', limitPitch);
+      map.on('zoomend', limitPitch);   // 핀치 도중에 기울기 한도를 바꾸면 덜컥거려서, 손을 뗀 뒤에만
       addAroundLayer();
       map.on('moveend', spreadMarkers);
       addBeaconLayer();
