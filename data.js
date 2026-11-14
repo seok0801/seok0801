@@ -150,7 +150,7 @@ window.TRIP_DATA = {
       url: 'https://www.taipavillagemacau.com/directory/sei-kee-cafe/', urlLabel: '소개 페이지'
     },
     eiffel: { mapQuery: 'Eiffel Tower The Parisian Macao', zh: '澳門巴黎人 巴黎鐵塔', zhArea: "路氹 · The Parisian Macao",
-      name: '파리지앵 에펠탑', type: 'sight', lng: 113.56283, lat: 22.14357, verified: true,
+      name: '파리지앵 에펠탑', type: 'sight', lng: 113.56283, lat: 22.14357, verified: true, model: true,   // 지도에 입체 모형(app.js eiffelFeatures)
       note: '절반 크기 에펠탑 · 37층 전망대 · 해 진 뒤 조명쇼', url: 'https://www.parisianmacao.com/amenities/eiffel-tower.html', urlLabel: '파리지앵 공식'
     },
     londoner: { mapQuery: 'Hampton Court Londoner Grand Macao', zh: '澳門倫敦人名匯', zhArea: "路氹 · Londoner Grand",

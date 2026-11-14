@@ -909,6 +909,7 @@
       map.setLight({ anchor: 'map', color: s.light, intensity: s.li, position: [1.3, 210, 45] });
     } catch (e) { /* 무시 */ }
     map.getCanvas().style.filter = s.filter;
+    eiffelNight(mode === 'night');
     // 빗줄기: 지도 그림 바로 위, 마커 아래
     var rain = document.getElementById('wx-rain');
     if (mode === 'rain' && !reducedMotion()) {
@@ -1038,7 +1039,7 @@
     var changed = false, all = null;
     Object.keys(D.places).forEach(function (id) {
       var p = D.places[id];
-      if (!onMap(id)) return;
+      if (!onMap(id) || p.model) return;      // 직접 만든 모형(에펠탑)은 건물 색칠에서 뺀다
       var pt = map.project([p.lng, p.lat]);
       var c = map.getContainer();
       if (pt.x < 0 || pt.y < 0 || pt.x > c.clientWidth || pt.y > c.clientHeight) return;
@@ -1213,6 +1214,66 @@
     }
     return out;
   }
+  /* ---------- 🗼 파리지앵 에펠탑 입체 모형 (실제 탑의 절반 크기, 높이 약 160m) ----------
+   * 네 다리가 위로 갈수록 안쪽으로 모이고, 1층(약 29m)·2층(약 58m) 전망대, 가늘어지는 몸통, 꼭대기 첨탑 */
+  function eiffelFeatures() {
+    var p = D.places.eiffel; if (!p) return [];
+    var lat0 = p.lat, lng0 = p.lng, kx = 111320 * Math.cos(lat0 * Math.PI / 180), ky = 111320;
+    var feats = [];
+    function box(cx, cy, w, d, b, h, part) {   // 가운데 (cx, cy)m, 폭 w·깊이 d m, 바닥 b·높이 h m
+      var x0 = cx - w / 2, x1 = cx + w / 2, y0 = cy - d / 2, y1 = cy + d / 2;
+      var ring = [[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]].map(function (v) { return [lng0 + v[0] / kx, lat0 + v[1] / ky]; });
+      feats.push({ type: 'Feature', properties: { b: b, h: h, part: part }, geometry: { type: 'Polygon', coordinates: [ring] } });
+    }
+    // 네 다리: 바닥에서 2층까지 4m 마디로, 다리 사이 거리와 굵기가 줄어든다
+    for (var z = 0; z < 58; z += 4) {
+      var t = z / 58, off = 27 * Math.pow(1 - t, 1.35) + 3.2, w = 9 - 5.2 * t;
+      [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (s) { box(s[0] * off, s[1] * off, w, w, z, z + 4.2, 'leg'); });
+      if (z < 24) {   // 1층 아래 아치: 다리 사이를 잇는 가는 테
+        var a = off - w / 2;
+        if (z >= 16) { box(0, off, 2 * a, 1.2, z + 2, z + 3.4, 'arch'); box(0, -off, 2 * a, 1.2, z + 2, z + 3.4, 'arch'); box(off, 0, 1.2, 2 * a, z + 2, z + 3.4, 'arch'); box(-off, 0, 1.2, 2 * a, z + 2, z + 3.4, 'arch'); }
+      }
+    }
+    box(0, 0, 38, 38, 28, 31.5, 'deck');     // 1층 전망대
+    box(0, 0, 18, 18, 56.5, 59.5, 'deck');   // 2층 전망대
+    // 몸통: 2층 위로 점점 가늘어진다
+    for (var y = 59.5; y < 140; y += 5) {
+      var u = (y - 59.5) / 80.5, s2 = 11 - 8 * Math.pow(u, 0.8);
+      box(0, 0, s2, s2, y, y + 5.2, 'shaft');
+    }
+    box(0, 0, 5, 5, 140, 146, 'top');         // 꼭대기 전망대
+    box(0, 0, 1.4, 1.4, 146, 162, 'spire');   // 첨탑
+    return feats;
+  }
+  function addEiffelLayer() {
+    try {
+      var f = eiffelFeatures(); if (!f.length) return;
+      // 바탕 지도에 있던 에펠탑 자리의 덩어리 건물은 숨긴다 (모형만 보이게)
+      (map.getStyle().layers || []).forEach(function (l) {
+        if (l['source-layer'] !== 'building' || (l.type !== 'fill-extrusion' && l.type !== 'fill')) return;
+        var old = map.getFilter(l.id);
+        // 바탕 지도(OpenStreetMap)의 에펠탑 층별 덩어리들 (건물 번호). 모형과 겹치지 않게 숨긴다
+        var not = ['!', ['in', ['id'], ['literal', [14699807400, 14699807440, 14699807560, 14699807480, 14699807500, 14699807592, 14699807552, 4424626772]]]];
+        map.setFilter(l.id, old ? ['all', old, not] : not);
+      });
+      map.addSource('eiffel3d', { type: 'geojson', data: { type: 'FeatureCollection', features: f } });
+      map.addLayer({ id: 'eiffel3d', type: 'fill-extrusion', source: 'eiffel3d', minzoom: 12,
+        paint: {
+          'fill-extrusion-color': ['match', ['get', 'part'], 'deck', '#6e4a33', 'arch', '#7a5238', 'spire', '#cfa86a', '#8a5d3e'],
+          'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-opacity': 1,
+          'fill-extrusion-vertical-gradient': true
+        } });
+      eiffelNight(wxFxOn() && wxMode(WXNOW) === 'night');
+    } catch (e) { /* 모형 없이 */ }
+  }
+  /* 밤에는 금빛 조명 색 (지금 날씨가 밤일 때) */
+  function eiffelNight(on) {
+    if (!mapReady || !map.getLayer('eiffel3d')) return;
+    map.setPaintProperty('eiffel3d', 'fill-extrusion-color', on
+      ? ['match', ['get', 'part'], 'deck', '#ffd27a', 'spire', '#fff1b8', '#f2b450']
+      : ['match', ['get', 'part'], 'deck', '#6e4a33', 'arch', '#7a5238', 'spire', '#cfa86a', '#8a5d3e']);
+  }
+
   function addShipLayer() {
     try {
       map.addSource('ships', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
@@ -1551,6 +1612,7 @@
       addRouteLayers();
       addPlane3dLayer();
       startPlaneLoop();
+      addEiffelLayer();
       addShipLayer();
       startShips();
       addMeLayer();
