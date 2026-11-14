@@ -95,7 +95,7 @@ window.TRIP_DATA = {
     wmacau: { mapQuery: 'W Macau Studio City', zh: '新濠影滙 W酒店', zhArea: "路氹 · W Macau – Studio City",
       baby: 'W·스튜디오 시티 수유실은 미확인 (프런트 문의). 객실용 유모차는 호텔에 요청 (예약 사이트 기준)',
       name: 'W 마카오 스튜디오 시티', type: 'hotel', lng: 113.56023, lat: 22.14198, verified: true,
-      height: 110,    // 대략의 높이(m)
+      // 높이는 적지 않는다: 지도 자료의 스튜디오 시티 바닥 전체가 한 덩어리로 솟아 버린다. 탑 모양은 app.js LANDMARKS 의 studiocity
       look: { wall: '#7d8ca0', glass: '#2f3e52', roof: '#59677a', radius: 140 },  // 청회색 유리 건물
       note: '12/29~31 숙박 · 체크인 15:00, 체크아웃 11:00'
     },
