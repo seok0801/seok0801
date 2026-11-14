@@ -1072,6 +1072,7 @@
         var geom = { type: 'Polygon', coordinates: o.rings };
         var own = insidePolygon(here, geom);
         if (!own && !nearPolygon(here, geom, look.radius || NEAR_M)) return;
+        if (look.maxH && (o.props.render_height || 0) > look.maxH) return;   // 낮은 성당·옛 집을 칠할 때 옆 아파트까지 칠하지 않게
         var first = o.rings[0][0];
         var key = first[0].toFixed(6) + ',' + first[1].toFixed(6) + ',' + o.rings[0].length + ',' + (o.props.render_min_height || 0) + ',' + (o.props.render_height || 0);   // 같은 바닥에 층별로 쌓인 덩어리(윈 팰리스 탑 등)도 따로 칠한다
         if (tallKeys[key]) {                         // 이미 칠한 건물 (지도 조각마다 같은 건물이 다른 번호로 올 수 있어 그 번호도 숨긴다)
