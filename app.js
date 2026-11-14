@@ -158,11 +158,11 @@
     return '<a class="' + (cls || '') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(text) + '</a>';
   }
   /* 그 장소를 구글 지도에서 여는 주소 (길찾기·리뷰·사진을 볼 수 있다) */
-  function mapsLink(id) {
+  function mapsLink(id, label) {
     var p = place(id);
     var q = p.mapQuery || (p.lat + ',' + p.lng);
     var url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
-    return gmLink(url, gmEmbed(q, p.lat, p.lng, 17), p.name, '📍 구글 지도', 'btn');
+    return gmLink(url, gmEmbed(q, p.lat, p.lng, 17), p.name, label || '📍 구글 지도', 'btn');
   }
 
   /* 구글 지도: 버튼을 누르면 다른 화면으로 넘어가지 않고 지금 지도 위에 창으로 올라온다.
@@ -430,8 +430,9 @@
       });
     }
     if (!isMove && !quiet) {
-      var first = (it.places || []).filter(onMap)[0];
-      if (first) actions.push(mapsLink(first));
+      // 한 일정에 장소가 여러 곳이면(예: 쿤하 거리 · 대리라이기 · 세이키 카페) 장소마다 구글 지도 버튼을 따로 둔다
+      var ons = (it.places || []).filter(onMap);
+      ons.forEach(function (id) { actions.push(mapsLink(id, ons.length > 1 ? '📍 ' + shortName(place(id).name) : '')); });
     }
     if (actions.length) more += '<div class="card-actions">' + actions.join('') + '</div>';
     if (sh) more += '<p class="fine">' + esc(sh.info) + ' · 운행 시각은 현장 확인</p>';
