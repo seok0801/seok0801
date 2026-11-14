@@ -139,12 +139,12 @@ window.TRIP_DATA = {
       name: '쿤하 거리 (타이파 빌리지)', type: 'snack', lng: 113.55697, lat: 22.15359, verified: true,
       note: '세라두라·아몬드 쿠키 등 먹거리 골목', url: 'https://www.taipavillagemacau.com/', urlLabel: '타이파 빌리지 안내'
     },
-    taileiloikei: { mapQuery: 'Tai Lei Loi Kei Taipa Macau', zh: '大利來記豬扒包', zhArea: "氹仔官也街 · Tai Lei Loi Kei",
+    taileiloikei: { mapQuery: 'Cafe Tai Lei Loi Kei 35 Rua Correia da Silva Taipa Macau', zh: '大利來記豬扒包', zhArea: "氹仔官也街 · Tai Lei Loi Kei",
       name: '대리라이기 (타이파 빌리지)', type: 'snack', lng: 113.55590, lat: 22.15251, verified: true,
       note: '마카오 명물 돼지갈비빵', hours: '매일 08:00~18:00 (소개 페이지 기준)', open: '08:00', close: '18:00',
       url: 'https://www.taipavillagemacau.com/directory/cafe-dai-lei-loi-kei/', urlLabel: '소개 페이지'
     },
-    seikee: { mapQuery: 'Sei Kee Cafe Taipa Largo dos Bombeiros Macau', zh: '世記咖啡', zhArea: "氹仔消防局前地 · Sei Kee Cafe",
+    seikee: { mapQuery: 'Sei Kee Cafe 1 Largo dos Bombeiros Taipa Macau', zh: '世記咖啡', zhArea: "氹仔消防局前地 · Sei Kee Cafe",
       name: '세이키 카페 (타이파 빌리지)', type: 'snack', lng: 113.55666, lat: 22.15421, verified: true,
       note: '항아리 밀크티·커피와 돼지갈비빵으로 유명한 옛날식 카페 (소방서 앞 광장)', hours: '11:00~19:00 · 화요일 휴무라는 안내도 있음 (사이트마다 다름)', open: '11:00', close: '19:00',
       url: 'https://www.taipavillagemacau.com/directory/sei-kee-cafe/', urlLabel: '소개 페이지'
@@ -171,11 +171,11 @@ window.TRIP_DATA = {
     },
     senado: { mapQuery: 'Senado Square Macau', zh: '議事亭前地', zhArea: "澳門 · Largo do Senado", name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장', look: { wall: '#ecd98f', glass: '#5d6b4f', roof: '#b9b4a8', radius: 110 }, baby: '가까운 공공 수유실: 로우카우 맨션(광장에서 약 150m, 월요일 휴관, 입구 계단 2단)·소아레스 빌딩(광장 옆, 평일만). 공중화장실: 대당가(약 100m, 24시간). 교환대 여부 미확인 (마카오 정부 자료)' },
     stpaul: { mapQuery: "Ruins of St. Paul's Macau", zh: '大三巴牌坊', zhArea: "澳門 · Ruínas de São Paulo", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 }, baby: '바로 옆 마카오 박물관(몬테 요새)에 간이 수유실 (매표소·보안요원에게 요청). 유적 아래 공중화장실(약 55m, 24시간). 앞 계단이 많아 유모차는 들어서 이동 (정부 자료)' },
-    koikei: { mapQuery: 'Koi Kei Bakery Senado Square Macau', zh: '鉅記餅家 議事亭前地', zhArea: "澳門 · Koi Kei Bakery",
+    koikei: { mapQuery: 'Pastelaria Koi Kei 7 Largo do Senado Macau', zh: '鉅記餅家 議事亭前地', zhArea: "澳門 · Koi Kei Bakery",
       name: '쿠이케이 (세나도 광장 지점)', type: 'snack', lng: 113.53965, lat: 22.19371, verified: true,
       note: '아몬드 쿠키·에그타르트, 선물용으로도 좋음', hours: '영업시간 미확인 (근처 성 바울 지점은 10:00부터로 안내)'
     },
-    wongchikei: { mapQuery: 'Wong Chi Kei Senado Square Macau', zh: '黃枝記 議事亭前地', zhArea: "澳門 · Wong Chi Kei",
+    wongchikei: { mapQuery: 'Wong Chi Kei 17 Largo do Senado Macau', zh: '黃枝記 議事亭前地', zhArea: "澳門 · Wong Chi Kei",
       name: '웡치케이 (세나도 광장)', type: 'food', lng: 113.54019, lat: 22.19414, verified: true,
       note: '완탕면·죽 노포', hours: '08:00~23:00, 정기 휴무 없음 (여행 사이트 기준)', open: '08:00', close: '23:00'
     },
