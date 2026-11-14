@@ -149,6 +149,10 @@ window.TRIP_DATA = {
       note: '항아리 밀크티·커피와 돼지갈비빵으로 유명한 옛날식 카페 (소방서 앞 광장)', hours: '11:00~19:00 · 화요일 휴무라는 안내도 있음 (사이트마다 다름)', open: '11:00', close: '19:00',
       url: 'https://www.taipavillagemacau.com/directory/sei-kee-cafe/', urlLabel: '소개 페이지'
     },
+    eiffel: { mapQuery: 'Eiffel Tower The Parisian Macao', zh: '澳門巴黎人 巴黎鐵塔', zhArea: "路氹 · The Parisian Macao",
+      name: '파리지앵 에펠탑', type: 'sight', lng: 113.56283, lat: 22.14357, verified: true,
+      note: '절반 크기 에펠탑 · 37층 전망대 · 해 진 뒤 조명쇼', url: 'https://www.parisianmacao.com/amenities/eiffel-tower.html', urlLabel: '파리지앵 공식'
+    },
     londoner: { mapQuery: 'Hampton Court Londoner Grand Macao', zh: '澳門倫敦人名匯', zhArea: "路氹 · Londoner Grand",
       baby: '런더너 그랜드에 육아실 있음 (관광청 무장애 가이드, 위치 미확인)',
       name: '햄튼 코트 뷔페 (런더너 그랜드 2층)', type: 'food', lng: 113.56540, lat: 22.14470, verified: true,
@@ -528,7 +532,7 @@ window.TRIP_DATA = {
     {"id": "ph_taipahouses", "area": "타이파 빌리지", "name": "타이파 주택박물관", "lat": 22.15394, "lng": 113.55973, "zh": "龍環葡韻住宅式博物館", "zhArea": "氹仔 海邊馬路", "mapQuery": "Taipa Houses-Museum Macau", "what": "타이파 주택박물관 민트색 옛 집 다섯 채와 연못 산책로", "best": "오후 (해가 집 정면 쪽) · 28일 타이파 산책 때", "tip": "집 앞 산책로 끝에서 비스듬히 찍으면 다섯 채가 나란히 담겨요. 유모차로 가기 쉬운 평지예요"},
     {"id": "ph_carmo", "area": "타이파 빌리지", "name": "카르멜 성모 성당 (타이파)", "lat": 22.1535, "lng": 113.55878, "zh": "嘉模聖母堂", "zhArea": "氹仔 嘉路士米耶馬路", "mapQuery": "Our Lady of Carmo Church Taipa", "what": "언덕 위 노란 카르멜 성모 성당과 정원", "best": "타이파 주택박물관과 같이 (걸어서 1~2분)", "tip": "성당 앞 정원 계단 아래에서 올려 찍으면 노란 성당이 하늘과 잘 어울려요"},
     {"id": "ph_venetian", "area": "코타이 (베네시안·런더너)", "name": "베네시안 실내 운하", "place": "venetian", "what": "베네시안 실내 운하와 하늘 그림 천장, 곤돌라", "best": "28일 곤돌라 탈 때", "tip": "곤돌라 위에서 앞쪽 운하를 길게 찍거나, 다리 위에서 곤돌라 탄 가족을 찍어 달라고 부탁하세요"},
-    {"id": "ph_eiffel", "area": "코타이 (베네시안·런더너)", "name": "파리지앵 에펠탑", "lat": 22.14357, "lng": 113.56283, "zh": "澳門巴黎人 巴黎鐵塔", "zhArea": "路氹 · 巴黎人", "mapQuery": "Eiffel Tower The Parisian Macao", "what": "파리지앵 앞 절반 크기 에펠탑", "best": "해 질 무렵 · 18:15부터 15분마다 조명쇼 (안내 사이트 기준)", "tip": "탑 바로 아래보다 길 건너(런더너·베네시안 쪽) 인도에서 찍어야 탑 전체가 나와요. 전망대 위에서는 코타이 전체가 보여요"},
+    {"id": "ph_eiffel", "area": "코타이 (베네시안·런더너)", "name": "파리지앵 에펠탑", "place": "eiffel", "what": "파리지앵 앞 절반 크기 에펠탑", "best": "해 질 무렵 · 18:15부터 15분마다 조명쇼 (안내 사이트 기준)", "tip": "탑 바로 아래보다 길 건너(런더너·베네시안 쪽) 인도에서 찍어야 탑 전체가 나와요. 전망대 위에서는 코타이 전체가 보여요"},
     {"id": "ph_londoner", "area": "코타이 (베네시안·런더너)", "name": "런더너 빅벤 시계탑", "lat": 22.14581, "lng": 113.56534, "zh": "澳門倫敦人 大笨鐘", "zhArea": "路氹 · 澳門倫敦人", "mapQuery": "빅벤 Shoppes at Cotai Central Sands Cotai Central Shop 2203D&E, Level 2 마카오", "what": "런더너의 빅벤 시계탑과 영국풍 건물 외관", "best": "28일 햄튼 코트 저녁 전후 · 밤 조명", "tip": "빅벤이 높아서 건물 앞 광장 끝까지 물러나 세로로 찍으세요"},
     {"id": "ph_wheel", "area": "코타이 (스튜디오 시티·COD)", "name": "8자 관람차 야경", "place": "wheel", "what": "스튜디오 시티 8자 관람차와 코타이 야경", "best": "29일 해 진 뒤 (18:30 일정)", "tip": "관람차 안에서는 유리 반사가 생기니 휴대폰을 유리에 바짝 대고 찍으세요"},
     {"id": "ph_panda", "area": "콜로안", "name": "자이언트 판다관", "place": "panda", "what": "자이언트 판다와 레서판다", "best": "오전 첫 회차 (판다가 활발한 편)", "tip": "유리 너머로 찍을 땐 플래시를 끄고 휴대폰을 유리에 붙이면 반사가 줄어요"},
@@ -714,7 +718,7 @@ window.TRIP_DATA = {
           ]
         },
         {
-          date: '2026-12-28', time: '15:40', end: '16:30', kind: 'activity', title: '파리지앵 에펠탑 37층 전망대', places: ['venetian'],
+          date: '2026-12-28', time: '15:40', end: '16:30', kind: 'activity', title: '파리지앵 에펠탑 37층 전망대', places: ['eiffel'],
           cost: { min: 176, max: 176, type: 'ticket', note: '어른 MOP 88 ×2 (공식). 아이 요금은 현장 확인' },
           tips: [
             '베네시안에서 파리지앵까지 실내 통로로 이어져 있어 유모차로 약 10분.',

@@ -144,12 +144,13 @@
     'macau.com': 'Macau.com 소개(영문)', 'macaulifestyle.com': 'Macau Lifestyle 소개(영문)', 'macau-airport.com': '마카오 공항 공식',
     'venetianmacao.com': '베네시안 공식', 'londonermacao.com': '런더너 공식', 'studiocity-macau.com': '스튜디오 시티 공식',
     'cityofdreamsmacau.com': '시티 오브 드림즈 공식', 'wynnresortsmacau.com': '윈 팰리스 공식', 'grandlisboapalace.com': '그랜드 리스보아 팰리스 공식',
-    'grandlisboa.com': '그랜드 리스보아 공식', 'lordstow.com': '로드 스토우 공식'
+    'grandlisboa.com': '그랜드 리스보아 공식', 'lordstow.com': '로드 스토우 공식', 'parisianmacao.com': '파리지앵 공식'
   };
   function siteLabel(url, label) {
     var host = ''; try { host = new URL(url).hostname.replace(/^www\./, '').replace(/^hk\./, ''); } catch (e) { /* 무시 */ }
     var name = SITE_NAMES[host];
-    if (!label || /소개 페이지/.test(label)) return '🌐 ' + (name || host || '소개 페이지');
+    // 막연한 이름('소개 페이지', '공식', '공식 안내')은 사이트 이름으로 바꾼다
+    if (!label || /소개 페이지/.test(label) || label === '공식' || label === '공식 안내') return '🌐 ' + (name || host || '소개 페이지');
     return '🌐 ' + label;
   }
 
