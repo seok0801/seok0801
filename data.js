@@ -90,7 +90,6 @@ window.TRIP_DATA = {
     glp: { mapQuery: 'Grand Lisboa Palace Macau', zh: '上葡京綜合度假村', zhArea: "路氹 · Grand Lisboa Palace",
       baby: '수유실 위치 미확인 (컨시어지 문의). 2층에 아이 놀이 공간이 있음 (호텔 공식)',
       name: '그랜드 리스보아 팰리스', type: 'hotel', lng: 113.57420, lat: 22.14409, verified: true,
-      height: 75,     // 공개 지도에 건물 높이가 없어 넣은 대략의 높이(m). 실제와 다를 수 있음
       look: { wall: '#efe9da', glass: '#6b7f8c', roof: '#6f9085', radius: 60 },   // 크림색 벽, 청록 지붕
       note: '12/27~29 숙박', url: 'https://www.grandlisboapalace.com/kr', urlLabel: '호텔 공식'
     },
@@ -530,6 +529,7 @@ window.TRIP_DATA = {
   decor: [
     { id: 'stdominic', name: '성 도밍고 성당', lng: 113.540364, lat: 22.194841, look: { wall: '#ecc95e', glass: '#fbf3d2', roof: '#c9b48a', radius: 12, maxH: 22 } },
     { id: 'lealsenado', name: '레알 세나도', lng: 113.539583, lat: 22.193267, look: { wall: '#f3f1ea', glass: '#cfcac0', roof: '#a9a49a', radius: 12, maxH: 20 } },
+    { id: 'parisian', name: '파리지앵', lng: 113.56120, lat: 22.14368, look: { wall: '#efe2c8', glass: '#6f86a0', roof: '#5b7088', radius: 110 } },
     { id: 'morpheus', name: '모피어스 호텔', lng: 113.566588, lat: 22.149834, look: { wall: '#f2f3f1', glass: '#8fa3b3', roof: '#e1e4e3', radius: 20 } }
   ],
 
