@@ -833,15 +833,14 @@
         // 실제 마카오처럼: 낮은 건물은 따뜻한 미색 벽에 작은 창, 중간 높이는 연한 회색 벽에 창, 고층은 푸른 유리 띠
         // 윈 팰리스(탑·낮은 건물)는 실제처럼 금빛 외벽으로 한 덩어리로 칠한다 (건물 번호로 지정)
         map.setPaintProperty(bLayer, 'fill-extrusion-pattern',
-          ['match', ['id'], WYNN_IDS, windowPattern('#d6b46e', '#d6b46e', 'plain'),   // 창문 무늬 없이 매끈하게 (멀리서 비스듬히 보면 무늬가 지저분한 줄로 겹쳐 보여서)
-           
-            ['step', H, windowPattern('#ece4d6', '#d6cfc2', 'small'), 15, windowPattern('#e6e3dc', '#c7ccd0', 'bands'), 45, windowPattern('#dfe4e7', '#a9b9c4', 'glass')]]);
+ 
+            ['step', H, windowPattern('#ece4d6', '#d6cfc2', 'small'), 15, windowPattern('#e6e3dc', '#c7ccd0', 'bands'), 45, windowPattern('#dfe4e7', '#a9b9c4', 'glass')]);
         map.setPaintProperty(bLayer, 'fill-extrusion-vertical-gradient', true);
         // 주변 건물 지붕도 회색 계열로만
         map.addLayer({
           id: 'tour-roofs', type: 'fill-extrusion', source: srcId, 'source-layer': 'building', minzoom: 13,
           paint: {
-            'fill-extrusion-color': ['match', ['id'], WYNN_IDS, '#c9a25e', ['step', H, '#ddd5c8', 15, '#d6d6d2', 45, '#c9d1d6']],
+            'fill-extrusion-color': ['step', H, '#ddd5c8', 15, '#d6d6d2', 45, '#c9d1d6'],
             'fill-extrusion-base': H,
             'fill-extrusion-height': ['+', H, 1.2],
             'fill-extrusion-opacity': 1
@@ -1013,7 +1012,7 @@
     if (!mapReady || !tallFeatures.length || !map.getSource('tour-tall')) return;
     tallFeatures.forEach(function (f) {
       var pr = f.properties, c = dayColorOf(pr.pid);
-      var wall = c ? mix(pr.wall, c, state.day === 'all' ? .3 : .42) : pr.wall;
+      var wall = c ? mix(pr.wall, c, state.day === 'all' ? .15 : .22) : pr.wall;   // 실제 색이 주가 되게 날짜 색은 살짝만
       var glass = c ? mix(pr.glass, c, .35) : pr.glass;
       pr.pat = windowPattern(wall, glass);
     });
@@ -1040,18 +1039,22 @@
   function raiseFlatBuildings() {
     if (!mapReady || map.getZoom() < 14.5) return;
     var changed = false, all = null, idsChanged = false;
-    Object.keys(D.places).forEach(function (id) {
-      var p = D.places[id];
-      if (!onMap(id) || p.model) return;      // 직접 만든 모형(에펠탑)은 건물 색칠에서 뺀다
+    var targets = {};   // 일정 장소 + 일정에는 없지만 실제 색으로 칠할 건물(D.decor: 성당·주택박물관 등)
+    Object.keys(D.places).forEach(function (id) { targets[id] = D.places[id]; });
+    (D.decor || []).forEach(function (d) { targets['decor_' + d.id] = d; });
+    Object.keys(targets).forEach(function (id) {
+      var p = targets[id];
+      if ((D.places[id] && !onMap(id)) || p.model) return;      // 직접 만든 모형(에펠탑)은 건물 색칠에서 뺀다
       var pt = map.project([p.lng, p.lat]);
       var c = map.getContainer();
-      if (pt.x < 0 || pt.y < 0 || pt.x > c.clientWidth || pt.y > c.clientHeight) return;
+      var mg = 350;   // 장소 점이 화면 밖이어도 그 둘레 건물(윈 팰리스처럼 넓은 곳)이 보이면 칠한다
+      if (pt.x < -mg || pt.y < -mg || pt.x > c.clientWidth + mg || pt.y > c.clientHeight + mg) return;
       if (!all) {
         // 지도 자료는 여러 건물을 한 덩어리(MultiPolygon)로 묶어 주기도 하므로, 건물 하나씩으로 나눠서 본다
         all = [];
         map.querySourceFeatures(map.getLayer('tour-roofs').source, { sourceLayer: 'building' }).forEach(function (f) {
           var polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
-          if (HIDE_BUILDING_IDS.indexOf(f.id) >= 0 || WYNN_IDS.indexOf(f.id) >= 0) return;   // 모형·윈 팰리스는 따로 칠한다   // 모형으로 바꾼 건물(그랜드 리스보아 등)은 색칠하지 않는다
+          if (HIDE_BUILDING_IDS.indexOf(f.id) >= 0) return;   // 모형으로 바꾼 건물(그랜드 리스보아 등)은 색칠하지 않는다
           polys.forEach(function (rings) { all.push({ rings: rings, props: f.properties, id: f.id }); });
         });
       }
@@ -1062,7 +1065,7 @@
         var own = insidePolygon(here, geom);
         if (!own && !nearPolygon(here, geom, look.radius || NEAR_M)) return;
         var first = o.rings[0][0];
-        var key = first[0].toFixed(6) + ',' + first[1].toFixed(6) + ',' + (o.props.render_min_height || 0) + ',' + (o.props.render_height || 0);   // 같은 바닥에 층별로 쌓인 덩어리(윈 팰리스 탑 등)도 따로 칠한다
+        var key = first[0].toFixed(6) + ',' + first[1].toFixed(6) + ',' + o.rings[0].length + ',' + (o.props.render_min_height || 0) + ',' + (o.props.render_height || 0);   // 같은 바닥에 층별로 쌓인 덩어리(윈 팰리스 탑 등)도 따로 칠한다
         if (tallKeys[key]) {                         // 이미 칠한 건물 (지도 조각마다 같은 건물이 다른 번호로 올 수 있어 그 번호도 숨긴다)
           if (o.id != null && !tallIds[o.id]) { tallIds[o.id] = true; idsChanged = true; }
           return;
@@ -1073,7 +1076,7 @@
         pat = pat || windowPattern(wall0, glass0);
         var h = Math.max(o.props.render_height || 5, own && p.height ? p.height : 0);
         // 원래 건물과 벽·지붕이 정확히 겹치면 카메라가 돌 때 깜빡이므로, 바깥으로 0.8m 넓히고 조금 높인다
-        tallFeatures.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: o.rings.map(growRing) },
+        tallFeatures.push({ type: 'Feature', geometry: { type: 'Polygon', coordinates: o.rings.map(function (r, i) { return i ? r : growRing(r); }) },
           properties: { h: h + 1.4, b: o.props.render_min_height || 0, pat: pat, pid: id, wall: wall0, glass: glass0 } });
       });
     });
@@ -1081,15 +1084,31 @@
     if (changed || idsChanged) applyBuildingHide();
   }
   /* 건물 바깥선을 중심에서 바깥쪽으로 0.8m 넓힌다 */
-  function growRing(ring) {
-    var cx = 0, cy = 0;
-    ring.forEach(function (v) { cx += v[0]; cy += v[1]; });
-    cx /= ring.length; cy /= ring.length;
-    var k = Math.cos(cy * Math.PI / 180);
-    return ring.map(function (v) {
-      var dx = (v[0] - cx) * 111320 * k, dy = (v[1] - cy) * 111320, d = Math.sqrt(dx * dx + dy * dy) || 1;
-      return [v[0] + dx / d * 0.8 / (111320 * k), v[1] + dy / d * 0.8 / 111320];
+  function growRing(ring, dist) {
+    // 각 변을 바깥쪽으로 dist(m)만큼 평행하게 밀어낸다. (예전처럼 중심에서 밀면 오목한 건물(윈 팰리스 등)은
+    // 안쪽으로 줄어드는 곳이 생겨 원래 벽이 비쳐 보였다)
+    dist = dist || 0.8;
+    var n = ring.length, closed = n > 1 && ring[0][0] === ring[n - 1][0] && ring[0][1] === ring[n - 1][1];
+    var pts = closed ? ring.slice(0, n - 1) : ring.slice();
+    var m = pts.length; if (m < 3) return ring;
+    var lat0 = pts[0][1], kx = 111320 * Math.cos(lat0 * Math.PI / 180), ky = 111320;
+    var P = pts.map(function (v) { return [v[0] * kx, v[1] * ky]; });
+    var area = 0; for (var i = 0; i < m; i++) { var a = P[i], b = P[(i + 1) % m]; area += a[0] * b[1] - b[0] * a[1]; }
+    var sgn = area > 0 ? 1 : -1;   // 반시계 방향이면 바깥 법선은 (dy, -dx)
+    var out = P.map(function (v, i) {
+      var p = P[(i - 1 + m) % m], q = P[(i + 1) % m];
+      var e1 = [v[0] - p[0], v[1] - p[1]], e2 = [q[0] - v[0], q[1] - v[1]];
+      var l1 = Math.hypot(e1[0], e1[1]) || 1, l2 = Math.hypot(e2[0], e2[1]) || 1;
+      var n1 = [sgn * e1[1] / l1, -sgn * e1[0] / l1], n2 = [sgn * e2[1] / l2, -sgn * e2[0] / l2];
+      var bx = n1[0] + n2[0], by = n1[1] + n2[1], bl = Math.hypot(bx, by);
+      if (bl < 1e-6) { bx = n1[0]; by = n1[1]; bl = 1; }
+      bx /= bl; by /= bl;
+      var cos = Math.max(0.35, bx * n1[0] + by * n1[1]);
+      var d = dist / cos;
+      return [(v[0] + bx * d) / kx, (v[1] + by * d) / ky];
     });
+    out.push(out[0]);
+    return out;
   }
   /* 건물 바깥선의 어느 꼭짓점이든 pt 에서 r 미터 안에 있는지 */
   function nearPolygon(pt, geom, r) {
@@ -1255,11 +1274,11 @@
     return feats;
   }
   /* 직접 만든 모형과 겹치는 바탕 지도(OpenStreetMap) 건물 번호: 에펠탑 층별 덩어리, 마카오 타워, 그랜드 리스보아 */
-  var WYNN_IDS = [2955070430, 4419172492, 2416023910, 4983462152, 13185718850];   // 윈 팰리스 건물 번호 (금빛으로 칠함)
   var HIDE_BUILDING_IDS = [14699807400, 14699807440, 14699807560, 14699807480, 14699807500, 14699807592, 14699807552, 4424626772,
     8489778690, 8481990182, 8481990192, 649339742, 8481990200, 2310745612, 8481990232, 8481990222,
-    1921824052, 27801710,
-    130876670, 103571250, 1920959500, 1920960650, 1920958810, 1736970750];   // 성 도밍고 성당·레알 세나도·타이파 주택박물관·카르멜 성당·콜로안 성당   // … 그랜드 리스보아, 성 바울 성당 유적(통짜 덩어리)
+    1921824052];   // … 그랜드 리스보아
+  // 주의: 지도 자료는 같은 높이의 건물 여러 채를 한 번호로 묶기도 한다 (예: 반도 건물 148채가 한 번호).
+  // 그런 번호를 숨기면 먼 건물까지 사라지므로, 여기에는 한 곳에만 있는 번호만 넣는다
 
   /* ---------- 🏛️ 랜드마크 입체 모형: 마카오 타워 · 그랜드 리스보아 · 성 바울 성당 유적 · 런더너 빅벤 · 스튜디오 시티 8자 관람차 ----------
    * 모양은 사진을 참고해 단순화한 것. 크기(m)는 실제에 가깝게 */
@@ -1285,7 +1304,7 @@
       for (var k = 0; k < 8; k++) { var a = k * 0.785; m.box(Math.cos(a) * 26, Math.sin(a) * 18, 6, 6, 205, 228 - (k % 2) * 8, '#f6dc86'); }   // 꽃잎 끝
       m.cyl(0, 0, 4, 205, 238, '#fff1b8');
     } },
-    { id: 'stpaul', lng: 113.54086, lat: 22.19758, build: function (m) {
+    { id: 'stpaul', lng: 113.540861, lat: 22.197440, build: function (m) {   // 지도 자료의 얇은 정면 벽(높이 27m) 바로 앞에 세운다
       var S = '#d8c39b', D = '#c9b083';
       // 1층: 문 3개 (기둥 사이를 비워 문처럼)
       [[-11, 3], [-5.5, 2], [0, 1.2], [5.5, 2], [11, 3]].forEach(function (c) { if (c[0] === 0) return; m.box(c[0], 0, c[1] * 1.6, 2.2, 0, 8, S); });
@@ -1315,40 +1334,6 @@
       m.box(0, 0, 9, 9, 82, 86, G);
       for (var y = 86, s2 = 8; s2 > 0.6; y += 2.4, s2 -= 1.1) m.box(0, 0, s2, s2, y, y + 2.5, G);   // 뾰족 지붕
       m.box(0, 0, 0.5, 0.5, y, y + 5, '#c9a64a');
-    } },
-    { id: 'stdominic', lng: 113.540364, lat: 22.194841, rot: 35, build: function (m) {   // 성 도밍고 성당: 노란 바로크 정면
-      var Y = '#ecc95e', Wt = '#fbf7ea';
-      m.box(0, 4, 15, 30, 0, 13, Y); m.box(0, 4, 15.6, 30.6, 13, 14, Wt);
-      m.box(0, -11.5, 16, 1.6, 0, 16, Y);                       // 정면 벽
-      for (var z = 4; z < 16; z += 4) m.box(0, -12.4, 16.4, 0.4, z, z + 0.5, Wt);   // 흰 띠
-      m.box(0, -11.5, 9, 1.6, 16, 19, Y); m.box(0, -11.5, 5, 1.6, 19, 21, Y); m.box(0, -11.6, 0.4, 0.4, 21, 23, Wt);
-      m.box(0, -12.4, 3, 0.4, 0, 5, '#6a4b2c');                 // 문
-      m.box(6, 18, 5, 5, 0, 20, Y); m.box(6, 18, 3.4, 3.4, 20, 23, '#b08a52');   // 뒤쪽 종탑
-    } },
-    { id: 'lealsenado', lng: 113.539583, lat: 22.193267, rot: 30, build: function (m) {   // 레알 세나도: 흰 신고전 양식 2층
-      m.box(0, 0, 30, 20, 0, 13, '#f3f1ea'); m.box(0, 0, 31, 21, 13, 14.2, '#ffffff');
-      m.box(0, -10.4, 10, 0.8, 0, 12, '#e7e2d3');
-      for (var x = -12; x <= 12; x += 4) m.box(x, -10.3, 1.2, 0.5, 0, 12.5, '#ffffff');   // 기둥
-      m.box(0, 0, 26, 16, 14.2, 15.4, '#9c968a');
-    } },
-    { id: 'taipahouses', lng: 113.559733, lat: 22.153940, build: function (m) {   // 타이파 주택박물관: 민트색 집 다섯 채
-      for (var k = -2; k <= 2; k++) {
-        var x = k * 17;
-        m.box(x, 0, 11, 13, 0, 8.5, '#9fd6bf'); m.box(x, 0, 11.6, 13.6, 8.5, 9.4, '#ffffff');
-        m.box(x, -6.7, 9, 0.4, 0, 3.2, '#ffffff');               // 흰 베란다
-        m.box(x, 0, 10, 12, 9.4, 10.6, '#c9c3b6'); m.box(x, 0, 6, 8, 10.6, 11.6, '#c9c3b6');
-      }
-    } },
-    { id: 'carmo', lng: 113.558777, lat: 22.153502, rot: 90, build: function (m) {   // 카르멜 성모 성당: 노란 성당과 종탑
-      m.box(0, 4, 11, 22, 0, 10, '#f1dd8a'); m.box(0, 4, 11.6, 22.6, 10, 11, '#ffffff');
-      m.box(0, -9, 6, 6, 0, 18, '#f1dd8a'); m.box(0, -9, 6.6, 6.6, 18, 19, '#ffffff');
-      m.box(0, -9, 4.5, 4.5, 19, 22, '#f1dd8a'); m.box(0, -9, 2.6, 2.6, 22, 24.5, '#b9a067'); m.box(0, -9, 0.4, 0.4, 24.5, 26.5, '#ffffff');
-    } },
-    { id: 'coloanechapel', lng: 113.551461, lat: 22.116917, rot: 90, build: function (m) {   // 콜로안 성 프란시스코 사비에르 성당
-      m.box(0, 3, 8.5, 17, 0, 8, '#f0d36a'); m.box(0, 3, 9, 17.5, 8, 8.8, '#ffffff');
-      m.box(0, -6.5, 5, 4, 0, 13, '#f0d36a'); m.box(0, -6.5, 5.4, 4.4, 13, 13.6, '#ffffff');
-      m.box(0, -6.5, 3.6, 3, 13.6, 16, '#f0d36a'); m.box(0, -6.5, 0.4, 0.4, 16, 18, '#ffffff');
-      m.box(0, -8.6, 2, 0.4, 0, 3.5, '#6b4b2e');
     } },
     { id: 'studiocity', lng: 113.56200, lat: 22.14095, build: function (m) {   // 스튜디오 시티: 쌍둥이 탑 사이에 8자 관람차, 꼭대기를 잇는 다리
       var C = '#efe5cf', G = '#c9a548', B = '#3d4c63';
@@ -1476,6 +1461,85 @@
         var hdg = back ? bearingTo(c, a) : bearingTo(a, c);
         feats = feats.concat(modelFeatures(SHIP_MODELS[sh.model], pos, hdg, S, true));
       });
+      src.setData({ type: 'FeatureCollection', features: feats });
+    })(t0);
+  }
+
+  /* ---------- 🚡 윈 팰리스 스카이캡: 퍼포먼스 호수 둘레를 도는 케이블카 ----------
+   * 길: 지도 자료의 호수 바깥선을 12m 바깥으로 넓힌 고리 (못 받으면 아래 고정 좌표). 기둥·케이블은 고정, 곤돌라만 움직인다 */
+  var SKYCAB_LAKE = [113.56946, 22.14804];
+  var SKYCAB_FALLBACK = [[113.57054,22.14704],[113.56994,22.14657],[113.56989,22.14645],[113.56957,22.14647],[113.56948,22.14652],[113.56945,22.14759],[113.56937,22.14819],[113.56925,22.14882],[113.56933,22.1489],[113.57005,22.1489],[113.57002,22.14879],[113.57063,22.14826],[113.57054,22.14704]];
+  var skycab = { token: 0, raf: 0, path: null, acc: null, len: 0, stat: null };
+  function skycabPath() {
+    var ring = null;
+    try {
+      var srcId = map.getLayer('tour-roofs') && map.getLayer('tour-roofs').source;
+      (srcId ? map.querySourceFeatures(srcId, { sourceLayer: 'water' }) : []).some(function (f) {
+        var polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [];
+        return polys.some(function (r) { if (r[0].length < 200 && insidePolygon(SKYCAB_LAKE, { type: 'Polygon', coordinates: r })) { ring = r[0]; return true; } return false; });
+      });
+    } catch (e) { /* 고정 좌표 */ }
+    return growRing(ring || SKYCAB_FALLBACK, 12);
+  }
+  function skycabBox(c, w, d, b, h, col, hdg) {   // c 를 가운데로, hdg(도) 방향으로 돌린 상자
+    var kx = 111320 * Math.cos(c[1] * Math.PI / 180), a = (hdg || 0) * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+    var ring = [[-w / 2, -d / 2], [w / 2, -d / 2], [w / 2, d / 2], [-w / 2, d / 2], [-w / 2, -d / 2]].map(function (v) {
+      var x = v[0] * ca + v[1] * sa, y = -v[0] * sa + v[1] * ca; return [c[0] + x / kx, c[1] + y / 111320];
+    });
+    return { type: 'Feature', properties: { b: b, h: h, c: col }, geometry: { type: 'Polygon', coordinates: [ring] } };
+  }
+  function addSkycabLayer() {
+    try {
+      map.addSource('skycab', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addSource('skycab-move', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      ['skycab', 'skycab-move'].forEach(function (id) {
+        map.addLayer({ id: id, type: 'fill-extrusion', source: id, minzoom: 13.5,
+          paint: { 'fill-extrusion-color': ['get', 'c'], 'fill-extrusion-base': ['get', 'b'], 'fill-extrusion-height': ['get', 'h'], 'fill-extrusion-opacity': 1 } });
+      });
+    } catch (e) { /* 없이 */ }
+  }
+  function buildSkycab() {
+    var path = skycabPath();
+    skycab.path = path; skycab.acc = [0];
+    for (var i = 1; i < path.length; i++) skycab.acc.push(skycab.acc[i - 1] + distanceM(path[i - 1], path[i]));
+    skycab.len = skycab.acc[skycab.acc.length - 1];
+    var feats = [];
+    // 기둥(약 45m 간격)과 케이블(짧은 조각으로 이어 붙임)
+    for (var d = 0; d < skycab.len; d += 45) { var pp = skycabAt(d); feats.push(skycabBox(pp.pos, 1.4, 1.4, 0, 19, '#9aa3a8', pp.hdg)); feats.push(skycabBox(pp.pos, 4, 1.2, 18.4, 19.2, '#7d868c', pp.hdg)); }
+    for (var e = 0; e < skycab.len; e += 6) { var q = skycabAt(e + 3); feats.push(skycabBox(q.pos, 0.35, 6.2, 18.2, 18.5, '#55606a', q.hdg)); }
+    // 양쪽 정류장 (윈 팰리스 쪽·코타이 길 쪽)
+    var s1 = skycabAt(0), s2 = skycabAt(skycab.len * 0.5);
+    [s1, s2].forEach(function (s) { feats.push(skycabBox(s.pos, 14, 10, 0, 21, '#c9a35b', s.hdg)); feats.push(skycabBox(s.pos, 15, 11, 21, 23, '#a8323a', s.hdg)); });
+    map.getSource('skycab').setData({ type: 'FeatureCollection', features: feats });
+  }
+  function skycabAt(d) {
+    var L = skycab.len, acc = skycab.acc, path = skycab.path;
+    d = ((d % L) + L) % L;
+    var i = 1; while (i < acc.length - 1 && acc[i] < d) i++;
+    var a = path[i - 1], c = path[i], u = (d - acc[i - 1]) / ((acc[i] - acc[i - 1]) || 1);
+    return { pos: [a[0] + (c[0] - a[0]) * u, a[1] + (c[1] - a[1]) * u], hdg: bearingTo(a, c) };
+  }
+  function startSkycab() {
+    skycab.token++; cancelAnimationFrame(skycab.raf);
+    if (!mapReady || !map.getSource('skycab-move')) return;
+    var my = skycab.token, last = 0, t0 = performance.now(), built = false;
+    var src = map.getSource('skycab-move'), N = 14;
+    (function frame(now) {
+      if (my !== skycab.token) return;
+      skycab.raf = requestAnimationFrame(frame);
+      if (now - last < 66 || document.hidden) return;   // 초당 약 15번
+      last = now;
+      if (map.getZoom() < 13.5) return;
+      var b = map.getBounds();
+      if (SKYCAB_LAKE[0] < b.getWest() - .01 || SKYCAB_LAKE[0] > b.getEast() + .01 || SKYCAB_LAKE[1] < b.getSouth() - .01 || SKYCAB_LAKE[1] > b.getNorth() + .01) return;
+      if (!built) { buildSkycab(); built = true; }
+      var feats = [], run = (now - t0) / 1000 * 3.2;   // 초속 약 3m (실제 케이블카처럼 천천히)
+      for (var k = 0; k < N; k++) {
+        var p = skycabAt(run + k * skycab.len / N);
+        feats.push(skycabBox(p.pos, 0.3, 0.3, 15.8, 18.3, '#3d444a', p.hdg));           // 매달린 줄
+        feats.push(skycabBox(p.pos, 2.6, 3.2, 12.6, 15.8, k % 3 ? '#c8323c' : '#d9b45a', p.hdg));   // 곤돌라 (빨강·금색)
+        feats.push(skycabBox(p.pos, 2.7, 3.3, 13.9, 14.9, '#dfe9f0', p.hdg));           // 창문 띠
+      }
       src.setData({ type: 'FeatureCollection', features: feats });
     })(t0);
   }
@@ -1778,6 +1842,8 @@
       startPlaneLoop();
       addEiffelLayer();
       addLandmarkLayer();
+      addSkycabLayer();
+      startSkycab();
       addShipLayer();
       startShips();
       addMeLayer();

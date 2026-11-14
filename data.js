@@ -110,6 +110,7 @@ window.TRIP_DATA = {
     },
     gourmet: { mapQuery: 'Gourmet Pavilion Wynn Palace Macau', zh: '永利皇宮', zhArea: "路氹 · Wynn Palace",
       name: '고메 파빌리온 푸드홀 (윈 팰리스)', type: 'food', lng: 113.57279, lat: 22.14722, verified: true,
+      look: { wall: '#d6b46e', glass: '#a57a45', roof: '#cfa65c', radius: 220 },  // 윈 팰리스 전체(낮은 건물·탑): 금빛 외벽
       note: '예약 없이 들어가는 캐주얼 푸드홀 (치킨라이스·죽·국수·만두)',
       hours: '푸드홀 11:30~22:30 · 수~월 영업 (화요일은 영업일에 없음)', open: '11:30', close: '22:30', closedWeekdays: [2],
       url: 'https://www.wynnresortsmacau.com/ko/wynn-palace/dining/gourmet-pavilion', urlLabel: '식당 공식'
@@ -173,7 +174,7 @@ window.TRIP_DATA = {
       url: 'https://citiesinsider.com/country/china/macao/cafes-and-bakeries/en', urlLabel: '소개 페이지(영문)'
     },
     senado: { mapQuery: 'Senado Square Macau', zh: '議事亭前地', zhArea: "澳門 · Largo do Senado", name: '세나도 광장', type: 'oldtown', lng: 113.53999, lat: 22.19383, verified: true, note: '돌길, 아기띠 권장', look: { wall: '#ecd98f', glass: '#5d6b4f', roof: '#b9b4a8', radius: 110 }, baby: '가까운 공공 수유실: 로우카우 맨션(광장에서 약 150m, 월요일 휴관, 입구 계단 2단)·소아레스 빌딩(광장 옆, 평일만). 공중화장실: 대당가(약 100m, 24시간). 교환대 여부 미확인 (마카오 정부 자료)' },
-    stpaul: { mapQuery: "Ruins of St. Paul's Macau", zh: '大三巴牌坊', zhArea: "澳門 · Ruínas de São Paulo", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, model: true, note: '계단 많음', look: { wall: '#cfc8b8', glass: '#6f6a60', roof: '#a9a497', radius: 70 }, baby: '바로 옆 마카오 박물관(몬테 요새)에 간이 수유실 (매표소·보안요원에게 요청). 유적 아래 공중화장실(약 55m, 24시간). 앞 계단이 많아 유모차는 들어서 이동 (정부 자료)' },
+    stpaul: { mapQuery: "Ruins of St. Paul's Macau", zh: '大三巴牌坊', zhArea: "澳門 · Ruínas de São Paulo", name: '성 바울 성당 유적', type: 'oldtown', lng: 113.54086, lat: 22.19746, verified: true, model: true, note: '계단 많음', look: { wall: '#d8c39b', glass: '#cdb88f', roof: '#c9b083', radius: 4 }, baby: '바로 옆 마카오 박물관(몬테 요새)에 간이 수유실 (매표소·보안요원에게 요청). 유적 아래 공중화장실(약 55m, 24시간). 앞 계단이 많아 유모차는 들어서 이동 (정부 자료)' },
     koikei: { mapQuery: 'Pastelaria Koi Kei 7 Largo do Senado Macau', zh: '鉅記餅家 議事亭前地', zhArea: "澳門 · Koi Kei Bakery",
       name: '쿠이케이 (세나도 광장 지점)', type: 'snack', lng: 113.53965, lat: 22.19371, verified: true,
       note: '아몬드 쿠키·에그타르트, 선물용으로도 좋음', hours: '영업시간 미확인 (근처 성 바울 지점은 10:00부터로 안내)'
@@ -520,6 +521,17 @@ window.TRIP_DATA = {
     {"id": "lordstow", "area": "콜로안", "kind": "bakery", "name": "로드 스토우 베이커리 본점", "place": "lordstow", "menu": "원조 포르투갈식 에그타르트", "price": "1개 약 MOP 13, 6개 상자 MOP 70~75 (가이드 기준, 미확인)", "hours": "출처마다 다름 (09:00~18:00 또는 07:00~21:00)", "tip": "포장 전용이에요. 앉아서 먹으려면 근처 가든 카페로. 갓 구운 건 뜨거우니 식혀서 주세요", "url": "https://guide.michelin.com/hk/en/macau-region/macau/restaurant/lord-stow-s-bakery-rua-do-tassara"},
     {"id": "lordstowgarden", "area": "콜로안", "kind": "cafe", "name": "로드 스토우 가든 카페", "lat": 22.11873, "lng": 113.55103, "zh": "安德魯花園咖啡店", "zhArea": "路環 屠場前地21號C", "mapQuery": "Lord Stow's Garden Cafe Coloane", "menu": "에그타르트, 클럽 샌드위치, 아포가토, 커피", "price": "가격 미확인", "hours": "월 09:00~17:00, 화~일 09:00~20:00 (예약 사이트 기준, 미확인)", "tip": "본점에서 걸어서 1~2분. 아이와 앉아서 먹기 편해요", "url": "https://www.ipacktravel.com/post/macau-buy-lord-stows-bakery-portuguese-egg-tart-coloane-village"},
     {"id": "ngatim", "area": "콜로안", "kind": "food", "name": "응아팀 카페", "place": "ngatim", "menu": "소금후추 새우, 커리 크랩, 생선구이, 파인애플 해산물 볶음밥", "price": "합리적이라는 후기 (금액 미확인)", "hours": "매일 12:00~새벽 1:00 무렵 (안내 사이트 기준, 최신 확인 안 됨)", "tip": "성당 옆 야외 테이블이라 유모차 대기 편해요. 영어가 잘 안 통할 수 있어요 (+853 2888 2086)", "url": "https://www.frommers.com/destinations/macau/restaurants/nga-tim-cafe"}
+  ],
+
+  /* 🎨 실제 색으로 칠할 건물 (일정 장소는 아니지만 포토 스팟·랜드마크). 지도 자료의 건물 모양에 이 색을 입힌다.
+   * radius(m): 이 점에서 그 거리 안의 건물을 칠한다 */
+  decor: [
+    { id: 'stdominic', name: '성 도밍고 성당', lng: 113.540364, lat: 22.194841, look: { wall: '#ecc95e', glass: '#fbf3d2', roof: '#c9b48a', radius: 12 } },
+    { id: 'lealsenado', name: '레알 세나도', lng: 113.539583, lat: 22.193267, look: { wall: '#f3f1ea', glass: '#cfcac0', roof: '#a9a49a', radius: 12 } },
+    { id: 'taipahouses', name: '타이파 주택박물관', lng: 113.559733, lat: 22.153940, look: { wall: '#9fd6bf', glass: '#ffffff', roof: '#c7c2b5', radius: 45 } },
+    { id: 'carmo', name: '카르멜 성모 성당', lng: 113.558777, lat: 22.153502, look: { wall: '#f1dd8a', glass: '#ffffff', roof: '#c9b48a', radius: 12 } },
+    { id: 'coloanechapel', name: '콜로안 성 프란시스코 사비에르 성당', lng: 113.551461, lat: 22.116917, look: { wall: '#f0d36a', glass: '#ffffff', roof: '#b9a067', radius: 10 } },
+    { id: 'morpheus', name: '모피어스 호텔', lng: 113.566588, lat: 22.149834, look: { wall: '#f2f3f1', glass: '#8fa3b3', roof: '#e1e4e3', radius: 20 } }
   ],
 
   /* 📸 포토 스팟: 일정 동선의 사진 명소 (place = 일정 장소 id). 🍴 메뉴의 '📸 포토 스팟' 탭 */
