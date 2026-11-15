@@ -746,6 +746,7 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 /* ---------- 위쪽: 제목 줄 + 🆘, 오늘 '다음 일정' ---------- */
 #title-row { display: flex; align-items: center; gap: 6px; max-width: 100%; }
 #title-row #title { min-width: 0; flex: 0 1 auto; }
+#btn-cards { flex: 0 0 auto; width: 34px; height: 34px; border-radius: 10px; background: rgba(24, 36, 44, .88); font-size: 16px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
 #btn-sos { flex: 0 0 auto; width: 34px; height: 34px; border: 0; border-radius: 10px; background: rgba(24, 36, 44, .88); font-size: 16px; cursor: pointer; }
 #next { align-self: flex-start; max-width: 100%; padding: 7px 12px; border: 0; border-radius: 10px;
   background: #fff; color: #16242d; font: inherit; font-size: 14px; font-weight: 700; text-align: left;
@@ -858,12 +859,5 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 @keyframes mk-arrow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @media (prefers-reduced-motion: reduce) { .mk.on::before { animation: none; } }
 
-/* ⤢ 일정 카드만 크게: 위 날짜 탭 아래부터 아래 버튼 줄 위까지 지도를 덮는다 */
-#sheet.list.full {
-  top: calc(var(--top-h, 120px) + 6px); max-height: none;
-  left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); width: auto; max-width: none;
-  box-shadow: 0 0 0 100vmax rgba(239, 236, 228, .96);   /* 뒤의 지도를 가린다 */
-}
-@media (min-width: 900px) { #sheet.list.full { left: 12px; right: 12px; width: auto; max-width: 760px; margin: 0 auto; } }
-#sheet-full { margin-left: auto; white-space: nowrap; }
-body.listfull #top, body.listfull #bar { z-index: 5; }
+/* 📇 카드로 보기: 일정 카드 페이지(schedule.html)로 가는 링크 */
+#sheet-full { margin-left: auto; white-space: nowrap; text-decoration: none; }

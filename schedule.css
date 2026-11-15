@@ -1,0 +1,149 @@
+/* 일정 카드 페이지 — 지도 없이 날짜별 카드. 휴대폰 세로 화면 기준, 넓은 화면은 가운데 정렬 */
+:root {
+  --bg: #f3f1ec;
+  --card: #ffffff;
+  --text: #1d222c;
+  --muted: #5d6474;
+  --line: #e1ddd3;
+  --chip: #eef1f4;
+  --tip: #f4f8ef;
+  --warn: #9a4a00;
+  --warn-bg: #fff2df;
+  --accent: #0b6e99;
+  --head: #18242c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .06), 0 2px 8px rgba(0, 0, 0, .05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171c; --card: #1f232b; --text: #eef1f5; --muted: #aab2c0; --line: #343a45;
+    --chip: #2a303a; --tip: #232c1f; --warn: #ffb766; --warn-bg: #3b2c17; --accent: #5bb8e0; --head: #0f151a;
+    --shadow: 0 1px 3px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171c; --card: #1f232b; --text: #eef1f5; --muted: #aab2c0; --line: #343a45;
+  --chip: #2a303a; --tip: #232c1f; --warn: #ffb766; --warn-bg: #3b2c17; --accent: #5bb8e0; --head: #0f151a;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--top-h, 110px) + 8px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  word-break: keep-all; overflow-wrap: anywhere;
+}
+a { color: var(--accent); }
+
+/* 위: 제목 + 날짜 탭 (따라 내려온다) */
+#s-top {
+  position: sticky; top: 0; z-index: 5; background: var(--head); color: #fff;
+  padding: calc(8px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+}
+.s-row { display: flex; align-items: center; gap: 10px; max-width: 760px; margin: 0 auto; }
+#s-top h1 { flex: 1 1 auto; margin: 0; font-size: 18px; line-height: 1.3; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; }
+#s-top h1 small { font-size: 13px; font-weight: 500; opacity: .75; }
+.s-dday { background: #f2c14e; color: #1b1b1b; border-radius: 999px; padding: 2px 9px; font-size: 13px; font-weight: 800; }
+#s-map { flex: 0 0 auto; background: rgba(255, 255, 255, .14); color: #fff; border-color: transparent; }
+#s-tabs { display: flex; gap: 6px; max-width: 760px; margin: 8px auto 0; }
+#s-tabs a {
+  flex: 1 1 0; min-width: 0; text-align: center; text-decoration: none; color: #fff; border-radius: 10px;
+  padding: 4px 0 3px; background: rgba(255, 255, 255, .10); line-height: 1.15; border-bottom: 3px solid transparent;
+}
+#s-tabs a b { display: block; font-size: 17px; }
+#s-tabs a small { font-size: 11px; opacity: .8; }
+#s-tabs a.on { background: var(--day); border-bottom-color: #fff; }
+
+#s-main { max-width: 760px; margin: 0 auto; padding: 12px 16px 8px; }
+#s-loading { color: var(--muted); text-align: center; padding: 40px 0; }
+
+/* 날짜 묶음 */
+.s-day { margin: 6px 0 26px; }
+.s-dayhead {
+  background: var(--day); color: #fff; border-radius: 16px; padding: 14px 16px 12px; margin-bottom: 10px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.s-dayhead::after { content: ""; position: absolute; right: -30px; top: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255, 255, 255, .10); }
+.s-daynum { font-size: 12px; font-weight: 700; letter-spacing: .04em; opacity: .85; }
+.s-dayhead h2 { margin: 0; font-size: 24px; line-height: 1.25; }
+.s-sum { margin: 2px 0 8px; font-size: 15px; opacity: .95; }
+.s-daychips { display: flex; flex-wrap: wrap; gap: 6px; }
+.s-daychips span { background: rgba(0, 0, 0, .18); border-radius: 999px; padding: 3px 10px; font-size: 13px; font-weight: 600; }
+.s-day.today .s-dayhead h2::after { content: " · 오늘"; font-size: 15px; font-weight: 700; }
+
+.s-box { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 0 0 8px; padding: 0 14px; }
+.s-box summary { cursor: pointer; padding: 11px 0; font-weight: 700; list-style: none; }
+.s-box summary::-webkit-details-marker { display: none; }
+.s-box summary::after { content: "⌄"; float: right; color: var(--muted); }
+.s-box[open] summary::after { content: "⌃"; }
+.s-box ul { margin: 0 0 12px; padding-left: 20px; }
+.s-box li { margin: 3px 0; }
+
+/* 시간 순서 목록: 왼쪽에 세로 선 */
+.s-list { list-style: none; margin: 12px 0 0; padding: 0; position: relative; }
+.s-list::before { content: ""; position: absolute; left: 27px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+
+.s-card {
+  position: relative; display: grid; grid-template-columns: 56px 1fr; gap: 0 10px;
+  background: var(--card); border-radius: 14px; box-shadow: var(--shadow); margin: 0 0 10px; padding: 14px 14px 14px 0;
+  border-left: 5px solid var(--day);
+}
+.s-time { text-align: center; padding-left: 4px; }
+.s-time b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+.s-time small { display: block; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.s-body { min-width: 0; }
+.s-body h3 { margin: 0; font-size: 17px; line-height: 1.4; }
+.s-place { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.s-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.s-chip { background: var(--chip); border-radius: 999px; padding: 2px 9px; font-size: 13px; font-weight: 600; }
+.s-chip.nap { background: #e8e4f7; color: #3d3070; }
+.s-chip.book { background: #e3f0fb; color: #0c4f7a; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .s-chip.nap { background: #2f2a48; color: #d6cffa; } :root:not([data-theme="light"]) .s-chip.book { background: #17344a; color: #bfe2fb; } }
+.s-warn { margin: 8px 0 0; background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 6px 10px; font-size: 14px; font-weight: 600; }
+.s-memo { margin: 10px 0 0; font-size: 15px; }
+.s-tips { margin: 8px 0 0; padding: 8px 12px 8px 28px; background: var(--tip); border-radius: 10px; font-size: 14.5px; }
+.s-tips li { margin: 3px 0; }
+.s-fine { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+.s-more { margin-top: 8px; }
+.s-more summary { cursor: pointer; color: var(--accent); font-weight: 700; font-size: 14px; list-style: none; padding: 4px 0; }
+.s-more summary::-webkit-details-marker { display: none; }
+.s-more summary::after { content: " ⌄"; }
+.s-more[open] summary::after { content: " ⌃"; }
+.s-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.s-btn {
+  display: inline-flex; align-items: center; min-height: 38px; padding: 6px 12px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--card); color: var(--text); text-decoration: none; font-size: 14px; font-weight: 700;
+}
+.s-btn.book { background: #0b6e99; color: #fff; border-color: transparent; }
+.s-btn.book.must { background: #c62828; }
+
+/* 쉬는 일정(낮잠·취침): 흐리게 */
+.s-card.quiet { box-shadow: none; background: transparent; border: 1px dashed var(--line); border-left: 5px solid var(--line); }
+.s-card.quiet h3 { font-weight: 600; color: var(--muted); }
+
+/* 이동: 카드 사이의 얇은 줄 */
+.s-move { display: grid; grid-template-columns: 56px 1fr; gap: 0 10px; margin: -2px 0 8px; padding: 2px 0; font-size: 14px; color: var(--muted); position: relative; }
+.s-move-time { text-align: center; font-variant-numeric: tabular-nums; font-size: 13px; background: var(--bg); position: relative; z-index: 1; align-self: start; padding: 2px 0; }
+.s-move-kind { color: var(--text); font-weight: 700; }
+.s-move-memo { display: block; font-size: 13px; margin-top: 2px; }
+
+/* 지금 · 다음 일정 강조 (여행 중에만) */
+.s-card.now, .s-card.next { outline: 3px solid var(--day); outline-offset: 0; }
+.s-card.now::before, .s-card.next::before {
+  position: absolute; top: -10px; right: 12px; background: var(--day); color: #fff; font-size: 12px; font-weight: 800; padding: 1px 8px; border-radius: 999px;
+}
+.s-card.now::before { content: "지금"; }
+.s-card.next::before { content: "다음 일정"; }
+
+#s-foot { max-width: 760px; margin: 0 auto; padding: 4px 16px calc(28px + env(safe-area-inset-bottom, 0px)); color: var(--muted); font-size: 13px; }
+#s-foot p { margin: 6px 0; }
+
+@media print {
+  #s-top { position: static; box-shadow: none; }
+  #s-tabs, .s-acts, #s-map { display: none; }
+  .s-more summary { display: none; } .s-more > * { display: block; }
+  .s-card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; border-left-width: 5px; }
+}
