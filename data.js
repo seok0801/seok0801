@@ -159,6 +159,11 @@ window.TRIP_DATA = {
       note: '중국 북방 요리 · 딤섬·꿔바로우·볶음밥', hours: '일~목 11:00~23:00, 금·토 ~01:00 (예약 사이트 기준)', open: '11:00', close: '23:00',
       url: 'https://www.venetianmacao.com/restaurants/north.html', urlLabel: '베네시안 공식'
     },
+    lebuffet: { mapQuery: 'Le Buffet The Parisian Macao', zh: '澳門巴黎人 Le Buffet 自助餐', zhArea: "路氹 · 巴黎人 地下 3100號舖",
+      name: '르 뷔페 Le Buffet (파리지앵 1층)', type: 'food', lng: 113.56150, lat: 22.14370, verified: false,
+      note: '파리지앵 1층(G/F) 국제식 뷔페 · 에펠탑 바로 옆', hours: '디너 18:00~22:00 (공식)', open: '18:00', close: '22:00',
+      url: 'https://www.parisianmacao.com/restaurants/le-buffet.html', urlLabel: '파리지앵 공식'
+    },
     londonerfront: { mapQuery: 'The Londoner Macao Big Ben', zh: '澳門倫敦人 大笨鐘', zhArea: "路氹 · 澳門倫敦人 正門",
       name: '런더너 정문 빅벤 · 빨간 2층 버스', type: 'sight', lng: 113.56510, lat: 22.14600, verified: false, model: true,
       note: '엘리자베스 타워(빅벤)와 빨간 런던 2층 버스 앞 가족사진'
@@ -267,14 +272,12 @@ window.TRIP_DATA = {
       url: 'https://www.venetianmacao.com/restaurants/north.html',
       note: '19:30 예약 확정. 베네시안 1층 1015호, 카지노 플로어 옆이라 아이·유모차는 쇼핑몰 바깥 통로로 간다. 영업 일~목 11:00~23:00 (예약 사이트 기준). 예약번호는 여기에 적지 마세요.'
     },
-    hampton: {
-      name: '햄튼 코트 저녁 뷔페 (런더너 그랜드 2층)', level: '권장', linkVerified: true,
-      kids: '✅ 두 아이 모두 무료 · 만 4세 미만',
-      icon: '🍽️', short: '햄튼 코트 뷔페 저녁', key: '어른 988 · 4세 미만 무료 · ☎ 8118 8822',
-      aff: 'https://3ha.in/r/895226', affBy: '클룩', affNote: '클룩 이용권을 사도 12/28 저녁 자리는 전화(+853 8118 8822)로 한 번 더 확인하세요. 공식 안내상 저녁 예약은 전화로만 받습니다.',
-      url: 'https://www.londonermacao.com/macau-restaurants/hampton-court.html',
-      note: '쉐라톤 그랜드가 런더너 그랜드로 바뀌며 생긴 저녁 뷔페로, 예전 FEAST 대신 이곳을 예약합니다. 공식 요금: 어른 MOP 988, 아이(만 4~12세 미만) 498, 만 4세 미만 무료, 봉사료 10% 별도 → 어른 2명 약 MOP 2,174. ' +
-        '저녁 17:30~22:30(금·토·일·공휴일 ~23:00). 저녁 뷔페 예약은 전화만 받는다고 안내되어 있습니다: +853 8118 8822. 복장은 스마트 캐주얼.'
+    lebuffet: {
+      name: '파리지앵 르 뷔페 Le Buffet 저녁 (파리지앵 1층)', level: '권장', linkVerified: true,
+      kids: '✅ 두 아이 모두 무료 · 만 4세 미만 (공식)',
+      icon: '🍽️', short: '르 뷔페 저녁 (파리지앵)', key: '12/28 18:00 · 어른 698 + 10% · 4세 미만 무료',
+      url: 'https://www.parisianmacao.com/restaurants/le-buffet.html',
+      note: '디너 18:00~22:00. 공식 요금: 어른 MOP 698, 아이(만 4~11세) MOP 388, 만 4세 미만 무료, 봉사료 10% 별도 → 어른 2명 약 MOP 1,536. 연말 요금은 달라질 수 있어 예약 때 확인하세요. 예약번호는 여기에 적지 마세요.'
     },
     wheel: {
       name: '8자 관람차 (골든 릴)', level: '선택', linkVerified: true,
@@ -533,6 +536,7 @@ window.TRIP_DATA = {
     {"id": "imperialhouse", "area": "코타이 (베네시안·런더너)", "kind": "food", "name": "임페리얼 하우스 딤섬 (베네시안)", "lat": 22.14672, "lng": 113.56017, "zh": "威尼斯人 帝王點心", "zhArea": "路氹 · 威尼斯人 1樓", "mapQuery": "Imperial House Dim Sum Venetian Macao", "menu": "하가우·샤오마이 딤섬, 바비큐 모둠, 새우완탕면", "price": "가격 미확인 · 비싼 편이라는 후기", "hours": "월~목 07:00~24:00, 금~일 07:00~02:00 (공식)", "tip": "하루 종일 딤섬을 팔아요. 곤돌라 전후 간식 겸 식사로 좋아요. 위치는 리조트 기준 대략", "url": "https://www.venetianmacao.com/restaurants/imperial-house-dim-sum.html"},
     {"id": "lordstowlondoner", "area": "코타이 (베네시안·런더너)", "kind": "cafe", "name": "로드 스토우 베이커리 & 카페 (런더너)", "lat": 22.14603, "lng": 113.56612, "zh": "倫敦人 安德魯餅店及咖啡店", "zhArea": "路氹 · 澳門倫敦人", "mapQuery": "Lord Stow's Bakery Cafe The Londoner Macao", "menu": "에그타르트 (굽는 모습 구경 가능), 커피", "price": "에그타르트 MOP 13~15 (가이드 기준, 미확인)", "hours": "10:00~22:00 (공식, 같은 페이지에 다른 시간도 있음)", "tip": "앉을 자리가 있는 카페라 햄튼 코트 저녁 전에 쉬어 가기 좋아요. 베네시안 3층에도 매장이 있어요", "url": "https://www.londonermacao.com/macau-restaurants/lord-stow-bakery-cafe.html"},
     {"id": "hampton", "area": "코타이 (베네시안·런더너)", "kind": "food", "name": "햄튼 코트 뷔페 (런더너 그랜드 2층)", "place": "londoner", "menu": "인터내셔널 저녁 뷔페", "price": "어른 MOP 988, 4~11세 MOP 498, 4세 미만 무료 + 봉사료 10% (공식)", "hours": "저녁 월~목 17:30~22:30, 금~일·공휴일 ~23:00 (공식)", "tip": "연말이라 전화 예약 권장 (+853 8118 8822). 두 아이 모두 무료", "url": "https://londonermacao.com/macau-restaurants/hampton-court.html"},
+    {"id": "lebuffet", "area": "코타이 (베네시안·런더너)", "kind": "food", "name": "파리지앵 르 뷔페 Le Buffet", "place": "lebuffet", "menu": "국제식 저녁 뷔페 (라이브 쿠킹·유럽식·아시아식)", "price": "어른 MOP 698, 만 4~11세 MOP 388, 4세 미만 무료 + 봉사료 10% (공식)", "hours": "디너 18:00~22:00 (공식)", "tip": "에펠탑 바로 옆 1층. 두 아이 모두 무료", "url": "https://www.parisianmacao.com/restaurants/le-buffet.html"},
     {"id": "dtf", "area": "코타이 (스튜디오 시티·COD)", "kind": "food", "name": "딘타이펑 (스튜디오 시티)", "place": "dtf", "menu": "샤오롱바오, 새우볶음밥, 오이무침", "price": "가격 미확인 (공식 메뉴판만 있음)", "hours": "월~금 12:00~22:00, 주말·공휴일 11:00~22:30 (공식)", "tip": "평일은 정오에 열어요. 개점 직후가 대기가 짧아요", "url": "https://studiocity-macau.com/en/dining/din-tai-fung"},
     {"id": "foodrepublic", "area": "코타이 (스튜디오 시티·COD)", "kind": "food", "name": "푸드 리퍼블릭 (스튜디오 시티 푸드코트)", "place": "foodrepublic", "menu": "광둥 바비큐·딤섬, 국수, 일식·한식, 태국·베트남식, 디저트", "price": "가격 미확인", "hours": "10:00~23:00 (공식)", "tip": "메뉴가 다양해 아이 입맛 맞추기 쉬워요. 저녁 피크엔 자리부터 잡으세요", "url": "https://studiocity-macau.com/en/dining/food-republic"},
     {"id": "chankee", "area": "코타이 (스튜디오 시티·COD)", "kind": "food", "name": "찬키 로스트 구스 (시티 오브 드림즈)", "place": "chankee", "menu": "거위구이, 거위구이 덮밥, 거위 볶음밥", "price": "가격 미확인", "hours": "월~목 11:00~22:00, 금~일 11:00~23:00 (공식)", "tip": "스튜디오 시티 1층에도 지점이 있어요. 덮밥이 나눠 먹기 편해요", "url": "https://cityofdreamsmacau.com/en/dining/chan-kee-roasted-goose"},
@@ -560,7 +564,7 @@ window.TRIP_DATA = {
     {"id": "ph_carmo", "area": "타이파 빌리지", "name": "카르멜 성모 성당 (타이파)", "lat": 22.1535, "lng": 113.55878, "zh": "嘉模聖母堂", "zhArea": "氹仔 嘉路士米耶馬路", "mapQuery": "Our Lady of Carmo Church Taipa", "what": "언덕 위 노란 카르멜 성모 성당과 정원", "best": "타이파 주택박물관과 같이 (걸어서 1~2분)", "tip": "성당 앞 정원 계단 아래에서 올려 찍으면 노란 성당이 하늘과 잘 어울려요"},
     {"id": "ph_venetian", "area": "코타이 (베네시안·런더너)", "name": "베네시안 실내 운하", "place": "venetian", "what": "베네시안 실내 운하와 하늘 그림 천장, 곤돌라", "best": "28일 곤돌라 탈 때", "tip": "곤돌라 위에서 앞쪽 운하를 길게 찍거나, 다리 위에서 곤돌라 탄 가족을 찍어 달라고 부탁하세요"},
     {"id": "ph_eiffel", "area": "코타이 (베네시안·런더너)", "name": "파리지앵 에펠탑", "place": "eiffel", "what": "파리지앵 앞 절반 크기 에펠탑", "best": "28일 15:40 · 7층 데크·길 건너 르 자르댕 정원 구도 추천 · 18:15부터 조명쇼", "tip": "탑 바로 아래보다 길 건너(런더너·베네시안 쪽) 인도에서 찍어야 탑 전체가 나와요. 전망대 위에서는 코타이 전체가 보여요"},
-    {"id": "ph_londoner", "area": "코타이 (베네시안·런더너)", "name": "런더너 빅벤 · 빨간 2층 버스", "place": "londonerfront", "what": "런더너 정문 빅벤(엘리자베스 타워)과 빨간 런던 2층 버스", "best": "28일 16:45 (햄튼 코트 저녁 전) · 밤 조명", "tip": "빅벤이 높아서 건물 앞 광장 끝까지 물러나 세로로 찍으세요"},
+    {"id": "ph_londoner", "area": "코타이 (베네시안·런더너)", "name": "런더너 빅벤 · 빨간 2층 버스", "place": "londonerfront", "what": "런더너 정문 빅벤(엘리자베스 타워)과 빨간 런던 2층 버스", "best": "28일 16:45~17:45 · 해 진 뒤 조명 켜진 야경", "tip": "빅벤이 높아서 건물 앞 광장 끝까지 물러나 세로로 찍으세요"},
     {"id": "ph_wheel", "area": "코타이 (스튜디오 시티·COD)", "name": "8자 관람차 야경", "place": "wheel", "what": "스튜디오 시티 8자 관람차와 코타이 야경", "best": "29일 해 진 뒤 (18:30 일정)", "tip": "관람차 안에서는 유리 반사가 생기니 휴대폰을 유리에 바짝 대고 찍으세요"},
     {"id": "ph_panda", "area": "콜로안", "name": "자이언트 판다관", "place": "panda", "what": "자이언트 판다와 레서판다", "best": "오전 첫 회차 (판다가 활발한 편)", "tip": "유리 너머로 찍을 땐 플래시를 끄고 휴대폰을 유리에 붙이면 반사가 줄어요"},
     {"id": "ph_chapel", "area": "콜로안", "name": "콜로안 성 프란시스코 사비에르 성당", "lat": 22.11712, "lng": 113.5511, "zh": "路環 聖方濟各聖堂", "zhArea": "路環 · 路環村", "mapQuery": "Chapel of St Francis Xavier Coloane", "what": "노란 성 프란시스코 사비에르 성당과 모자이크 광장", "best": "30일 점심 (응아팀 카페 바로 옆)", "tip": "광장 가운데 기념비 뒤에서 성당을 정면으로 찍으면 바닥 무늬까지 담겨요. 위치는 대략"}
@@ -607,7 +611,7 @@ window.TRIP_DATA = {
           '아기띠 (오전 구시가지 돌길·계단은 유모차가 불편)',
           '접이식 유모차 (오후 타이파 빌리지 골목이 좁음)',
           '보호자 연락처를 적은 팔찌나 스티커 (베네시안 인파)',
-          '햄튼 코트 저녁 뷔페 전화 예약 확인 (+853 8118 8822), 택시용 현금'
+          '파리지앵 르 뷔페 18:00 저녁 예약 확인, 택시용 현금'
         ],
         '2026-12-29': [
           '양말 여러 켤레: 키즈시티는 아이·어른 모두 양말 필수',
@@ -805,23 +809,28 @@ window.TRIP_DATA = {
           places: ['eiffel', 'londonerfront'], transport: 'walk'
         },
         {
-          date: '2026-12-28', time: '16:45', end: '17:20', kind: 'activity', title: '런더너 정문 빅벤(엘리자베스 타워) + 빨간 2층 런던 버스 가족사진', places: ['londonerfront'],
+          date: '2026-12-28', time: '16:45', end: '17:45', kind: 'activity', title: '런더너 정문 빅벤(엘리자베스 타워) + 빨간 2층 런던 버스 야경 사진 · 런더너 실내 산책', places: ['londonerfront'],
           tips: [
-            '파리지앵에서 런더너로 건너가며 정문 앞 빅벤과 빨간 2층 버스 앞에서 15~20분 가족사진.',
-            '17:20쯤 햄튼 코트(런더너 그랜드 2층)로 들어간다.'
+            '정문 앞 빅벤과 빨간 2층 버스 앞에서 가족사진. 해가 지면(17:50 무렵) 조명이 켜져 야경 사진도 좋다.',
+            '사진을 찍은 뒤 런더너 실내(영국풍 쇼핑몰)를 유모차로 산책한다. 17:45쯤 길 건너 파리지앵으로 출발한다.'
           ]
         },
         {
-          date: '2026-12-28', time: '17:30', kind: 'meal', meal: 'dinner', title: '저녁: 햄튼 코트 뷔페 (런더너 그랜드 2층)', places: ['londoner'], booking: 'hampton',
-          memo: '베네시안에서 길 건너편 런더너 그랜드(옛 쉐라톤) 2층입니다. 예전 FEAST 대신 이곳으로 바꿨습니다. 저녁 뷔페는 17:30부터입니다.',
+          date: '2026-12-28', time: '17:45', end: '18:00', kind: 'move', title: '파리지앵 르 뷔페로 이동 (길 건너, 도보 약 10분)',
+          places: ['londonerfront', 'lebuffet'], transport: 'walk'
+        },
+        {
+          date: '2026-12-28', time: '18:00', end: '19:30', kind: 'meal', meal: 'dinner', title: '저녁: 파리지앵 르 뷔페 Le Buffet (파리지앵 1층) · 18:00 디너 오픈에 맞춰 입장', places: ['lebuffet'], booking: 'lebuffet',
+          cost: { min: 1536, max: 1536, type: 'ticket', note: '어른 MOP 698 ×2 + 봉사료 10% = 약 MOP 1,536. 만 4세 미만 무료라 두 아이 모두 요금 없음 (공식)' },
+          memo: '디너 18:00~22:00. 에펠탑 바로 옆이라 나오는 길에 에펠탑 조명쇼를 볼 수 있습니다.',
           tips: [
-            '저녁 뷔페 예약은 전화(+853 8118 8822)로만 받는다고 안내되어 있다. 연말이라 미리 예약한다.',
-            '만 4세 미만은 무료라 두 아이 모두 요금이 없다 (공식). 어른 MOP 988 + 봉사료 10%.'
+            '18:00 디너 오픈에 맞춰 들어가면 자리 고르기와 음식 줄이 편하다. 연말이라 미리 예약한다.',
+            '만 4세 미만은 무료라 두 아이 모두 요금이 없다 (공식). 어른 MOP 698 + 봉사료 10%. 예약할 때 아이 나이를 함께 알린다.'
           ]
         },
         {
-          date: '2026-12-28', time: '19:15', kind: 'sleep', title: '택시로 호텔 복귀, 20:00 목욕, 21:00 취침', places: ['glp'],
-          transport: 'taxi', cost: { min: 29, max: 36, type: 'taxi', note: '런더너 → 호텔 약 2.5km' },
+          date: '2026-12-28', time: '19:35', kind: 'sleep', title: '택시로 그랜드 리스보아 팰리스 복귀, 20:00 목욕, 21:00 취침', places: ['glp'],
+          transport: 'taxi', cost: { min: 29, max: 36, type: 'taxi', note: '파리지앵 → 호텔 약 2.5km' },
           tips: ['나오는 길에 파리지앵 에펠탑 조명쇼를 본다 (18:15부터 15분 간격, 안내 사이트 기준).']
         },
 

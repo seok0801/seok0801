@@ -2451,7 +2451,7 @@
       rows += '<li><span class="cd-day" style="--day-color:' + d.color + '">' + esc(d.label) + '</span><span class="cd-sum">' +
         (c.max ? mopShort(c) + (KRW.rate ? '<small>' + won(c) + '</small>' : '') : '0') + '</span></li>';
     });
-    var html = '<div class="cost-big"><p class="fine">👨‍👩‍👧 1가족 (어른 2 · 아이 1) · 식비 제외</p>' +
+    var html = '<div class="cost-big"><p class="fine">👨‍👩‍👧 1가족 (어른 2 · 아이 1) · 식비 제외 (예약한 뷔페 저녁은 포함)</p>' +
       '<p class="cost-total">💰 MOP ' + mopShort(tot) + '</p>' +
       (KRW.rate ? '<p class="cost-won">🇰🇷 ' + won(tot) + '</p>' : '') +
       '<p class="cost-split">🎟️ 시설 ' + mopShort({ min: tot.ticketMin, max: tot.ticketMax }) + ' &nbsp;·&nbsp; 🚕 택시 ' + mopShort({ min: tot.taxiMin, max: tot.taxiMax }) + '</p>' +
