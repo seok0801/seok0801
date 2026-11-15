@@ -276,7 +276,7 @@ window.TRIP_DATA = {
       name: '파리지앵 르 뷔페 Le Buffet 저녁 (파리지앵 1층)', level: '권장', linkVerified: true,
       kids: '✅ 두 아이 모두 무료 · 만 4세 미만 (공식)',
       icon: '🍽️', short: '르 뷔페 저녁 (파리지앵)', key: '12/28 18:00 · 어른 698 + 10% · 4세 미만 무료',
-      aff: 'https://3ha.in/r/906842', affBy: '클룩',
+      aff: 'https://3ha.in/r/906850', affBy: '클룩',
       url: 'https://www.parisianmacao.com/restaurants/le-buffet.html',
       note: '디너 18:00~22:00. 공식 요금: 어른 MOP 698, 아이(만 4~11세) MOP 388, 만 4세 미만 무료, 봉사료 10% 별도 → 어른 2명 약 MOP 1,536. 연말 요금은 달라질 수 있어 예약 때 확인하세요. 예약번호는 여기에 적지 마세요.'
     },
