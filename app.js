@@ -259,7 +259,7 @@
   /* 아이 리듬 규칙: 저녁이 너무 늦게 시작하거나, 활동이 호텔 복귀 시각보다 늦게 끝나면 주의 */
   function rhythmWarning(it) {
     var R = D.rhythm || {};
-    if (QUIET_KINDS[it.kind]) return '';
+    if (QUIET_KINDS[it.kind] || it.rhythmOk) return '';   // rhythmOk: 늦은 걸 알고 정한 일정 (예: 첫날 북방관 19:30 예약)
     if (it.kind === 'meal' && it.meal === 'dinner' && R.dinnerLatest && toMin(it.time) > toMin(R.dinnerLatest)) {
       return '저녁 시작이 ' + R.dinnerLatest + '보다 늦음';
     }
