@@ -531,17 +531,14 @@
     if (sheetMode === 'list' && mode === 'place') listScroll = $('sheet-body').scrollTop;
     sheetMode = mode;
     $('sheet-back').hidden = mode !== 'place';
-    $('sheet-full').hidden = mode !== 'list';
     $('sheet').hidden = false;
     $('sheet').className = mode;
-    if (mode === 'list') $('sheet-full').href = './schedule.html' + (state.day !== 'all' ? '#d-' + state.day : '');
     $('sheet-title').textContent = title;
     $('place').hidden = mode !== 'place';
     $('list').hidden = mode !== 'list';
     $('sheet-body').scrollTop = 0;
   }
   function hideSheet() { sheetMode = ''; $('sheet').hidden = true; }
-  /* ⤢ 크게: 지도를 덮고 일정 카드만 화면 가득 (날짜 탭과 아래 버튼은 그대로). 이 휴대폰에 기억 */
 
   /* 장소를 눌렀을 때 보여 줄 내용: 그 장소에서 하는 일정(시간·메모·꿀팁·예약 버튼) */
   /* 주변 찾기: 그 장소 둘레의 식당·카페·편의점·약국을 구글 지도(앱)에서 바로 연다. 키가 필요 없다 */

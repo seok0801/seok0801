@@ -858,6 +858,3 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 }
 @keyframes mk-arrow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @media (prefers-reduced-motion: reduce) { .mk.on::before { animation: none; } }
-
-/* 📇 카드로 보기: 일정 카드 페이지(schedule.html)로 가는 링크 */
-#sheet-full { margin-left: auto; white-space: nowrap; text-decoration: none; }
