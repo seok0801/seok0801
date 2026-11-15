@@ -857,3 +857,13 @@ a.chip-btn { display: inline-flex; align-items: center; text-decoration: none; }
 }
 @keyframes mk-arrow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @media (prefers-reduced-motion: reduce) { .mk.on::before { animation: none; } }
+
+/* ⤢ 일정 카드만 크게: 위 날짜 탭 아래부터 아래 버튼 줄 위까지 지도를 덮는다 */
+#sheet.list.full {
+  top: calc(var(--top-h, 120px) + 6px); max-height: none;
+  left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); width: auto; max-width: none;
+  box-shadow: 0 0 0 100vmax rgba(239, 236, 228, .96);   /* 뒤의 지도를 가린다 */
+}
+@media (min-width: 900px) { #sheet.list.full { left: 12px; right: 12px; width: auto; max-width: 760px; margin: 0 auto; } }
+#sheet-full { margin-left: auto; white-space: nowrap; }
+body.listfull #top, body.listfull #bar { z-index: 5; }
